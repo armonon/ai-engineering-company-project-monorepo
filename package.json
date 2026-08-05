@@ -1,0 +1,18 @@
+{
+  "name": "trackflow-company-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TrackFlow company monorepo for the 4Geeks AI Engineering milestones",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "demo": "tsx src/demo.ts",
+    "verify": "npm run typecheck && npm test && npm run demo"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  }
+}

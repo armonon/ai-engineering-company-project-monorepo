@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TrackFlow provides warehouse management, last-mile delivery, and reverse logistics for e-commerce brands in Mexico and Spain." />
+    <title>TrackFlow | E-commerce logistics in Mexico and Spain</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme {
+        --color-track-navy: #10243e;
+        --color-track-teal: #0f766e;
+        --color-track-mint: #ccfbf1;
+      }
+      .form-input {
+        @apply mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-track-teal focus:ring-3 focus:ring-teal-100;
+      }
+      .field-error {
+        @apply mt-1 min-h-5 text-sm font-medium text-red-700;
+      }
+    </style>
+    <script src="./app.js" defer></script>
+  </head>
+  <body class="bg-slate-50 text-slate-800 antialiased">
+    <a href="#main" class="fixed left-4 top-4 z-50 -translate-y-24 rounded-lg bg-white px-4 py-2 font-semibold shadow focus:translate-y-0">Skip to content</a>
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <nav class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4" aria-label="Primary navigation">
+        <a href="#home" class="text-xl font-black tracking-tight text-track-navy">Track<span class="text-track-teal">Flow</span></a>
+        <div class="flex gap-4 text-sm font-semibold sm:gap-7">
+          <a class="hover:text-track-teal" href="#home">Home</a><a class="hover:text-track-teal" href="#services">Services</a><a class="hover:text-track-teal" href="#coverage">Coverage</a><a class="hover:text-track-teal" href="#contact">Contact</a>
+        </div>
+      </nav>
+    </header>
+    <main id="main">
+      <section id="home" class="overflow-hidden bg-track-navy text-white">
+        <div class="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[1.2fr_.8fr] lg:items-center lg:py-28">
+          <div>
+            <p class="mb-5 font-bold uppercase tracking-[0.2em] text-teal-300">Mexico + Spain</p>
+            <h1 class="max-w-3xl text-4xl font-black leading-tight sm:text-6xl">Logistics that scales with your e-commerce</h1>
+            <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-200">Warehouse management, last-mile deliveries, and reverse logistics in Mexico and Spain. Over 15 years helping fashion, electronics, and cosmetics brands grow without worrying about operations.</p>
+            <a href="#request-form" class="mt-8 inline-flex rounded-xl bg-teal-400 px-6 py-3 font-bold text-track-navy shadow-lg transition hover:bg-teal-300 focus:outline-none focus:ring-4 focus:ring-teal-200">Request information</a>
+          </div>
+          <div class="grid grid-cols-2 gap-4" aria-label="TrackFlow company facts">
+            <div class="rounded-2xl bg-white/10 p-6"><strong class="block text-3xl text-teal-300">15+</strong><span>years in logistics</span></div><div class="rounded-2xl bg-white/10 p-6"><strong class="block text-3xl text-teal-300">130+</strong><span>professionals</span></div><div class="rounded-2xl bg-white/10 p-6"><strong class="block text-3xl text-teal-300">2</strong><span>owned warehouses</span></div><div class="rounded-2xl bg-white/10 p-6"><strong class="block text-3xl text-teal-300">2</strong><span>operating countries</span></div>
+          </div>
+        </div>
+      </section>
+      <section id="services" class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-bold uppercase tracking-[0.18em] text-track-teal">Services</p><h2 class="mt-3 text-3xl font-black text-track-navy sm:text-4xl">Your operations, connected end to end</h2>
+        <div class="mt-10 grid gap-6 md:grid-cols-3">
+          <article class="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm"><h3 class="text-xl font-bold text-track-navy">Warehouse Management</h3><ul class="mt-4 list-disc space-y-2 pl-5 text-slate-600"><li>Storage, picking and packing</li><li>Real-time inventory</li><li>Warehouses in Monterrey and Zaragoza</li></ul></article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm"><h3 class="text-xl font-bold text-track-navy">Last-Mile Deliveries</h3><ul class="mt-4 list-disc space-y-2 pl-5 text-slate-600"><li>Certified carrier network</li><li>Unified shipment tracking</li><li>Incident and returns management</li></ul></article>
+          <article class="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm"><h3 class="text-xl font-bold text-track-navy">Reverse Logistics</h3><ul class="mt-4 list-disc space-y-2 pl-5 text-slate-600"><li>Complete returns management</li><li>Inspection and reconditioning</li><li>Sales-platform integrations</li></ul></article>
+        </div>
+      </section>
+      <section id="coverage" class="bg-track-mint/50"><div class="mx-auto max-w-6xl px-5 py-20">
+        <p class="font-bold uppercase tracking-[0.18em] text-track-teal">Coverage</p><h2 class="mt-3 text-3xl font-black text-track-navy sm:text-4xl">One logistics partner across two markets</h2>
+        <div class="mt-10 grid gap-6 md:grid-cols-2"><article class="rounded-2xl bg-white p-8 shadow-sm"><h3 class="text-2xl font-black text-track-navy">Mexico</h3><p class="mt-3 text-slate-600">Warehouse in Monterrey with national coverage through Estafeta, FedEx, and DHL.</p></article><article class="rounded-2xl bg-white p-8 shadow-sm"><h3 class="text-2xl font-black text-track-navy">Spain</h3><p class="mt-3 text-slate-600">Warehouse in Zaragoza with peninsular and island coverage through MRW, SEUR, and DHL.</p></article></div>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><p class="rounded-xl border border-teal-100 bg-white p-5"><strong class="block text-track-navy">Binational operation</strong><span class="text-sm text-slate-600">Own infrastructure in Mexico and Spain</span></p><p class="rounded-xl border border-teal-100 bg-white p-5"><strong class="block text-track-navy">+130 professionals</strong><span class="text-sm text-slate-600">Dedicated to your logistics</span></p><p class="rounded-xl border border-teal-100 bg-white p-5"><strong class="block text-track-navy">Own technology</strong><span class="text-sm text-slate-600">Total inventory visibility</span></p><p class="rounded-xl border border-teal-100 bg-white p-5"><strong class="block text-track-navy">E-commerce specialists</strong><span class="text-sm text-slate-600">Fashion, electronics, and cosmetics</span></p></div>
+      </div></section>
+      <section id="contact" class="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[.7fr_1.3fr]">
+        <div><p class="font-bold uppercase tracking-[0.18em] text-track-teal">Contact</p><h2 class="mt-3 text-3xl font-black text-track-navy sm:text-4xl">Tell us what you need to move</h2><p class="mt-5 leading-7 text-slate-600">Our Commercial team will review your operation and contact you with the right logistics setup.</p><address class="mt-8 space-y-3 not-italic text-slate-700"><p><a class="font-semibold text-track-teal hover:underline" href="mailto:comercial@trackflow.com">comercial@trackflow.com</a></p><p>Monterrey: <a href="tel:+528112345678">+52 81 1234 5678</a></p><p>Zaragoza: <a href="tel:+34976123456">+34 976 123 456</a></p></address></div>
+        <form id="request-form" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg sm:p-9" novalidate>
+          <div class="grid gap-x-5 sm:grid-cols-2">
+            <label class="block font-semibold">Company name *<input class="form-input" id="company" name="company" type="text" autocomplete="organization" required aria-describedby="company-error" /><span id="company-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold">Contact person *<input class="form-input" id="contact-person" name="contactPerson" type="text" autocomplete="name" required aria-describedby="contact-person-error" /><span id="contact-person-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold">Corporate email *<input class="form-input" id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error" /><span id="email-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold">Phone *<input class="form-input" id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+52 81 1234 5678" required aria-describedby="phone-error" /><span id="phone-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold sm:col-span-2">Company website<input class="form-input" id="website" name="website" type="url" autocomplete="url" placeholder="https://company.com" aria-describedby="website-error" /><span id="website-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold">Main operating country *<select class="form-input" id="country" name="country" required aria-describedby="country-error"><option value="">Select one</option><option>Mexico</option><option>Spain</option><option>Both</option><option>Other</option></select><span id="country-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold">Product type *<select class="form-input" id="product-type" name="productType" required aria-describedby="product-type-error"><option value="">Select one</option><option>Fashion</option><option>Electronics</option><option>Cosmetics</option><option>Food</option><option>Other</option></select><span id="product-type-error" class="field-error block" aria-live="polite"></span></label>
+            <label class="block font-semibold sm:col-span-2">Estimated monthly shipping volume *<select class="form-input" id="volume" name="volume" required aria-describedby="volume-error"><option value="">Select one</option><option>0-100</option><option>101-500</option><option>501-2000</option><option>2000+</option><option>Not sure</option></select><span id="volume-error" class="field-error block" aria-live="polite"></span></label>
+          </div>
+          <fieldset class="mt-3" aria-describedby="services-error"><legend class="font-semibold">Services of interest *</legend><div class="mt-3 flex flex-wrap gap-4"><label><input class="mr-2 accent-teal-700" name="services" type="checkbox" value="Warehousing" />Warehousing</label><label><input class="mr-2 accent-teal-700" name="services" type="checkbox" value="Last mile" />Last mile</label><label><input class="mr-2 accent-teal-700" name="services" type="checkbox" value="Reverse logistics" />Reverse logistics</label></div><p id="services-error" class="field-error" aria-live="polite"></p></fieldset>
+          <fieldset class="mt-3" aria-describedby="provider-error"><legend class="font-semibold">Do you currently work with another 3PL? *</legend><div class="mt-3 flex flex-wrap gap-4"><label><input class="mr-2 accent-teal-700" name="provider" type="radio" value="Yes" />Yes</label><label><input class="mr-2 accent-teal-700" name="provider" type="radio" value="No" />No</label><label><input class="mr-2 accent-teal-700" name="provider" type="radio" value="Evaluating options" />Evaluating options</label></div><p id="provider-error" class="field-error" aria-live="polite"></p></fieldset>
+          <label class="mt-3 block font-semibold">Comments or specific needs<textarea class="form-input min-h-28" id="comments" name="comments" maxlength="500" aria-describedby="comments-count comments-error"></textarea><span id="comments-count" class="mt-1 block text-right text-sm text-slate-500">0 / 500</span><span id="comments-error" class="field-error block" aria-live="polite"></span></label>
+          <label class="mt-3 flex items-start gap-3"><input id="privacy" name="privacy" type="checkbox" class="mt-1 accent-teal-700" aria-describedby="privacy-error" /><span>I accept the privacy policy *</span></label><p id="privacy-error" class="field-error" aria-live="polite"></p>
+          <button class="mt-4 w-full rounded-xl bg-track-teal px-6 py-3 font-bold text-white transition hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200" type="submit">Request information</button><p id="form-status" class="mt-4 text-center font-semibold" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+    <footer class="bg-track-navy px-5 py-8 text-center text-sm text-slate-300"><p>© 2025 TrackFlow. All rights reserved. · <a class="text-teal-300 hover:underline" href="https://www.linkedin.com" rel="noreferrer">LinkedIn</a></p></footer>
+  </body>
+</html>

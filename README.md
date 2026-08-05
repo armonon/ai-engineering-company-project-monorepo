@@ -9,6 +9,29 @@ _Estas instrucciones tambien estan disponibles en [espanol](./README.es.md)._
 
 ---
 
+## TrackFlow milestone delivery
+
+This copy of the official company monorepo is dedicated to **TrackFlow**, the last-mile delivery and warehouse management company operating in Mexico and Spain.
+
+| Milestone | Deliverable | Location |
+| --- | --- | --- |
+| 0 — Company choice | Selection, departments, and AI-agent idea | [`company-choice.md`](./company-choice.md) |
+| 1 — Web fundamentals | Responsive Tailwind public website and validated lead form | [`uis/website/`](./uis/website/) |
+| 2 — Programming fundamentals | Typed inventory, shipment, and carrier utilities | [`src/`](./src/) |
+
+The active business rules are in [`CONTEXT.md`](./CONTEXT.md), while the complete official context history is retained in [`docs/company-context/`](./docs/company-context/).
+
+### Validate Milestone 2
+
+```bash
+npm install
+npm run verify
+```
+
+`verify` runs strict TypeScript checking, the automated test suite, and the sample TrackFlow operations demo.
+
+---
+
 ## Purpose
 
 This repository is the **starter template** for transversal projects. You will work on real company scenarios (Brasaland, TrackFlow, Nexova), building deliverables that map to course milestones (Web, Programming, Backend, Telemetry, RAG, Agents, Workflows, Real-time).
@@ -49,13 +72,15 @@ You are building **one company** across many milestones and projects. Each top-l
 
 ---
 
-## Current status of the template
+## Current project status
 
-> 💡 This repository currently provides a **base folder structure and documentation skeleton** only. It does not include runnable apps or global scripts yet.
+> This repository now contains the cumulative TrackFlow work through Milestone 2.
 >
-> - `CONTEXT.md` is a placeholder and must be replaced with your assigned company context.
-> - There is no root `AGENTS.md` yet.
-> - Shared package metadata exists in `packages/shared/package.json` (`@repo/shared-types`), but no workspace runner is configured at root.
+> - `CONTEXT.md` contains the official TrackFlow programming-fundamentals contract.
+> - `uis/website/` contains the public website carried forward from Milestone 1.
+> - `src/` contains the reusable TrackFlow logic layer, with tests in `tests/`.
+> - Root npm scripts provide type-checking, automated tests, and a runnable demo.
+> - `packages/shared/` re-exports the canonical TrackFlow domain models for future monorepo apps.
 
 ---
 

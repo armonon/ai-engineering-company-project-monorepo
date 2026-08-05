@@ -1,13 +1,3 @@
-/**
- * Shared types for transversal project apps.
- * Extend with domain types (e.g. Location, Sale, Customer) as needed.
- */
-
-// Example placeholder — replace with your domain types
-export type Id = string;
-
-export interface BaseEntity {
-  id: Id;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// The canonical Milestone 2 models remain in src/types as required by the
+// assignment. The monorepo shared package re-exports them for future apps.
+export * from "../../../src/types/models.js";
