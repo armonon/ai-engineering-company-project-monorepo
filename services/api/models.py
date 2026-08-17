@@ -356,3 +356,111 @@ class ChangePasswordRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# ===========================================================================
+# Inventory — SQLModel ORM models (Milestone 5)
+#
+# These are the *only* SQLModel `table=True` classes in the codebase, and
+# they are the only things that live in Supabase. Everything above this
+# line is a Pydantic model held in TinyDB or used as an API contract.
+#
+# Names come from CONTEXT-trackflow.md § "Entity Names and Field
+# Specification" and are not interchangeable with the README's generic
+# Product / InboundOrder / OutboundOrder: TrackFlow calls them SKU,
+# StockEntry and StockExit, and the API speaks that language.
+#
+# Note what is NOT here: a User table. Auth stays in TinyDB, and both
+# movement models carry `user_uuid` as a plain string referencing the
+# TinyDB user id — no foreign key, no replicated account (CONTEXT rule 4).
+#
+# `current_stock` is also deliberately absent. It is derived from the
+# movements, never stored, so there is no column anyone could set
+# directly (CONTEXT rule 1). It appears only on the response schema in
+# schemas.py.
+# ===========================================================================
+
+from sqlmodel import Field as SQLField  # noqa: E402
+from sqlmodel import SQLModel  # noqa: E402
+
+
+class Warehouse(str, Enum):
+    """CONTEXT § "Los Angeles and Zaragoza warehouses coexist"."""
+
+    LA = "LA"
+    ZGZ = "ZGZ"
+
+
+class SKUCategory(str, Enum):
+    """CONTEXT § SKU.category."""
+
+    FASHION = "fashion"
+    ELECTRONICS = "electronics"
+    COSMETICS = "cosmetics"
+
+
+class ExitType(str, Enum):
+    """CONTEXT § StockExit.exit_type."""
+
+    DISPATCH = "dispatch"
+    LOSS = "loss"
+
+
+class SKU(SQLModel, table=True):
+    """A client brand's product line, held at one warehouse.
+
+    The same physical product in two warehouses is two SKU rows with
+    distinct `sku` codes — see the seed data, where the white sneaker is
+    CLT-SNK-W-42 in LA and CLT-SNK-W-42-Z in Zaragoza. That is what makes
+    stock per-warehouse rather than global (CONTEXT rule 6).
+    """
+
+    __tablename__ = "sku"
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    name: str = SQLField(index=True)
+    sku: str = SQLField(index=True, unique=True)
+    client_name: str = SQLField(index=True)
+    category: SKUCategory
+    warehouse: Warehouse = SQLField(index=True)
+
+    # No SQLModel `Relationship()` here on purpose. This module uses
+    # `from __future__ import annotations`, which turns every annotation
+    # into a string; SQLAlchemy then reads `list["StockEntry"]` as a
+    # class literally named that and fails to map it. The foreign keys
+    # below are the real relationship and are enforced by the database.
+    # `routers/inventory.py` loads related SKUs with one explicit extra
+    # query, which avoids N+1 without depending on lazy attribute
+    # access — and is easier to reason about than relationship loading.
+
+
+class StockEntry(SQLModel, table=True):
+    """A goods receipt: stock arriving from a client brand."""
+
+    __tablename__ = "stock_entry"
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    # Enforced at database level, per the acceptance criteria.
+    sku_id: int = SQLField(foreign_key="sku.id", index=True)
+    quantity: int
+    reference: str
+    warehouse: Warehouse = SQLField(index=True)
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(UTC))
+    # TinyDB user id as a string. No FK — there is no user table here.
+    user_uuid: str = SQLField(index=True)
+
+
+class StockExit(SQLModel, table=True):
+    """A dispatch to a customer, or a written-off loss."""
+
+    __tablename__ = "stock_exit"
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    sku_id: int = SQLField(foreign_key="sku.id", index=True)
+    quantity: int
+    exit_type: ExitType
+    # Required for a dispatch, must be null for a loss (CONTEXT rule 3).
+    tracking_number: str | None = SQLField(default=None)
+    warehouse: Warehouse = SQLField(index=True)
+    created_at: datetime = SQLField(default_factory=lambda: datetime.now(UTC))
+    user_uuid: str = SQLField(index=True)

@@ -19,6 +19,8 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import Engine
+from sqlmodel import Session, SQLModel, create_engine
 from tinydb import TinyDB
 from tinydb.storages import JSONStorage
 from tinydb.table import Table
@@ -103,8 +105,15 @@ def db_path() -> Path:
     return Path(override) if override else _DEFAULT_DB_PATH
 
 
-def get_db() -> TinyDB:
+def get_tinydb() -> TinyDB:
     """Return the process-wide TinyDB handle, opening it on first use.
+
+    Named `get_tinydb`, not `get_db`: `get_db` is the FastAPI dependency
+    that yields a SQLModel session for the inventory database (see the
+    bottom of this file). Two different stores, two clearly different
+    names — they were briefly both called `get_db`, and the second
+    definition silently shadowed the first, breaking every TinyDB
+    accessor below.
 
     Re-opens automatically if TINYDB_PATH changed since the last call,
     which is what makes the test fixtures work.
@@ -123,29 +132,29 @@ def get_db() -> TinyDB:
 
 
 def suppliers_table() -> _LockedTable:
-    return _LockedTable(get_db().table(SUPPLIERS_TABLE))
+    return _LockedTable(get_tinydb().table(SUPPLIERS_TABLE))
 
 
 def users_table() -> _LockedTable:
-    return _LockedTable(get_db().table(USERS_TABLE))
+    return _LockedTable(get_tinydb().table(USERS_TABLE))
 
 
 def profiles_table() -> _LockedTable:
     """Profiles are one-to-one with users, keyed by `user_id`."""
-    return _LockedTable(get_db().table(PROFILES_TABLE))
+    return _LockedTable(get_tinydb().table(PROFILES_TABLE))
 
 
 def incidents_table() -> _LockedTable:
     """Incidents registered through the manager, plus the historical
     rows loaded by scripts/seed_incidents.py."""
-    return _LockedTable(get_db().table(INCIDENTS_TABLE))
+    return _LockedTable(get_tinydb().table(INCIDENTS_TABLE))
 
 
 def password_resets_table() -> _LockedTable:
     """One row per issued reset token: the token HASH, its expiry, and
     whether it has been used. Server-side state is what makes a token
     invalidatable after use — a bare JWT could not be."""
-    return _LockedTable(get_db().table(PASSWORD_RESETS_TABLE))
+    return _LockedTable(get_tinydb().table(PASSWORD_RESETS_TABLE))
 
 
 def close_db() -> None:
@@ -163,3 +172,99 @@ def reset_db() -> None:
     with _lock:
         if _db is not None:
             _db.drop_tables()
+
+
+# ===========================================================================
+# Inventory — the second database connection (Milestone 5)
+#
+# Two stores, used deliberately:
+#
+#   TinyDB (above)   users, auth, profiles, suppliers, incidents
+#   Supabase (here)  SKUs and stock movements — the inventory domain
+#
+# They never mix. The inventory tables hold `user_uuid` as a plain string
+# pointing at a TinyDB user id; no account data is copied into Postgres.
+#
+# The engine is built lazily rather than at import. Without it, importing
+# this module would require DATABASE_URL to be set and Supabase to be
+# reachable before *any* endpoint could serve — including the auth routes
+# that have nothing to do with inventory. Lazy construction keeps the
+# rest of the service working when the inventory database is unavailable,
+# and keeps the existing test suite runnable without Postgres.
+# ===========================================================================
+
+_engine: Engine | None = None
+_engine_url: str | None = None
+
+
+def database_url() -> str | None:
+    """The Supabase connection string, or None if it is not configured.
+
+    Read from the environment at call time, never hardcoded — see
+    `.env.example`. Supabase's Transaction pooler URI is the expected
+    form.
+    """
+    url = os.environ.get("DATABASE_URL", "").strip()
+    return url or None
+
+
+def inventory_engine() -> Engine:
+    """The SQLModel engine for Supabase, created on first use.
+
+    Cached per URL so tests that repoint DATABASE_URL get a fresh engine
+    instead of silently reusing the previous database.
+    """
+    global _engine, _engine_url
+
+    url = database_url()
+    if url is None:
+        raise RuntimeError(
+            "DATABASE_URL is not set. Add the Supabase connection string to "
+            "services/api/.env — see .env.example."
+        )
+
+    with _lock:
+        if _engine is None or _engine_url != url:
+            if _engine is not None:
+                _engine.dispose()
+            # pool_pre_ping: Supabase's pooler drops idle connections, and
+            # without this the first request after a quiet spell fails on
+            # a stale socket rather than reconnecting.
+            _engine = create_engine(url, echo=False, pool_pre_ping=True)
+            _engine_url = url
+        return _engine
+
+
+def create_inventory_schema() -> bool:
+    """Create the inventory tables if they do not exist.
+
+    Called once on application startup. Returns False when DATABASE_URL
+    is absent so startup can log it and carry on rather than refusing to
+    boot the whole API over one unconfigured subsystem.
+    """
+    if database_url() is None:
+        return False
+    SQLModel.metadata.create_all(inventory_engine())
+    return True
+
+
+def get_db() -> Iterator[Session]:
+    """FastAPI dependency yielding one SQLModel session per request.
+
+    Injected with `Depends(get_db)`. There is deliberately no global
+    session object anywhere in the codebase: a session shared across
+    requests leaks state between callers and is not safe under the
+    threadpool FastAPI runs sync handlers in.
+    """
+    with Session(inventory_engine()) as session:
+        yield session
+
+
+def dispose_inventory_engine() -> None:
+    """Drop the pooled connections. Used by tests between cases."""
+    global _engine, _engine_url
+    with _lock:
+        if _engine is not None:
+            _engine.dispose()
+        _engine = None
+        _engine_url = None

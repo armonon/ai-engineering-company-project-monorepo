@@ -17,9 +17,12 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "pydantic[email]>=2.13.4",
     "trackflow-shared>=0.1.0",
+    "sqlmodel>=0.0.39",
+    "psycopg2-binary>=2.9.12",
 ]
 
 [project.scripts]
+seed-inventory = "seed_inventory:main"
 # Enables `uv run seed`.
 seed = "seed:main"
 # Enables `uv run seed-incidents` (historical CSV -> incident manager).

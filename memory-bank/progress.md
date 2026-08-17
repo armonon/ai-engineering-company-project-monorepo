@@ -299,3 +299,62 @@ Three consequential edits came with it:
   up precisely as `Cannot read properties of null (reading 'useContext')`
   during prerender). The backoffice's 56 error-handling assertions and the
   supplier directory check were re-run against the shared hoisted React.
+
+---
+
+## Milestone 5 — inventory with SQLModel and a second database
+
+`services/api` now holds two databases and uses each deliberately:
+TinyDB keeps users, auth, profiles, suppliers and incidents; **Supabase
+(PostgreSQL, via SQLModel)** holds SKUs and stock movements. Entity
+names come from `docs/CONTEXT-inventory-trackflow.md`.
+
+### What was added
+
+- `models.py` — `SKU`, `StockEntry`, `StockExit` as SQLModel
+  `table=True` classes. These are the only ORM models in the codebase.
+- `schemas.py` — new file, Pydantic request/response schemas. Separate
+  from the ORM by design; no endpoint returns a SQLModel object.
+- `routers/inventory.py` — `APIRouter(prefix="/inventory")`, six
+  endpoints.
+- `database.py` — SQLModel engine plus a `get_db` dependency yielding
+  one session per request. No global session.
+- `seed_inventory.py` (`uv run seed-inventory`) — the CONTEXT seed data,
+  idempotent.
+- `tests/test_inventory.py` — 29 tests.
+
+### Decisions worth remembering
+
+- **`get_db` was already taken.** TinyDB's accessor had that name, and
+  adding the SQLModel dependency silently shadowed it — every TinyDB
+  table broke. The TinyDB one is now `get_tinydb()`; `get_db` is the
+  SQLModel dependency the milestone requires.
+- **No SQLModel `Relationship()`.** `models.py` uses
+  `from __future__ import annotations`, so SQLAlchemy sees
+  `list["StockEntry"]` as a class name and fails to map it. The foreign
+  keys are declared and enforced at database level; `routers/inventory.py`
+  loads related SKUs with one explicit batched query instead, which is
+  N+1-free and easier to follow than relationship loading.
+- **Stock is per SKU per warehouse** (CONTEXT rule 6). The response
+  carries `current_stock` for the SKU's own warehouse plus a
+  `stock_by_warehouse` breakdown, so the scoping is visible rather than
+  implied.
+- **The engine is lazy.** Building it at import would have required
+  DATABASE_URL and a reachable Supabase before *any* route could serve,
+  including auth. Startup logs a warning when it is unset and the API
+  boots anyway — which is also why the suite runs without Postgres.
+- **`user_uuid` is the TinyDB user id as a string**, the convention
+  `models.py` and `security.py` already documented before this
+  milestone. No user table exists in Supabase.
+
+### Verification
+
+- 315 backend tests (29 new). The inventory tests run on SQLite so the
+  suite needs no credentials.
+- The whole API was additionally driven against **real PostgreSQL 16**:
+  tables created on startup, the exact CONTEXT rejection message,
+  per-warehouse scoping, and no exit row persisted after a rejection.
+- Mutation-checked: removing the stock guard fails 3 tests, aggregating
+  stock globally fails the warehouse test, and reading the SKU per
+  movement fails the N+1 test with 10 SELECTs instead of 4.
+- `ruff` clean.

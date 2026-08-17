@@ -13,11 +13,14 @@ Run it:
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from routers.inventory import router as inventory_router
 from routes.auth import router as auth_router
 from routes.incidents import router as incidents_router
 from routes.incidents_manager import router as incidents_manager_router
@@ -25,7 +28,40 @@ from routes.profiles import router as profiles_router
 from routes.suppliers import router as suppliers_router
 from routes.users import router as users_router
 
+logger = logging.getLogger("trackflow.api")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Startup: make sure the inventory tables exist in Supabase.
+
+    Deliberately non-fatal when DATABASE_URL is absent. The inventory
+    routes will fail loudly on use, but auth, suppliers and incidents —
+    which live in TinyDB and have nothing to do with Supabase — keep
+    serving. One unconfigured subsystem should not stop the API booting,
+    and the test suite runs without Postgres because of it.
+
+    Uses the lifespan contextmanager rather than @app.on_event, which
+    FastAPI has deprecated.
+    """
+    from database import create_inventory_schema
+
+    try:
+        if create_inventory_schema():
+            logger.info("Inventory schema ready in Supabase")
+        else:
+            logger.warning(
+                "DATABASE_URL not set - /inventory routes are unavailable. "
+                "See services/api/.env.example."
+            )
+    except Exception:
+        logger.exception("Could not initialise the inventory schema")
+
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="TrackFlow API",
     description=(
         "Supplier directory (TinyDB) and incident-report analysis for "
@@ -52,9 +88,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-logger = logging.getLogger("trackflow.api")
-
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
@@ -94,6 +127,7 @@ app.include_router(profiles_router)
 app.include_router(suppliers_router)
 app.include_router(incidents_manager_router)
 app.include_router(incidents_router)
+app.include_router(inventory_router)
 
 
 @app.get("/", tags=["health"])
