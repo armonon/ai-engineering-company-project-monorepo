@@ -9,13 +9,14 @@
 > called `AGENTS.md`, and expects an agent's hard limits in it. Those
 > live with the agent they belong to:
 >
-> | Agent | Its config |
+> | Agent | Where its config lives |
 > |---|---|
-> | Coursework Steward | `IDENTITY.md`, `SOUL.md`, `TOOLS.md`, `OPENCLAW.md` at the repo root |
-> | Warehouse agent (planned) | `.openclaw/` — see `docs/BRIEF-warehouse-agent.md` |
+> | Warehouse agent (planned) | `.openclaw/` here — see `docs/BRIEF-warehouse-agent.md` |
+> | Coursework Steward | a separate repository: [4geeks-coursework-agent](https://github.com/armonon/4geeks-coursework-agent) |
 >
-> One filename, two meanings. Read the section headings below before
-> assuming which contract you are holding.
+> The coursework agent used to live at this root, which is what created
+> the ambiguity. It manages bootcamp progress and has nothing to do with
+> TrackFlow, so it moved out.
 
 Working protocol for any AI or human contributor operating in this
 repository. This file is authoritative — if it conflicts with your
