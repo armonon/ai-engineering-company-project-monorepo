@@ -559,3 +559,39 @@ Three consequential edits came with it:
 - Docker was not installed on the authoring machine, so image execution was
   not claimed. Static Dockerfile/Compose validation and the full repository
   typecheck, test, and build workflow are the available verification gates.
+
+## 2026-08-29 — Warehouse Steward acceptance proof
+
+- Added the dedicated public OpenClaw workspace under `.openclaw/`: Warehouse
+  Steward identity, six hard safety constraints, authenticated HTTP-only tool
+  contract, read-only `stock-check`, confirmation-gated `log-movement`, and a
+  shared Node adapter that never logs credentials or retries writes.
+- Registered the isolated `trackflow-warehouse` agent and verified the existing
+  OpenAI runtime with a real embedded turn. Private operative credentials stay
+  only in ignored `.openclaw/.env`; no bearer token is persisted.
+- Ran the documented seed command against the Docker API. That exposed three
+  real packaging omissions (`seed_inventory`, `routers*`, and `schemas`) in
+  `services/api/pyproject.toml`; fixed them and added regression tests for all
+  console-script imports.
+- Captured `.openclaw/TRANSCRIPT.md` from a real session: two white-sneaker
+  candidates were disambiguated, LA stock was freshly read as 145, a separately
+  confirmed 60-unit receipt produced movement 6 and stock 205, a declined loss
+  wrote nothing, and a 999-unit dispatch returned the API's exact HTTP 400
+  insufficient-stock message without a retry.
+- Independently checked the movement feed after the conversation: one matching
+  receipt exists, no declined serum loss exists, no refused tracking number
+  exists, and LA stock remains 205.
+
+## 2026-08-29 — Talent Pipeline consolidated into backoffice
+
+- Added a protected `Talent pipeline` section to the existing backoffice at
+  `/talent`, with the full Milestone 3 list/search/filter, register, detail,
+  edit, stage/status update, and internal-note workflows.
+- Kept candidate traffic isolated behind `lib/talent-api.ts` and a same-origin
+  `/talent-api` rewrite; it does not reuse the authenticated TrackFlow
+  inventory/auth base URL or depend on cross-origin browser policy.
+- Added focused tests for API URL normalization and candidate filter query
+  construction. Backoffice typecheck, 49 tests, and lint pass.
+- Preserved `milestone-3-talent-pipeline` and the historical standalone
+  workspace as assessment evidence while making the cumulative backoffice the
+  single current demo surface.

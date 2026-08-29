@@ -43,10 +43,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 # Flat layout: the milestone specifies main.py / models.py / database.py /
 # seed.py at services/api/ with routes/ beside them.
-py-modules = ["main", "models", "database", "seed", "security", "services_users", "email_service", "password_reset", "seed_incidents_entry"]
+py-modules = ["main", "models", "schemas", "database", "seed", "seed_inventory", "security", "services_users", "email_service", "password_reset", "seed_incidents_entry"]
 
 [tool.setuptools.packages.find]
-include = ["routes*"]
+include = ["routes*", "routers*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

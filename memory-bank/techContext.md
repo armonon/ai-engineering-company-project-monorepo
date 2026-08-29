@@ -28,8 +28,8 @@
 ./.openclaw/                     — allowlisted public warehouse-agent deliverables
 ./packages/business-logic/       — Milestone 2 TypeScript module (freight quote)
 ./uis/website/                   — public corporate Next.js site
-./uis/backoffice/                — internal Next.js app, imports @trackflow/business-logic
-./uis/talent-pipeline-tracker/    — recruiting workflow UI
+./uis/backoffice/                — unified internal app: operations, inventory, talent, suppliers
+./uis/talent-pipeline-tracker/    — historical Milestone 3 submission workspace
 ./services/api/                  — FastAPI auth, incidents, suppliers, and inventory
 ./docker-compose.yml             — two-service local development environment
 ./skills/                        — OpenClaw-visible reusable coursework skills
@@ -61,8 +61,9 @@
    the website and backoffice on ports 3000 and 3001 through `uis/start.sh`;
    the backend image runs the centralized FastAPI app on port 8000. Compose
    bind mounts source for hot reload and keeps dependencies/data in named
-   volumes. Browser requests use the same-origin `/trackflow-api` path; the
-   backoffice Next.js server proxies it to the `backend` service name.
+  volumes. Browser requests use the same-origin `/trackflow-api` and
+  `/talent-api` paths; the backoffice Next.js server proxies them to the local
+  backend and the 4Geeks Talent Tracker respectively.
 
 ## Active technical constraints
 
@@ -84,12 +85,13 @@
 
 ## Known technical debt
 
-- No shared UI kit; `uis/website` and `uis/backoffice` each duplicate
-  a `Button` component. The talent tracker is the third UI, but extraction is
-  deferred until the components share an actual API instead of only a name.
-- The warehouse-agent brief is versioned, but its authenticated transcript
-  remains intentionally absent until a real operative account and live
-  inventory API are available. It must never be fabricated.
+- No shared UI kit; `uis/website`, the cumulative backoffice, and the retained
+  Milestone 3 snapshot still own their presentation components independently.
+  Do not extract a component library until the interfaces actually converge.
+- The warehouse agent is proven locally with an authenticated operative and a
+  real acceptance transcript. Its private `.env`, OpenAI state, and session
+  log remain outside Git; only the public contract and visible transcript are
+  versioned.
 - Milestones 7 and 8 and the warehouse agent's official milestone number
   remain unmapped until the 4Geeks project pages provide their identifiers.
 

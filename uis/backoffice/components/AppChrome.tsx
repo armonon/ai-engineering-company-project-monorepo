@@ -12,6 +12,7 @@ const NAV = [
   { href: "/incidents", label: "Incident analysis" },
   { href: "/inventory", label: "Inventory" },
   { href: "/inventory/orders", label: "Stock movements" },
+  { href: "/talent", label: "Talent pipeline" },
   { href: "/suppliers", label: "Supplier directory" },
   { href: "/account/profile", label: "My profile" },
   { href: "/account/change-password", label: "Change password" },

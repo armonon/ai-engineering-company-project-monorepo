@@ -30,6 +30,7 @@ htmlcov/
 /MEMORY.md
 /BOOTSTRAP.md
 /memory/
+/openclaw-workspace-state.json
 
 # The warehouse-agent brief requires public deliverables under .openclaw/.
 # Ignore everything there by default, then allow only the reviewable contract.
@@ -39,5 +40,8 @@ htmlcov/
 !/.openclaw/AGENTS.md
 !/.openclaw/TOOLS.md
 !/.openclaw/TRANSCRIPT.md
+!/.openclaw/.agents/
+!/.openclaw/.agents/rules/
+!/.openclaw/.agents/rules/warehouse-agent.md
 !/.openclaw/skills/
 !/.openclaw/skills/**
