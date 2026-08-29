@@ -46,7 +46,7 @@ specific dangerous calls in the analyzer route as well (C2).
 
 ### C2 — The analyzer route leaves its two dangerous calls unguarded
 
-`services/api/routes/incidents.py`
+`services/api/routers/incidents.py`
 
 `read_csv_bytes(payload)` is wrapped only for `UnicodeDecodeError`; the
 `csv` module's own `Error` (field size, embedded NUL, bad quoting) passes
@@ -150,7 +150,7 @@ The ticket requires every error state to offer an exit.
 
 ### H5 — A login failure can echo the submitted password back to the client
 
-`services/api/routes/auth.py:57-61`
+`services/api/routers/auth.py:57-61`
 
 ```python
 except Exception as exc:
@@ -207,7 +207,7 @@ session check itself.
 
 ### M1 — Raw `UnicodeDecodeError` text in an API response
 
-`services/api/routes/incidents.py:83` — `detail=f"CSV must be UTF-8 encoded: {exc}"`
+`services/api/routers/incidents.py:83` — `detail=f"CSV must be UTF-8 encoded: {exc}"`
 appends byte offsets and codec internals to a message a user reads.
 
 ### M2 — `scripts/analyze.py` leaves file I/O and CSV parsing unguarded

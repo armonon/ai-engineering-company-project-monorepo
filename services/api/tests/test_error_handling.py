@@ -101,7 +101,7 @@ def test_the_global_handler_returns_structured_json_and_hides_the_cause(
     JSON, and must not contain the exception text — that belongs in the
     server log.
     """
-    import routes.incidents_manager as manager
+    import routers.incidents_manager as manager
 
     secret_detail = "postgres://admin:s3cr3t@10.0.0.4/trackflow"
 

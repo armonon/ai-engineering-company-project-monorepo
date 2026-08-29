@@ -548,7 +548,7 @@ def test_two_exclusive_final_transitions_cannot_both_succeed(
     import time
     from concurrent.futures import ThreadPoolExecutor
 
-    import routes.incidents_manager as manager
+    import routers.incidents_manager as manager
 
     real_now = manager._now_iso
 

@@ -15,10 +15,10 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import jwt
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-import jwt
 
 # libpass is a maintained drop-in fork of passlib; the import path is
 # unchanged, which is why this reads as `passlib`.

@@ -195,10 +195,10 @@ Coverage on the authentication module — the ticket asks for **70%**:
 Name                  Stmts   Miss  Cover
 -----------------------------------------
 security.py              68      0   100%
-routes/auth.py           70      0   100%
+routers/auth.py           70      0   100%
 password_reset.py        57      3    95%
 services_users.py        85      7    92%
-routes/users.py          28      1    96%
+routers/users.py          28      1    96%
 -----------------------------------------
 auth module                          97%
 ```
@@ -206,9 +206,9 @@ auth module                          97%
 Backoffice modules (ticket API-042 asks for **60%**):
 
 ```
-routes/suppliers.py          56      0   100%
-routes/incidents_manager.py  83      2    98%
-routes/incidents.py          41      2    95%
+routers/suppliers.py          56      0   100%
+routers/incidents_manager.py  83      2    98%
+routers/incidents.py          41      2    95%
 ```
 
 `test_suppliers_business_rules.py` adds 17 tests on top of the existing
@@ -260,7 +260,7 @@ bug in the message builder, an unexpected library error — escaped, so a
 200. A provider incident would have handed an attacker a working oracle at
 exactly the moment nobody was watching.
 
-Fixed in `routes/auth.py`: the send is wrapped where the security property
+Fixed in `routers/auth.py`: the send is wrapped where the security property
 lives. The reset token stays valid and the failure is logged server-side.
 
 ### 2. `formatRate` rendered "NaN €" to the user

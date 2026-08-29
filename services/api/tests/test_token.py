@@ -18,9 +18,9 @@ import base64
 import json
 from datetime import UTC, datetime, timedelta
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
-import jwt
 
 from models import Role
 

@@ -123,7 +123,7 @@ def test_a_mail_delivery_failure_does_not_change_the_response(
     """If a provider outage produced a different response, the endpoint
     would leak whether the address exists exactly when it is least able to
     tell anyone about it."""
-    import routes.auth as auth_routes
+    import routers.auth as auth_routes
 
     def explode(*_args, **_kwargs):
         raise RuntimeError("smtp is down")

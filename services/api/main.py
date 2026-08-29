@@ -21,13 +21,13 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from routers.auth import router as auth_router
+from routers.incidents import router as incidents_router
+from routers.incidents_manager import router as incidents_manager_router
 from routers.inventory import router as inventory_router
-from routes.auth import router as auth_router
-from routes.incidents import router as incidents_router
-from routes.incidents_manager import router as incidents_manager_router
-from routes.profiles import router as profiles_router
-from routes.suppliers import router as suppliers_router
-from routes.users import router as users_router
+from routers.profiles import router as profiles_router
+from routers.suppliers import router as suppliers_router
+from routers.users import router as users_router
 
 logger = logging.getLogger("trackflow.api")
 

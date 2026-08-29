@@ -40,7 +40,7 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
 def sent(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
     """Capture reset emails instead of sending them."""
     import email_service
-    import routes.auth as auth_routes
+    import routers.auth as auth_routes
 
     box: list[dict] = []
 

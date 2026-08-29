@@ -105,7 +105,7 @@ def test_analyze_rejects_header_only_csv(client: TestClient) -> None:
 
 
 def test_export_before_any_analysis_returns_404(client: TestClient) -> None:
-    import routes.incidents as api_main
+    import routers.incidents as api_main
 
     api_main._LAST_RESULT = None
     r = client.get("/api/incidents/results/export")
