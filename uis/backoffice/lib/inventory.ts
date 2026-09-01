@@ -85,6 +85,10 @@ export function outboundStockWarning(
   return `Insufficient stock. ${currentStock} units are available in ${warehouse}.`;
 }
 
+export function userUuidLabel(userUuid: string): string {
+  return `user_uuid: ${userUuid}`;
+}
+
 export function fetchInventoryProducts(): Promise<InventoryProduct[]> {
   return authJson<InventoryProduct[]>("/inventory/products");
 }

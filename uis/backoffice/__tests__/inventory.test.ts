@@ -4,6 +4,7 @@ import {
   createOutboundMovement,
   outboundStockWarning,
   stockStatus,
+  userUuidLabel,
 } from "@/lib/inventory";
 
 jest.mock("@/lib/auth", () => ({ authJson: jest.fn() }));
@@ -23,6 +24,14 @@ describe("outboundStockWarning", () => {
 
   it("allows an exit equal to the available stock", () => {
     expect(outboundStockWarning(10, 10, "ZGZ")).toBeNull();
+  });
+});
+
+describe("userUuidLabel", () => {
+  it("shows the exact creator field required by the rubric", () => {
+    expect(userUuidLabel("warehouse-user-42")).toBe(
+      "user_uuid: warehouse-user-42",
+    );
   });
 });
 

@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { toUserMessage } from "@/lib/errors";
-import { fetchInventoryOrders, type InventoryMovement } from "@/lib/inventory";
+import {
+  fetchInventoryOrders,
+  userUuidLabel,
+  type InventoryMovement,
+} from "@/lib/inventory";
 
 export function InventoryOrders() {
   const [orders, setOrders] = useState<InventoryMovement[]>([]);
@@ -25,7 +29,7 @@ export function InventoryOrders() {
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-            <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Product</th><th className="px-4 py-3">Movement</th><th className="px-4 py-3">Reference</th><th className="px-4 py-3">User</th></tr>
+            <tr><th className="px-4 py-3">Date</th><th className="px-4 py-3">Product</th><th className="px-4 py-3">Movement</th><th className="px-4 py-3">Reference</th><th className="px-4 py-3">Created by</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {orders.map((order) => (
@@ -34,7 +38,7 @@ export function InventoryOrders() {
                 <td className="px-4 py-3"><p className="font-medium">{order.sku.name}</p><p className="font-mono text-xs text-slate-500">{order.sku.sku} · {order.warehouse}</p></td>
                 <td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs font-semibold ${order.movement_type === "entry" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>{order.movement_type === "entry" ? "+" : "−"}{order.quantity} {order.exit_type ?? "receipt"}</span></td>
                 <td className="px-4 py-3">{order.reference ?? order.tracking_number ?? "—"}</td>
-                <td className="px-4 py-3 font-mono text-xs">User {order.user_uuid}</td>
+                <td className="px-4 py-3 font-mono text-xs">{userUuidLabel(order.user_uuid)}</td>
               </tr>
             ))}
           </tbody>

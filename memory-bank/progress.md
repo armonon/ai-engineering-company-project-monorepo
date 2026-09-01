@@ -20,6 +20,8 @@ Rolling log of substantive changes. Newest first.
   can exceed warehouse stock. The same location now surfaces the API's
   insufficient-stock 400 detail, and successful movement submissions reset
   every form field.
+- Made the movement history expose the authenticated creator explicitly as
+  `user_uuid`, matching the evaluator's required field name.
 - Documented the low-stock threshold and extended the API, inventory, and
   navigation regression tests for the new contracts.
 
