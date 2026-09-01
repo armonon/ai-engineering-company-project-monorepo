@@ -1,9 +1,13 @@
-export function resolveApiBaseUrl(value?: string): string {
-  const configured = value?.trim();
+export function resolveApiBaseUrl(
+  inventoryValue?: string,
+  generalValue?: string,
+): string {
+  const configured = inventoryValue?.trim() || generalValue?.trim();
   return (configured || "/trackflow-api").replace(/\/+$/, "");
 }
 
 export const API_BASE_URL = resolveApiBaseUrl(
+  process.env.NEXT_PUBLIC_INVENTORY_API_URL,
   process.env.NEXT_PUBLIC_API_BASE_URL,
 );
 

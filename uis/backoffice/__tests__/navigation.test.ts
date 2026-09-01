@@ -1,17 +1,29 @@
 import { activeNavigationHref } from "@/lib/navigation";
 
-const hrefs = ["/", "/inventory", "/inventory/orders", "/suppliers"];
+const hrefs = [
+  "/",
+  "/backoffice/inventory/products",
+  "/backoffice/inventory/orders",
+  "/suppliers",
+];
 
 describe("activeNavigationHref", () => {
   it("selects only the most specific matching destination", () => {
-    expect(activeNavigationHref("/inventory/orders", hrefs)).toBe(
-      "/inventory/orders",
+    expect(
+      activeNavigationHref("/backoffice/inventory/orders", hrefs),
+    ).toBe(
+      "/backoffice/inventory/orders",
     );
   });
 
   it("keeps the inventory parent active for its form routes", () => {
-    expect(activeNavigationHref("/inventory/inbound", hrefs)).toBe(
-      "/inventory",
+    expect(
+      activeNavigationHref(
+        "/backoffice/inventory/products/details",
+        hrefs,
+      ),
+    ).toBe(
+      "/backoffice/inventory/products",
     );
   });
 
