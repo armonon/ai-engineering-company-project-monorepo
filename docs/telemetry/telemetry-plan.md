@@ -107,7 +107,7 @@ registered, a required property is missing, or a property is not allowlisted.
 | `eventId` | UUID string, required | Producer-generated idempotency key; consumers deduplicate on it. |
 | `timestamp` | ISO 8601 UTC string ending in `Z`, required | Time the fact occurred, not ingestion time. |
 | `sessionId` | Non-empty opaque string, required | Random browser/session identifier; never a cookie or bearer token. Backend-only work uses a new service session id. |
-| `userId` | Non-empty string, required | `usr_` plus an HMAC of the TinyDB user UUID; use `anonymous` before authentication and `system` for scheduled processes. |
+| `userId` | `anonymous`, `system`, or `usr_` plus 64 lowercase hexadecimal characters, required | Full HMAC-SHA-256 pseudonym of the TinyDB user UUID; raw user UUIDs are rejected. |
 | `event_type` | `entity_action` lowercase snake case, required | Stable identifier registered in this catalogue. |
 | `schemaVersion` | semantic version such as `1.0.0`, required | Version of the selected event contract. |
 | `requestId` | Non-empty correlation id, required | Browser-generated for requests and propagated in `X-Request-ID`; service jobs generate one per run. |
@@ -120,7 +120,7 @@ Example with deliberately fake opaque identifiers:
   "eventId": "4c94ba70-4cbc-4b30-81a8-0f94bf730f87",
   "timestamp": "2026-09-01T19:45:12.482Z",
   "sessionId": "sess_6997c20d0fd94aa9",
-  "userId": "usr_08b7bd14e1c0",
+  "userId": "usr_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "event_type": "inbound_order_created",
   "schemaVersion": "1.0.0",
   "requestId": "req_74f7282e456b4ce9",
@@ -164,7 +164,7 @@ decision**. Events without a concrete decision were excluded.
 | --- | --- | --- |
 | `inbound_order_created` | Mandatory / business inventory | Fires after a receipt commits. We capture it because we need to know incoming units by client, warehouse, country, and time, which allows Ana to plan capacity and staffing. |
 | `outbound_order_created` | Mandatory / business inventory | Fires after a customer dispatch commits. We capture it because we need to know dispatched order volume and rate by client and warehouse, which allows Ana to find bottlenecks before delivery SLA is affected. |
-| `stock_threshold_triggered` | Mandatory / business inventory | Fires when warehouse-scoped stock crosses from above to at/below the client's minimum. We capture it because we need to know how often each client approaches a SKU stockout, which allows Miguel to alert the client and commercial team before fulfilment stops. |
+| `stock_threshold_triggered` | Mandatory / business inventory | Fires when warehouse-scoped stock crosses from at/above to below the client's configured minimum. We capture it because we need to know how often each client approaches a SKU stockout, which allows Miguel to alert the client and commercial team before fulfilment stops. |
 | `direct_stock_edit_rejected` | Mandatory / business inventory | Fires when the API rejects stock mutation outside an order. We capture it because we need to know whether staff try to bypass traceability and where, which allows operations to change training or permissions. |
 | `inventory_discrepancy_detected` | Mandatory / business inventory | Fires when an audit's physical count differs from computed stock. We capture it because we need to know discrepancy frequency and magnitude by SKU and warehouse, which allows Ana to prioritise audits and root-cause work. |
 | `inventory_loss_recorded` | Opportunity / business inventory | Fires after a loss `StockExit` commits. We capture it because we need to know which warehouses, clients, and SKUs lose the most units, which allows operations to target handling controls without misclassifying losses as customer dispatches. |
@@ -178,7 +178,7 @@ decision**. Events without a concrete decision were excluded.
 | `authorization_denied` | Opportunity / authentication security | Fires when role or ownership policy denies an authenticated request. We capture it because we need to know where permissions conflict with real work or indicate misuse, which allows administrators to correct roles or investigate. |
 | `password_reset_requested` | Opportunity / authentication security | Fires when reset is accepted or rate-limited. We capture it because we need to know reset demand and abuse bursts, which allows support to improve recovery while security protects targeted accounts. |
 | `page_viewed` | Opportunity / navigation workflow | Fires after an authenticated route transition. We capture it because we need to know which sections are used and from where, which allows product to reorganise navigation around operator behaviour. |
-| `workflow_started` | Opportunity / navigation workflow | Fires on the first meaningful interaction in a defined flow. We capture it because we need a trustworthy funnel denominator, which allows product to compare starts with completion and abandonment. |
+| `workflow_started` | Opportunity / navigation workflow | Fires on the first meaningful interaction in a defined flow. We capture it because we need to know how many operators start each workflow, which allows product to compare starts with completion and abandonment. |
 | `workflow_completed` | Opportunity / navigation workflow | Fires after the intended API-confirmed outcome. We capture it because we need to know successful conversion and time-to-task, which allows operations to compare workflows and training outcomes. |
 | `workflow_abandoned` | Opportunity / navigation workflow | Is derived when a started flow has no completion by its watermark or ends on navigation/expiry. We capture it because we need to know where operators leave unfinished work, which allows product to remove the highest-impact friction. |
 | `api_latency_recorded` | Opportunity / performance | Fires from FastAPI middleware for sampled healthy requests and every slow/error request. We capture it because we need to know endpoint latency percentiles and SLO breaches, which allows engineering to fix bottlenecks before warehouse work slows. |
@@ -193,8 +193,9 @@ only if it appears in its event row. `R` means required and `O` means optional.
 The JSON catalogue repeats the name, type, required flag, validation constraints,
 and description for machine validation. Every inventory event includes the
 context minimum: `warehouse`, `client_id`, `product_id`, `product_category`, and
-`quantity`. The privacy column assesses event-specific properties; the envelope's
-pseudonymous `userId` is sensitive and access-controlled for every event.
+`quantity`. The privacy column assesses event-specific properties. An
+authenticated envelope's pseudonymous `userId` is sensitive and access-controlled;
+`anonymous` and `system` carry no person identifier.
 
 ### Business inventory
 
@@ -287,7 +288,8 @@ technology: all producers still validate the same envelope.
 - Mandatory inventory events, committed losses, business rejections, security
   denials, password resets, and all 5xx errors are never sampled.
 - `stock_threshold_triggered` emits on a state transition, not every movement
-  while stock remains low. It re-arms only after stock rises above the minimum.
+  while stock remains below the minimum. It re-arms when stock reaches or
+  exceeds the configured minimum.
 - `inventory_validation_failed` groups identical session/form/field/reason/SKU
   failures for 10 seconds and emits `occurrence_count`.
 - `page_viewed` emits once per completed transition and suppresses the same

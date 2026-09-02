@@ -21,6 +21,10 @@ Rolling log of substantive changes. Newest first.
 - Kept committed dispatches (`outbound_order_created`) distinct from confirmed
   losses (`inventory_loss_recorded`) so future SLA reporting does not classify
   warehouse loss as customer throughput.
+- A strict rubric audit validated all 23 event contracts, Markdown/JSON
+  property parity, forbidden-property rejection, and the official threshold
+  boundary: emit only when stock crosses from at/above to below the configured
+  minimum.
 
 This is a design-only milestone: no runtime instrumentation or new service was
 added. The structure follows the monorepo documentation contract (`DOC-1`).

@@ -15,9 +15,9 @@
     ]
   },
   "privacyContract": {
-    "envelopeUserIdIsAlwaysPseudonymousAndAccessControlled": true,
+    "envelopeUserIdIsNonIdentifyingOrPseudonymousAndAccessControlled": true,
     "eventPrivacyFlagsDescribeEventSpecificProperties": true,
-    "description": "The envelope userId is governed for every event. Each event flag additionally identifies sensitive or personal data in that event's properties."
+    "description": "The envelope userId is anonymous, system-scoped, or pseudonymous and is governed for every event. Each event flag additionally identifies sensitive or personal data in that event's properties."
   },
   "envelope": {
     "additionalProperties": false,
@@ -50,8 +50,8 @@
       },
       "userId": {
         "type": "string",
-        "minLength": 1,
-        "description": "Pseudonymous HMAC of the TinyDB user UUID, or 'anonymous' before authentication."
+        "pattern": "^(anonymous|system|usr_[a-f0-9]{64})$",
+        "description": "Pseudonymous HMAC of the TinyDB user UUID, 'anonymous' before authentication, or 'system' for scheduled processes."
       },
       "event_type": {
         "type": "string",
@@ -168,7 +168,7 @@
       "schemaVersion": "1.0.0",
       "classification": "mandatory",
       "category": "business_inventory",
-      "description": "A SKU crosses from above its client minimum to at or below it.",
+      "description": "A SKU crosses from at or above its client minimum to below it.",
       "delivery": {
         "mode": "stream",
         "justification": "Client and commercial alerts must arrive before a stockout blocks fulfilment."
@@ -177,7 +177,7 @@
         "containsSensitiveDataOrPii": true,
         "handling": "Client and product ids are opaque; do not attach client contact details."
       },
-      "emissionControl": "Emit only on the above-to-at-or-below threshold transition; re-arm after stock rises above the threshold.",
+      "emissionControl": "Emit only on the at-or-above-to-below threshold transition; re-arm when stock reaches or exceeds the threshold.",
       "properties": {
         "additionalProperties": false,
         "fields": {
