@@ -1,0 +1,597 @@
+{
+  "format": "trackflow.telemetry.catalogue/1.0.0",
+  "description": "Validatable custom event catalogue for TrackFlow. Validation rules are documented in telemetry-plan.md.",
+  "catalogueSummary": {
+    "totalEvents": 23,
+    "mandatoryEvents": 5,
+    "identifiedOpportunities": 18,
+    "categories": [
+      "business_inventory",
+      "authentication_security",
+      "navigation_workflow",
+      "performance",
+      "frontend_errors",
+      "api_errors"
+    ]
+  },
+  "privacyContract": {
+    "envelopeUserIdIsAlwaysPseudonymousAndAccessControlled": true,
+    "eventPrivacyFlagsDescribeEventSpecificProperties": true,
+    "description": "The envelope userId is governed for every event. Each event flag additionally identifies sensitive or personal data in that event's properties."
+  },
+  "envelope": {
+    "additionalProperties": false,
+    "required": [
+      "eventId",
+      "timestamp",
+      "sessionId",
+      "userId",
+      "event_type",
+      "schemaVersion",
+      "requestId",
+      "properties"
+    ],
+    "fields": {
+      "eventId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Producer-generated UUID; consumers deduplicate on this value."
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "Z$",
+        "description": "UTC ISO 8601 event occurrence time."
+      },
+      "sessionId": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Opaque random session identifier; never an auth token or cookie."
+      },
+      "userId": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Pseudonymous HMAC of the TinyDB user UUID, or 'anonymous' before authentication."
+      },
+      "event_type": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)+$",
+        "description": "Stable entity_action identifier."
+      },
+      "schemaVersion": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]*\\.[0-9]+\\.[0-9]+$",
+        "description": "Semantic version of this event's schema."
+      },
+      "requestId": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Correlation id propagated from browser to FastAPI and downstream events."
+      },
+      "properties": {
+        "type": "object",
+        "description": "Payload validated against the selected event's property allowlist."
+      }
+    }
+  },
+  "events": {
+    "inbound_order_created": {
+      "event_type": "inbound_order_created",
+      "schemaVersion": "1.0.0",
+      "classification": "mandatory",
+      "category": "business_inventory",
+      "description": "A warehouse commits a goods receipt from a client.",
+      "delivery": {
+        "mode": "stream",
+        "justification": "Incoming volume changes capacity and stock immediately; operations must see it within seconds."
+      },
+      "privacy": {
+        "containsSensitiveDataOrPii": true,
+        "handling": "Use internal opaque ids only; never include purchase-order text, recipient, address, or auth data."
+      },
+      "emissionControl": "Emit once from the backend transaction outbox after commit; never sample.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Normalised receiving warehouse." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "minimum": 1, "description": "Units received." },
+          "order_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque StockEntry identifier." },
+          "stock_after": { "type": "integer", "required": false, "minimum": 0, "description": "Computed warehouse stock after the committed receipt." },
+          "reference_present": { "type": "boolean", "required": false, "description": "Whether an internal receipt reference exists; never send its value." }
+        }
+      }
+    },
+    "outbound_order_created": {
+      "event_type": "outbound_order_created",
+      "schemaVersion": "1.0.0",
+      "classification": "mandatory",
+      "category": "business_inventory",
+      "description": "A warehouse completes and commits a customer dispatch.",
+      "delivery": {
+        "mode": "stream",
+        "justification": "Outbound throughput and stock availability affect the active shift and delivery SLA."
+      },
+      "privacy": {
+        "containsSensitiveDataOrPii": true,
+        "handling": "Record only internal ids and tracking_present; never include tracking numbers or recipient data."
+      },
+      "emissionControl": "Emit once from the backend transaction outbox after commit; never sample.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Normalised dispatch warehouse." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "minimum": 1, "description": "Units dispatched to a customer shipment." },
+          "order_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque StockExit identifier." },
+          "exit_type": { "type": "string", "required": true, "enum": ["dispatch"], "description": "Confirms this mandatory event represents a customer dispatch, not a loss." },
+          "stock_after": { "type": "integer", "required": false, "minimum": 0, "description": "Computed warehouse stock after the committed exit." },
+          "tracking_present": { "type": "boolean", "required": false, "description": "Whether a dispatch has tracking; never send the tracking number." }
+        }
+      }
+    },
+    "inventory_loss_recorded": {
+      "event_type": "inventory_loss_recorded",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "business_inventory",
+      "description": "A warehouse commits a confirmed inventory loss through the outbound-order endpoint.",
+      "delivery": {
+        "mode": "stream",
+        "justification": "Loss changes available stock immediately and may require prompt operational investigation."
+      },
+      "privacy": {
+        "containsSensitiveDataOrPii": true,
+        "handling": "Use opaque client, product, and order ids; never attach free-text notes or photographs."
+      },
+      "emissionControl": "Emit once from the backend transaction outbox after a loss commits; never sample.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Warehouse where units were written off." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "minimum": 1, "description": "Units written off as a confirmed loss." },
+          "order_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque StockExit identifier." },
+          "exit_type": { "type": "string", "required": true, "enum": ["loss"], "description": "Confirms this event represents a warehouse loss." },
+          "stock_after": { "type": "integer", "required": false, "minimum": 0, "description": "Computed warehouse stock after the committed loss." }
+        }
+      }
+    },
+    "stock_threshold_triggered": {
+      "event_type": "stock_threshold_triggered",
+      "schemaVersion": "1.0.0",
+      "classification": "mandatory",
+      "category": "business_inventory",
+      "description": "A SKU crosses from above its client minimum to at or below it.",
+      "delivery": {
+        "mode": "stream",
+        "justification": "Client and commercial alerts must arrive before a stockout blocks fulfilment."
+      },
+      "privacy": {
+        "containsSensitiveDataOrPii": true,
+        "handling": "Client and product ids are opaque; do not attach client contact details."
+      },
+      "emissionControl": "Emit only on the above-to-at-or-below threshold transition; re-arm after stock rises above the threshold.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Warehouse whose scoped stock crossed the threshold." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "minimum": 0, "description": "Current computed stock when the threshold activates." },
+          "threshold_quantity": { "type": "integer", "required": true, "minimum": 0, "description": "Configured client minimum for this SKU." },
+          "previous_quantity": { "type": "integer", "required": true, "minimum": 0, "description": "Stock immediately before the triggering movement." },
+          "trigger_source": { "type": "string", "required": true, "enum": ["outbound_order", "inventory_loss", "inventory_reconciliation"], "description": "Operation that caused the transition." }
+        }
+      }
+    },
+    "direct_stock_edit_rejected": {
+      "event_type": "direct_stock_edit_rejected",
+      "schemaVersion": "1.0.0",
+      "classification": "mandatory",
+      "category": "business_inventory",
+      "description": "The API rejects an attempt to set or adjust stock outside an order.",
+      "delivery": {
+        "mode": "stream",
+        "justification": "Repeated bypass attempts may indicate a permissions or training problem requiring immediate attention."
+      },
+      "privacy": {
+        "containsSensitiveDataOrPii": true,
+        "handling": "Attribute via pseudonymous envelope userId; discard the raw body and credentials."
+      },
+      "emissionControl": "Never sample or debounce; one security-control event per rejected request.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Warehouse the user attempted to alter." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "description": "Attempted stock value or delta, interpreted by attempted_operation." },
+          "attempted_operation": { "type": "string", "required": true, "enum": ["set", "increment", "decrement"], "description": "Forbidden direct mutation operation." },
+          "endpoint_template": { "type": "string", "required": true, "enum": ["/inventory/products/{id}"], "description": "Low-cardinality route template; no raw URL or query string." },
+          "reason_code": { "type": "string", "required": true, "enum": ["stock_is_derived"], "description": "Stable rejection reason." }
+        }
+      }
+    },
+    "inventory_discrepancy_detected": {
+      "event_type": "inventory_discrepancy_detected",
+      "schemaVersion": "1.0.0",
+      "classification": "mandatory",
+      "category": "business_inventory",
+      "description": "A physical count differs from computed system stock.",
+      "delivery": {
+        "mode": "stream",
+        "justification": "A discrepancy is a client-contract risk and must reach warehouse operations promptly."
+      },
+      "privacy": {
+        "containsSensitiveDataOrPii": true,
+        "handling": "Audit, client, and product ids plus stock variance are commercially sensitive; do not include operator notes or photographs."
+      },
+      "emissionControl": "Emit once per completed audit comparison and deduplicate by audit_id plus product_id plus warehouse.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Warehouse where the physical count occurred." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "minimum": 1, "description": "Absolute discrepancy magnitude in units." },
+          "audit_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque inventory audit identifier." },
+          "system_quantity": { "type": "integer", "required": true, "minimum": 0, "description": "Computed stock at comparison time." },
+          "physical_quantity": { "type": "integer", "required": true, "minimum": 0, "description": "Counted units." },
+          "variance_quantity": { "type": "integer", "required": true, "description": "Signed physical minus system quantity." },
+          "detection_method": { "type": "string", "required": true, "enum": ["cycle_count", "full_audit"], "description": "Audit method that detected the discrepancy." }
+        }
+      }
+    },
+    "product_created": {
+      "event_type": "product_created",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "business_inventory",
+      "description": "An authenticated user registers a new client SKU at one warehouse.",
+      "delivery": { "mode": "batch", "justification": "Catalogue growth informs onboarding and capacity planning, which is reviewed daily rather than within seconds." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Client and product ids are commercially sensitive opaque identifiers; do not emit free-text product names." },
+      "emissionControl": "Emit once after the product transaction commits; never sample.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Warehouse assigned to the SKU." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque new SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "enum": [0], "description": "Initial computed stock; always zero because stock cannot be set directly." }
+        }
+      }
+    },
+    "inventory_validation_failed": {
+      "event_type": "inventory_validation_failed",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "business_inventory",
+      "description": "An inbound or outbound form fails validation after a valid SKU has been selected.",
+      "delivery": { "mode": "batch", "justification": "Validation trends guide form and training improvements in a daily product review; no immediate action is needed." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Client and product ids plus attempted quantity are commercially sensitive; send stable field/reason codes and never the rejected raw value." },
+      "emissionControl": "Debounce identical session, form_type, field_name, reason_code, and product_id combinations for 10 seconds and increment occurrence_count.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Selected SKU warehouse." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque selected client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque selected SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "Selected product category." },
+          "quantity": { "type": "integer", "required": true, "description": "Attempted unit quantity; zero when empty." },
+          "form_type": { "type": "string", "required": true, "enum": ["inbound", "outbound"], "description": "Inventory form being validated." },
+          "field_name": { "type": "string", "required": true, "enum": ["quantity", "reference", "exit_type", "tracking_number", "warehouse"], "description": "Stable invalid field name." },
+          "reason_code": { "type": "string", "required": true, "enum": ["required", "not_positive_integer", "too_long", "tracking_required", "tracking_forbidden", "warehouse_mismatch"], "description": "Stable validation reason; no raw error text." },
+          "occurrence_count": { "type": "integer", "required": true, "minimum": 1, "description": "Number of debounced identical failures represented by the event." }
+        }
+      }
+    },
+    "outbound_order_rejected": {
+      "event_type": "outbound_order_rejected",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "business_inventory",
+      "description": "The backend rejects a known-SKU outbound order for an inventory business rule.",
+      "delivery": { "mode": "stream", "justification": "Repeated rejected exits can block the active warehouse shift and require rapid stock or training intervention." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Client/product ids and quantities are commercially sensitive; send stable reason codes and never tracking numbers or response bodies." },
+      "emissionControl": "Emit once per rejected backend request; never sample.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse": { "type": "string", "required": true, "enum": ["los_angeles", "zaragoza"], "description": "Requested dispatch warehouse." },
+          "client_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque B2B client identifier." },
+          "product_id": { "type": "string", "required": true, "minLength": 1, "description": "Opaque SKU identifier." },
+          "product_category": { "type": "string", "required": true, "enum": ["fashion", "electronics", "cosmetics"], "description": "TrackFlow product category." },
+          "quantity": { "type": "integer", "required": true, "minimum": 1, "description": "Requested outbound units." },
+          "available_quantity": { "type": "integer", "required": true, "minimum": 0, "description": "Warehouse-scoped stock at rejection time." },
+          "exit_type": { "type": "string", "required": true, "enum": ["dispatch", "loss"], "description": "Requested exit type." },
+          "reason_code": { "type": "string", "required": true, "enum": ["insufficient_stock", "warehouse_mismatch", "tracking_required", "tracking_forbidden"], "description": "Stable backend business-rule rejection reason." }
+        }
+      }
+    },
+    "audit_history_viewed": {
+      "event_type": "audit_history_viewed",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "navigation_workflow",
+      "description": "An authenticated operator views the read-only inventory movement history.",
+      "delivery": { "mode": "batch", "justification": "Usage informs information architecture and audit-tool investment during weekly product reviews." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Use filter enums and result count only; do not emit displayed movement rows." },
+      "emissionControl": "Emit once after a successful history load; deduplicate refreshes of the same filter for 30 seconds.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "warehouse_filter": { "type": "string", "required": true, "enum": ["all", "los_angeles", "zaragoza"], "description": "Warehouse filter applied to the view." },
+          "movement_filter": { "type": "string", "required": true, "enum": ["all", "entry", "exit"], "description": "Movement type filter." },
+          "result_count": { "type": "integer", "required": true, "minimum": 0, "description": "Rows returned after filtering." },
+          "load_duration_ms": { "type": "integer", "required": true, "minimum": 0, "description": "Time from request start until the history is usable." }
+        }
+      }
+    },
+    "login_succeeded": {
+      "event_type": "login_succeeded",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "authentication_security",
+      "description": "A user establishes a valid backoffice session.",
+      "delivery": { "mode": "batch", "justification": "Successful-login volume supports adoption and staffing analysis in daily aggregates." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Envelope userId is an HMAC pseudonym; never emit email, token, password, IP address, or user agent." },
+      "emissionControl": "Emit once per successful authentication response; never client-retry the same eventId.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "auth_method": { "type": "string", "required": true, "enum": ["password"], "description": "Authentication method used." },
+          "role": { "type": "string", "required": true, "enum": ["admin", "manager", "user"], "description": "Authorised TrackFlow role." },
+          "session_age_seconds": { "type": "integer", "required": true, "enum": [0], "description": "New sessions begin at zero seconds." }
+        }
+      }
+    },
+    "login_failed": {
+      "event_type": "login_failed",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "authentication_security",
+      "description": "A login attempt fails without revealing whether an account exists.",
+      "delivery": { "mode": "stream", "justification": "A burst can indicate credential abuse and must feed near-real-time security alerting and rate limits." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Optional principal_hash is HMAC-SHA-256 of normalised email with a rotating secret; never emit raw email, password, IP, or provider error." },
+      "emissionControl": "Do not sample or client-debounce security failures; enforce API rate limiting separately and deduplicate only by eventId.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "auth_method": { "type": "string", "required": true, "enum": ["password"], "description": "Authentication method attempted." },
+          "reason_code": { "type": "string", "required": true, "enum": ["invalid_credentials", "inactive_account", "rate_limited"], "description": "Non-enumerating failure code returned to telemetry." },
+          "principal_hash": { "type": "string", "required": false, "pattern": "^ph_[a-f0-9]{64}$", "description": "Rotating HMAC pseudonym for abuse correlation." },
+          "attempt_number": { "type": "integer", "required": true, "minimum": 1, "description": "Failure count in the current server-side rate-limit window." }
+        }
+      }
+    },
+    "session_expired": {
+      "event_type": "session_expired",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "authentication_security",
+      "description": "The API rejects an otherwise well-formed request because its session token expired.",
+      "delivery": { "mode": "batch", "justification": "Expiry patterns guide session-duration UX changes in weekly reviews; the user already receives an immediate local redirect." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Use the envelope's pseudonymous userId; never emit the token, cookie, or raw URL." },
+      "emissionControl": "Emit once per sessionId; suppress subsequent 401s caused by the same expired session for 15 minutes.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "session_age_seconds": { "type": "integer", "required": true, "minimum": 0, "description": "Age of the session when rejected." },
+          "expiry_reason": { "type": "string", "required": true, "enum": ["token_expired", "token_revoked"], "description": "Stable expiry reason." },
+          "route_template": { "type": "string", "required": true, "minLength": 1, "description": "Sanitised route template active when expiry was detected." }
+        }
+      }
+    },
+    "authorization_denied": {
+      "event_type": "authorization_denied",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "authentication_security",
+      "description": "An authenticated user is denied an operation by role or ownership policy.",
+      "delivery": { "mode": "stream", "justification": "Repeated denials may indicate permission drift or misuse requiring timely investigation." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Attribute only through pseudonymous userId and low-cardinality role names; never emit resource contents." },
+      "emissionControl": "Emit every backend denial; aggregate alerting by userId, endpoint_template, and five-minute window.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "endpoint_template": { "type": "string", "required": true, "minLength": 1, "description": "Sanitised API route template." },
+          "method": { "type": "string", "required": true, "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"], "description": "HTTP method denied." },
+          "required_role": { "type": "string", "required": true, "enum": ["admin", "manager", "user", "owner"], "description": "Minimum role or ownership policy." },
+          "actual_role": { "type": "string", "required": true, "enum": ["admin", "manager", "user"], "description": "Authenticated user's role." },
+          "reason_code": { "type": "string", "required": true, "enum": ["role_insufficient", "ownership_mismatch"], "description": "Stable denial reason." }
+        }
+      }
+    },
+    "password_reset_requested": {
+      "event_type": "password_reset_requested",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "authentication_security",
+      "description": "The password-reset endpoint accepts or rate-limits a request without disclosing account existence.",
+      "delivery": { "mode": "stream", "justification": "A reset-request burst may indicate account targeting and must reach abuse detection quickly." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Use a rotating principal_hash only; never emit email, reset token, delivery address, or provider response." },
+      "emissionControl": "Emit once per server request and retain rate limiting; never sample.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "delivery_channel": { "type": "string", "required": true, "enum": ["email"], "description": "Reset delivery channel." },
+          "outcome": { "type": "string", "required": true, "enum": ["accepted", "rate_limited"], "description": "Non-enumerating endpoint outcome." },
+          "principal_hash": { "type": "string", "required": false, "pattern": "^ph_[a-f0-9]{64}$", "description": "Rotating HMAC pseudonym for abuse correlation." }
+        }
+      }
+    },
+    "page_viewed": {
+      "event_type": "page_viewed",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "navigation_workflow",
+      "description": "An authenticated user completes a backoffice route transition.",
+      "delivery": { "mode": "batch", "justification": "Navigation popularity supports weekly information-architecture decisions, not immediate intervention." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Emit route templates and section enums only; remove ids, query strings, fragments, and referrer URLs." },
+      "emissionControl": "Emit once per completed route transition; suppress the same route_template within the same session for five seconds.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "route_template": { "type": "string", "required": true, "minLength": 1, "description": "Low-cardinality route template with ids removed." },
+          "section": { "type": "string", "required": true, "enum": ["freight_quote", "incidents", "inventory", "suppliers", "account", "authentication"], "description": "Backoffice information-architecture section." },
+          "previous_section": { "type": "string", "required": false, "enum": ["freight_quote", "incidents", "inventory", "suppliers", "account", "authentication", "external", "direct"], "description": "Sanitised origin section." },
+          "viewport_class": { "type": "string", "required": true, "enum": ["mobile", "tablet", "desktop"], "description": "Coarse viewport class; no screen fingerprint." }
+        }
+      }
+    },
+    "workflow_started": {
+      "event_type": "workflow_started",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "navigation_workflow",
+      "description": "A user begins a defined multi-step or submission workflow.",
+      "delivery": { "mode": "batch", "justification": "Start volume becomes useful when compared with completion and abandonment in daily funnels." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Use a random flow_instance_id and controlled workflow names; never capture field values." },
+      "emissionControl": "Emit once per flow_instance_id when the first meaningful interaction occurs, not on initial render.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "workflow_name": { "type": "string", "required": true, "enum": ["inventory_inbound", "inventory_outbound", "product_create", "password_reset", "incident_report", "freight_quote"], "description": "Controlled workflow identifier." },
+          "flow_instance_id": { "type": "string", "required": true, "format": "uuid", "description": "Random id joining lifecycle events for one workflow attempt." },
+          "entry_point": { "type": "string", "required": true, "enum": ["navigation", "product_row", "deep_link", "retry"], "description": "How the user entered the flow." }
+        }
+      }
+    },
+    "workflow_completed": {
+      "event_type": "workflow_completed",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "navigation_workflow",
+      "description": "A defined workflow reaches its intended successful outcome.",
+      "delivery": { "mode": "batch", "justification": "Daily funnel conversion guides UX prioritisation and operator training." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Use controlled outcomes and random flow identifiers; never include submitted form contents." },
+      "emissionControl": "Emit once per flow_instance_id after confirmed success; consumers deduplicate retries by eventId.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "workflow_name": { "type": "string", "required": true, "enum": ["inventory_inbound", "inventory_outbound", "product_create", "password_reset", "incident_report", "freight_quote"], "description": "Controlled workflow identifier." },
+          "flow_instance_id": { "type": "string", "required": true, "format": "uuid", "description": "Random id joining lifecycle events for one workflow attempt." },
+          "duration_ms": { "type": "integer", "required": true, "minimum": 0, "description": "Elapsed time from workflow_started to success." },
+          "step_count": { "type": "integer", "required": true, "minimum": 1, "description": "Meaningful steps completed." },
+          "outcome": { "type": "string", "required": true, "enum": ["success"], "description": "Terminal workflow outcome." }
+        }
+      }
+    },
+    "workflow_abandoned": {
+      "event_type": "workflow_abandoned",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "navigation_workflow",
+      "description": "A started workflow has no completion within its defined timeout or ends on navigation/session expiry.",
+      "delivery": { "mode": "batch", "justification": "Abandonment requires joining lifecycle events and informs daily funnel analysis rather than real-time operations." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Derived from event ids and controlled steps; do not capture typed but unsubmitted values." },
+      "emissionControl": "Derive once in hourly processing: 30-minute timeout for forms, 10-minute timeout for freight quotes; suppress if completion later arrives inside the watermark.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "workflow_name": { "type": "string", "required": true, "enum": ["inventory_inbound", "inventory_outbound", "product_create", "password_reset", "incident_report", "freight_quote"], "description": "Controlled workflow identifier." },
+          "flow_instance_id": { "type": "string", "required": true, "format": "uuid", "description": "Random workflow attempt id." },
+          "duration_ms": { "type": "integer", "required": true, "minimum": 0, "description": "Observed time before abandonment classification." },
+          "last_step": { "type": "string", "required": true, "enum": ["opened", "product_selected", "details_entered", "validation_failed", "reviewed", "submitted"], "description": "Last controlled step observed." },
+          "abandonment_reason": { "type": "string", "required": true, "enum": ["navigation", "timeout", "session_expired"], "description": "How abandonment was determined." }
+        }
+      }
+    },
+    "api_latency_recorded": {
+      "event_type": "api_latency_recorded",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "performance",
+      "description": "FastAPI middleware records a completed request's latency and result class.",
+      "delivery": { "mode": "stream", "justification": "SLA-impacting latency and error spikes require operational detection within minutes." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Use route templates and coarse status classes; omit paths, query strings, headers, bodies, IPs, and user agents." },
+      "emissionControl": "Keep 100% of errors and requests at or above the SLO; deterministically sample 10% of healthy requests by requestId.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "service": { "type": "string", "required": true, "enum": ["trackflow_api"], "description": "Producing service." },
+          "endpoint_template": { "type": "string", "required": true, "minLength": 1, "description": "Low-cardinality FastAPI route template." },
+          "method": { "type": "string", "required": true, "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"], "description": "HTTP method." },
+          "status_class": { "type": "string", "required": true, "enum": ["2xx", "3xx", "4xx", "5xx"], "description": "Coarse response class." },
+          "duration_ms": { "type": "integer", "required": true, "minimum": 0, "description": "Server request duration." },
+          "slo_exceeded": { "type": "boolean", "required": true, "description": "Whether duration exceeded the endpoint SLO." }
+        }
+      }
+    },
+    "page_load_recorded": {
+      "event_type": "page_load_recorded",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "performance",
+      "description": "The browser records when a backoffice route becomes usable.",
+      "delivery": { "mode": "batch", "justification": "Daily percentiles are sufficient for frontend performance prioritisation; individual slow loads do not require paging." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Use route templates and coarse device classes; do not emit full URLs or browser fingerprints." },
+      "emissionControl": "Emit one measurement per route transition; retain 100% of slow loads and deterministically sample 10% below the threshold.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "route_template": { "type": "string", "required": true, "minLength": 1, "description": "Low-cardinality route template." },
+          "duration_ms": { "type": "integer", "required": true, "minimum": 0, "description": "Navigation start to usable content." },
+          "navigation_type": { "type": "string", "required": true, "enum": ["initial", "spa", "reload"], "description": "Kind of page navigation." },
+          "viewport_class": { "type": "string", "required": true, "enum": ["mobile", "tablet", "desktop"], "description": "Coarse viewport class." },
+          "threshold_exceeded": { "type": "boolean", "required": true, "description": "Whether the three-second usability target was exceeded." }
+        }
+      }
+    },
+    "frontend_error_captured": {
+      "event_type": "frontend_error_captured",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "frontend_errors",
+      "description": "The backoffice error boundary captures an uncaught client error.",
+      "delivery": { "mode": "stream", "justification": "A new or rapidly increasing error can block warehouse workflows and requires prompt engineering response." },
+      "privacy": { "containsSensitiveDataOrPii": true, "handling": "Generate error_code and fingerprint from a server-side scrubbed stack; never emit raw messages, stack values, DOM, form data, URL parameters, or tokens." },
+      "emissionControl": "Deduplicate the same error_fingerprint, route_template, release, and sessionId for 60 seconds; increment occurrence_count.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "error_code": { "type": "string", "required": true, "pattern": "^[A-Z][A-Z0-9_]+$", "description": "Stable sanitised error code." },
+          "error_fingerprint": { "type": "string", "required": true, "pattern": "^err_[a-f0-9]{32,64}$", "description": "Hash of scrubbed error type and stack frames." },
+          "component": { "type": "string", "required": true, "minLength": 1, "description": "Controlled component or error-boundary name." },
+          "route_template": { "type": "string", "required": true, "minLength": 1, "description": "Sanitised route template." },
+          "release": { "type": "string", "required": true, "minLength": 1, "description": "Application commit or release id." },
+          "handled": { "type": "boolean", "required": true, "description": "Whether a local fallback prevented a full-page failure." },
+          "occurrence_count": { "type": "integer", "required": true, "minimum": 1, "description": "Number of deduplicated occurrences represented." }
+        }
+      }
+    },
+    "api_error_returned": {
+      "event_type": "api_error_returned",
+      "schemaVersion": "1.0.0",
+      "classification": "identified_opportunity",
+      "category": "api_errors",
+      "description": "FastAPI returns a controlled 4xx or 5xx response.",
+      "delivery": { "mode": "stream", "justification": "A 5xx spike or unexpected 4xx concentration can block active operations and needs rapid triage." },
+      "privacy": { "containsSensitiveDataOrPii": false, "handling": "Emit stable error codes only; never send exception text, traceback, request/response bodies, headers, query strings, or database URLs." },
+      "emissionControl": "Emit all 5xx and business-rule 4xx events; aggregate identical validation 4xx events by requestId and reason code.",
+      "properties": {
+        "additionalProperties": false,
+        "fields": {
+          "service": { "type": "string", "required": true, "enum": ["trackflow_api"], "description": "Producing service." },
+          "endpoint_template": { "type": "string", "required": true, "minLength": 1, "description": "Low-cardinality FastAPI route template." },
+          "method": { "type": "string", "required": true, "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"], "description": "HTTP method." },
+          "status_code": { "type": "integer", "required": true, "minimum": 400, "maximum": 599, "description": "Returned HTTP status." },
+          "error_code": { "type": "string", "required": true, "pattern": "^[A-Z][A-Z0-9_]+$", "description": "Stable sanitised application error code." },
+          "duration_ms": { "type": "integer", "required": true, "minimum": 0, "description": "Server duration before the error response." },
+          "retryable": { "type": "boolean", "required": true, "description": "Whether the caller may safely retry." }
+        }
+      }
+    }
+  }
+}
