@@ -11,4 +11,13 @@ describe("resolveApiBaseUrl", () => {
       "https://api.trackflow.example",
     );
   });
+
+  it("prefers the assignment-specific inventory API URL", () => {
+    expect(
+      resolveApiBaseUrl(
+        "http://localhost:8000/",
+        "https://api.trackflow.example",
+      ),
+    ).toBe("http://localhost:8000");
+  });
 });

@@ -97,10 +97,10 @@ export function InventoryProductList() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
-                      <Link href={`/inventory/inbound?sku=${product.id}`} className="rounded-md border border-slate-300 px-2.5 py-1.5 font-medium text-slate-700 hover:bg-slate-100">
+                      <Link href={`/backoffice/inventory/orders/inbound?sku=${product.id}`} className="rounded-md border border-slate-300 px-2.5 py-1.5 font-medium text-slate-700 hover:bg-slate-100">
                         Inbound
                       </Link>
-                      <Link href={`/inventory/outbound?sku=${product.id}`} className="rounded-md bg-slate-900 px-2.5 py-1.5 font-medium text-white hover:bg-slate-700">
+                      <Link href={`/backoffice/inventory/orders/outbound?sku=${product.id}`} className="rounded-md bg-slate-900 px-2.5 py-1.5 font-medium text-white hover:bg-slate-700">
                         Outbound
                       </Link>
                     </div>

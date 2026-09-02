@@ -1,5 +1,26 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Inventory API configuration
+
+For direct local development, copy `.env.example` to `.env.local` and keep
+the file untracked:
+
+```bash
+cp .env.example .env.local
+```
+
+`NEXT_PUBLIC_INVENTORY_API_URL` points the authenticated backoffice at the
+FastAPI service. Docker Compose leaves that override blank and uses the
+same-origin `/trackflow-api` proxy, which reaches the backend container by
+its `backend` service name.
+
+The four inventory views use the assignment paths:
+
+- `/backoffice/inventory/products`
+- `/backoffice/inventory/orders/inbound`
+- `/backoffice/inventory/orders/outbound`
+- `/backoffice/inventory/orders`
+
 ## Getting Started
 
 First, run the development server:

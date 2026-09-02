@@ -6,6 +6,7 @@ import {
   createInboundMovement,
   createOutboundMovement,
   fetchInventoryProducts,
+  outboundStockWarning,
   type ExitType,
   type InventoryProduct,
 } from "@/lib/inventory";
@@ -21,6 +22,7 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quantityError, setQuantityError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInventoryProducts()
@@ -39,12 +41,20 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
     [products, skuId],
   );
   const numericQuantity = Number(quantity);
-  const oversells = direction === "outbound" && product && numericQuantity > product.current_stock;
+  const stockWarning =
+    direction === "outbound" && product && quantity
+      ? outboundStockWarning(
+          product.current_stock,
+          numericQuantity,
+          product.warehouse,
+        )
+      : null;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
     setError(null);
+    setQuantityError(null);
 
     if (!product) {
       setError("Choose a product.");
@@ -54,8 +64,8 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
       setError("Quantity must be a positive whole number.");
       return;
     }
-    if (oversells) {
-      setError(`Insufficient stock. ${product.current_stock} units are available in ${product.warehouse}.`);
+    if (stockWarning) {
+      setQuantityError(stockWarning);
       return;
     }
     if (direction === "outbound" && exitType === "dispatch" && !trackingNumber.trim()) {
@@ -83,12 +93,23 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
       }
       const refreshed = await fetchInventoryProducts();
       setProducts(refreshed);
+      setSkuId("");
       setQuantity("");
       setReference("");
       setTrackingNumber("");
+      setExitType("dispatch");
+      setQuantityError(null);
       setMessage(`${direction === "inbound" ? "Goods receipt" : "Stock exit"} recorded for ${product.name}.`);
     } catch (caught) {
-      setError(toUserMessage(caught, `The ${direction} movement could not be recorded.`));
+      const readable = toUserMessage(
+        caught,
+        `The ${direction} movement could not be recorded.`,
+      );
+      if (direction === "outbound" && /insufficient stock/i.test(readable)) {
+        setQuantityError(readable);
+      } else {
+        setError(readable);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -103,7 +124,7 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
 
       <label className="block text-sm font-medium text-slate-700">
         Product
-        <select required value={skuId} onChange={(event) => setSkuId(event.target.value)} className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2">
+        <select required value={skuId} onChange={(event) => { setSkuId(event.target.value); setQuantityError(null); }} className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2">
           <option value="">Choose a product</option>
           {products.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.sku} · {item.warehouse}</option>)}
         </select>
@@ -119,7 +140,12 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
 
       <label className="block text-sm font-medium text-slate-700">
         Quantity
-        <input required min="1" step="1" type="number" value={quantity} onChange={(event) => setQuantity(event.target.value)} className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2" />
+        <input required min="1" step="1" type="number" value={quantity} onChange={(event) => { setQuantity(event.target.value); setQuantityError(null); }} aria-describedby={direction === "outbound" && (stockWarning || quantityError) ? "quantity-stock-error" : undefined} className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2" />
+        {direction === "outbound" && (quantityError || stockWarning) && (
+          <span id="quantity-stock-error" role="alert" className="mt-1 block text-sm text-red-700">
+            {quantityError ?? stockWarning}
+          </span>
+        )}
       </label>
 
       {direction === "inbound" ? (
@@ -145,7 +171,7 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
         </>
       )}
 
-      <button disabled={submitting || Boolean(oversells)} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400">
+      <button disabled={submitting || Boolean(stockWarning)} className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400">
         {submitting ? "Saving…" : direction === "inbound" ? "Confirm goods receipt" : "Confirm stock exit"}
       </button>
     </form>

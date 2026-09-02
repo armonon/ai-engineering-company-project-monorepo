@@ -65,10 +65,28 @@ export interface OutboundInput {
 
 export type StockStatus = "out" | "low" | "available";
 
+// Operations threshold: 0 is out, 1–10 units is low, and 11+ is
+// available. Keeping this in the integration layer makes the product
+// table and any future scanner view use the same visual classification.
 export function stockStatus(currentStock: number): StockStatus {
   if (currentStock <= 0) return "out";
   if (currentStock <= 10) return "low";
   return "available";
+}
+
+export function outboundStockWarning(
+  currentStock: number,
+  requestedQuantity: number,
+  warehouse: Warehouse,
+): string | null {
+  if (!Number.isFinite(requestedQuantity) || requestedQuantity <= currentStock) {
+    return null;
+  }
+  return `Insufficient stock. ${currentStock} units are available in ${warehouse}.`;
+}
+
+export function userUuidLabel(userUuid: string): string {
+  return `user_uuid: ${userUuid}`;
 }
 
 export function fetchInventoryProducts(): Promise<InventoryProduct[]> {

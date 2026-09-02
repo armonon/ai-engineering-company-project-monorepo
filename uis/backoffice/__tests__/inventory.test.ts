@@ -2,7 +2,9 @@ import { authJson } from "@/lib/auth";
 import {
   createInboundMovement,
   createOutboundMovement,
+  outboundStockWarning,
   stockStatus,
+  userUuidLabel,
 } from "@/lib/inventory";
 
 jest.mock("@/lib/auth", () => ({ authJson: jest.fn() }));
@@ -11,6 +13,26 @@ const mockedAuthJson = jest.mocked(authJson);
 
 beforeEach(() => {
   mockedAuthJson.mockReset();
+});
+
+describe("outboundStockWarning", () => {
+  it("warns before an outbound quantity exceeds warehouse stock", () => {
+    expect(outboundStockWarning(10, 11, "LA")).toBe(
+      "Insufficient stock. 10 units are available in LA.",
+    );
+  });
+
+  it("allows an exit equal to the available stock", () => {
+    expect(outboundStockWarning(10, 10, "ZGZ")).toBeNull();
+  });
+});
+
+describe("userUuidLabel", () => {
+  it("shows the exact creator field required by the rubric", () => {
+    expect(userUuidLabel("warehouse-user-42")).toBe(
+      "user_uuid: warehouse-user-42",
+    );
+  });
 });
 
 describe("stockStatus", () => {

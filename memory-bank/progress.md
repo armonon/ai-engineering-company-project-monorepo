@@ -4,6 +4,30 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-09-01 · Inventory backoffice rubric alignment
+
+**Branch:** `milestone-5-inventory-backoffice`
+
+- Made the assignment's four canonical routes available at
+  `/backoffice/inventory/products`, `/backoffice/inventory/orders/inbound`,
+  `/backoffice/inventory/orders/outbound`, and
+  `/backoffice/inventory/orders`; the earlier short routes now redirect so
+  saved links continue to work.
+- Added `NEXT_PUBLIC_INVENTORY_API_URL` as the assignment-specific API origin
+  override while retaining the same-origin `/trackflow-api` Docker proxy as
+  the safe default.
+- Added a visible, quantity-adjacent client warning before an outbound request
+  can exceed warehouse stock. The same location now surfaces the API's
+  insufficient-stock 400 detail, and successful movement submissions reset
+  every form field.
+- Made the movement history expose the authenticated creator explicitly as
+  `user_uuid`, matching the evaluator's required field name.
+- Documented the low-stock threshold and extended the API, inventory, and
+  navigation regression tests for the new contracts.
+
+This preserves TrackFlow's scoped SKU / LA / ZGZ vocabulary and the existing
+centralized authenticated API client (`DOC-1`).
+
 ## 2026-08-29 · Public TrackFlow demonstration
 
 **Branch:** `codex/sync-live-trackflow-site`
