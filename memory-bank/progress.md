@@ -4,6 +4,31 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-09-01 · TrackFlow telemetry design plan
+
+**Branch:** `codex/telemetry-design-plan`
+
+- Added `docs/telemetry/telemetry-plan.md` and the validatable custom schema
+  catalogue `docs/telemetry/event-schemas.json` for the telemetry-plan project.
+- Preserved all five mandatory TrackFlow event identifiers and the course
+  context's long-form warehouse dimensions (`los_angeles` / `zaragoza`).
+- Designed 23 events: 5 mandatory and 18 identified opportunities across
+  business inventory, authentication/security, navigation/workflows,
+  performance, frontend errors, and API errors.
+- Defined the standard envelope, explicit property allowlist for every event,
+  stream/batch urgency, high-frequency controls, privacy handling, retention,
+  exclusions, risks, and an instrumentation handoff.
+- Kept committed dispatches (`outbound_order_created`) distinct from confirmed
+  losses (`inventory_loss_recorded`) so future SLA reporting does not classify
+  warehouse loss as customer throughput.
+- A strict rubric audit validated all 23 event contracts, Markdown/JSON
+  property parity, forbidden-property rejection, and the official threshold
+  boundary: emit only when stock crosses from at/above to below the configured
+  minimum.
+
+This is a design-only milestone: no runtime instrumentation or new service was
+added. The structure follows the monorepo documentation contract (`DOC-1`).
+
 ## 2026-09-01 · Inventory backoffice rubric alignment
 
 **Branch:** `milestone-5-inventory-backoffice`
