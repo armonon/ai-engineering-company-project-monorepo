@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { forgotPassword } from "@/lib/auth";
 import { AuthShell, Field, inputCls } from "@/components/LoginForm";
+import { track } from "@/lib/telemetry";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -22,7 +23,11 @@ export function ForgotPasswordForm() {
     setSubmitting(true);
 
     try {
-      await forgotPassword(email.trim().toLowerCase());
+      const response = await forgotPassword(email.trim().toLowerCase());
+      track("password_reset_requested", {
+        delivery_channel: "email",
+        outcome: response.outcome,
+      });
     } catch {
       // Swallowed on purpose. The confirmation must look identical
       // whether or not the address is registered, and a transport

@@ -311,6 +311,19 @@ uv run pytest
 reset/change, 39 for the supplier directory, and 7 for incident
 analysis.
 
+## Telemetry verification receiver
+
+`POST /telemetry/events` is the Phase 2 non-persistent stub. It accepts
+`{"events": [...]}`, validates every standard envelope, logs only the batch
+count and `event_type` labels, and returns `{"received": N}`. It never logs
+event properties or writes them to a database. The future target is declared
+with `TELEMETRY_ENDPOINT` in the untracked `.env` file so Phase 3 can replace
+the implementation without changing browser callers.
+
+Authentication responses also include an HMAC-pseudonymised
+`telemetry_user_id`. Set a dedicated `TELEMETRY_HMAC_KEY` in `.env`; raw TinyDB
+user ids, email addresses, and credentials are never used as telemetry ids.
+
 ## CORS
 
 Explicit origins for the `uis/*` dev servers, including the containerized

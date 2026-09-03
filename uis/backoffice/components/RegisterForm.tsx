@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { register } from "@/lib/auth";
+import { beginTelemetrySession, track } from "@/lib/telemetry";
 import { AuthShell, Field, inputCls } from "@/components/LoginForm";
 
 export function RegisterForm() {
@@ -50,12 +51,18 @@ export function RegisterForm() {
     try {
       // Registers, then logs in with the same credentials so the user
       // lands authenticated rather than on a second form.
-      await register({
+      const session = await register({
         email: email.trim(),
         password,
         name: name.trim() || undefined,
         phone: phone.trim() || undefined,
         address: address.trim() || undefined,
+      });
+      beginTelemetrySession(session.telemetry_user_id);
+      track("login_succeeded", {
+        auth_method: "password",
+        role: session.role,
+        session_age_seconds: 0,
       });
       router.replace("/");
     } catch (err) {
