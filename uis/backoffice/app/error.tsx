@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { captureFrontendError } from "@/lib/telemetry";
 
 /**
  * Route-level error boundary.
@@ -33,6 +34,7 @@ export default function Error({
     // The detail belongs in the console and the error reporter, not on
     // screen — it is a stack trace, not a sentence.
     console.error(error);
+    void captureFrontendError(error, "app/error", true);
   }, [error]);
 
   return (

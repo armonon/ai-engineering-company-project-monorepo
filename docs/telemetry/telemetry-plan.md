@@ -151,6 +151,8 @@ Example with deliberately fake opaque identifiers:
 - Additive optional properties increment the minor `schemaVersion`; removals,
   type changes, or semantic changes increment the major version. Consumers must
   reject unknown major versions and ignore only documented optional omissions.
+- Phase 2 adds the capture rubric's `network_error` reason to
+  `login_failed`; that event alone therefore emits schema version `1.1.0`.
 - Dynamic ids never appear in route properties: use `/inventory/products/{id}`
   rather than the raw path. Query strings and fragments are discarded.
 

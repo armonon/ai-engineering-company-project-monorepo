@@ -1,0 +1,17 @@
+TrackFlow telemetry Phase 2 — live browser verification
+Date: 2026-09-02
+
+Browser page:
+  http://localhost:3100/login
+
+Frontend configuration:
+  NEXT_PUBLIC_TELEMETRY_ENDPOINT=http://127.0.0.1:8001/telemetry/events
+
+Observed FastAPI development-server output after the 10-second queue interval:
+  INFO: Telemetry batch received count=1 event_types=['page_viewed'] endpoint=http://127.0.0.1:8001/telemetry/events
+  INFO: 127.0.0.1 - "POST /telemetry/events HTTP/1.1" 200 OK
+
+The browser rendered the TrackFlow sign-in page without an application error.
+No credentials were entered for this verification. The receiver logged only the
+batch count and event-type label; no event properties or personal data appeared
+in the server output.

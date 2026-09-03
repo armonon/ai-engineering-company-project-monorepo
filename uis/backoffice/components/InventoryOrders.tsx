@@ -7,6 +7,7 @@ import {
   userUuidLabel,
   type InventoryMovement,
 } from "@/lib/inventory";
+import { track } from "@/lib/telemetry";
 
 export function InventoryOrders() {
   const [orders, setOrders] = useState<InventoryMovement[]>([]);
@@ -14,8 +15,17 @@ export function InventoryOrders() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const startedAt = performance.now();
     fetchInventoryOrders()
-      .then(setOrders)
+      .then((loaded) => {
+        setOrders(loaded);
+        track("audit_history_viewed", {
+          warehouse_filter: "all",
+          movement_filter: "all",
+          result_count: loaded.length,
+          load_duration_ms: Math.max(0, Math.round(performance.now() - startedAt)),
+        });
+      })
       .catch((caught) => setError(toUserMessage(caught, "We couldn't load stock movements.")))
       .finally(() => setLoading(false));
   }, []);

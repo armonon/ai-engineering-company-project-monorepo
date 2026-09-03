@@ -100,7 +100,10 @@ def stock(api: TestClient, sku_id: int) -> int:
 
 def test_a_new_sku_starts_at_zero_stock(api: TestClient) -> None:
     """CONTEXT: a SKU accumulates stock only through receipts."""
-    assert make_sku(api)["current_stock"] == 0
+    created = make_sku(api)
+    assert created["current_stock"] == 0
+    assert created["client_id"].startswith("client_")
+    assert created["minimum_stock"] == 25
 
 
 def test_stock_is_receipts_minus_exits(api: TestClient) -> None:
@@ -125,6 +128,45 @@ def test_no_endpoint_accepts_a_stock_value(api: TestClient) -> None:
 
     assert created["current_stock"] == 0
     assert stock(api, created["id"]) == 0
+
+
+def test_direct_stock_edit_is_rejected_and_safely_instrumented(
+    api: TestClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    sku = make_sku(api)
+
+    with caplog.at_level("INFO", logger="uvicorn.error.trackflow.telemetry"):
+        response = api.patch(
+            f"/inventory/products/{sku['id']}",
+            json={"warehouse": "LA", "quantity": 99, "attempted_operation": "set"},
+        )
+
+    assert response.status_code == 400
+    assert "cannot be modified directly" in response.json()["detail"]
+    assert "direct_stock_edit_rejected" in caplog.text
+    assert stock(api, sku["id"]) == 0
+
+
+def test_physical_audit_compares_without_mutating_stock(api: TestClient) -> None:
+    sku = make_sku(api)
+    inbound(api, sku["id"], 20)
+
+    response = api.post(
+        "/inventory/audits/check",
+        json={
+            "sku_id": sku["id"],
+            "warehouse": "LA",
+            "physical_quantity": 17,
+            "detection_method": "cycle_count",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["system_quantity"] == 20
+    assert response.json()["variance_quantity"] == -3
+    assert response.json()["discrepancy_detected"] is True
+    assert stock(api, sku["id"]) == 20
 
 
 def test_the_orm_model_has_no_stock_column(api: TestClient) -> None:
@@ -334,6 +376,8 @@ def test_no_user_table_exists_in_the_inventory_database(api: TestClient) -> None
         ("post", "/inventory/orders/inbound"),
         ("post", "/inventory/orders/outbound"),
         ("get", "/inventory/orders"),
+        ("patch", "/inventory/products/1"),
+        ("post", "/inventory/audits/check"),
     ],
 )
 def test_every_inventory_route_requires_a_token(
@@ -343,7 +387,7 @@ def test_every_inventory_route_requires_a_token(
     brand's stock position."""
     api.headers.pop("Authorization")
 
-    kwargs = {"json": {}} if method == "post" else {}
+    kwargs = {"json": {}} if method in {"post", "patch"} else {}
     assert getattr(api, method)(path, **kwargs).status_code == 401
 
 

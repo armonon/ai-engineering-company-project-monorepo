@@ -25,12 +25,20 @@ no endpoint accepts a stock value.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from datetime import UTC, datetime
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlmodel import Session, col, func, select
 
 from database import get_db
+from inventory_telemetry_config import minimum_stock_for_sku, telemetry_client_id
 from models import SKU, StockEntry, StockExit, UserInDB, Warehouse
+from routers.telemetry import record_stub_batch
 from schemas import (
+    DirectStockEditAttempt,
+    InventoryAuditCreate,
+    InventoryAuditRead,
     MovementRead,
     SKUCreate,
     SKURead,
@@ -39,8 +47,10 @@ from schemas import (
     StockEntryRead,
     StockExitCreate,
     StockExitRead,
+    TelemetryBatch,
+    TelemetryEvent,
 )
-from security import get_current_user
+from security import get_current_user, pseudonymous_user_id
 
 router = APIRouter(prefix="/inventory", tags=["inventory"])
 
@@ -126,10 +136,12 @@ def _to_sku_read(sku: SKU, totals: dict[tuple[int, str], int]) -> SKURead:
         name=sku.name,
         sku=sku.sku,
         client_name=sku.client_name,
+        client_id=telemetry_client_id(sku.client_name),
         category=sku.category,
         warehouse=sku.warehouse,
         current_stock=breakdown.get(_warehouse_value(sku.warehouse), 0),
         stock_by_warehouse=breakdown,
+        minimum_stock=minimum_stock_for_sku(sku.sku),
     )
 
 
@@ -244,6 +256,110 @@ def get_product(
 ) -> SKURead:
     sku = _get_sku_or_404(session, sku_id)
     return _to_sku_read(sku, _stock_by_warehouse(session, [sku_id]))
+
+
+@router.patch(
+    "/products/{sku_id}",
+    status_code=status.HTTP_400_BAD_REQUEST,
+    summary="Reject forbidden direct stock mutation",
+)
+def reject_direct_stock_edit(
+    sku_id: int,
+    payload: DirectStockEditAttempt,
+    request: Request,
+    session: Session = Depends(get_db),
+    caller: UserInDB = Depends(get_current_user),
+) -> None:
+    """Enforce and instrument the derived-stock invariant at the API boundary."""
+    sku = _get_sku_or_404(session, sku_id)
+    client_id = telemetry_client_id(sku.client_name)
+    if client_id is not None:
+        record_stub_batch(
+            TelemetryBatch(
+                events=[
+                    TelemetryEvent(
+                        eventId=uuid4(),
+                        timestamp=datetime.now(UTC),
+                        sessionId=(
+                            request.headers.get("x-telemetry-session-id")
+                            or f"svc_{uuid4()}"
+                        ),
+                        userId=pseudonymous_user_id(caller.id),
+                        event_type="direct_stock_edit_rejected",
+                        schemaVersion="1.0.0",
+                        requestId=(
+                            request.headers.get("x-request-id") or f"req_{uuid4()}"
+                        ),
+                        properties={
+                            "warehouse": (
+                                "los_angeles"
+                                if sku.warehouse is Warehouse.LA
+                                else "zaragoza"
+                            ),
+                            "client_id": client_id,
+                            "product_id": sku.sku,
+                            "product_category": sku.category.value,
+                            "quantity": payload.quantity,
+                            "attempted_operation": payload.attempted_operation,
+                            "endpoint_template": "/inventory/products/{id}",
+                            "reason_code": "stock_is_derived",
+                        },
+                    )
+                ]
+            )
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=(
+            "Stock is derived from inbound and outbound orders and cannot be "
+            "modified directly."
+        ),
+    )
+
+
+@router.post(
+    "/audits/check",
+    response_model=InventoryAuditRead,
+    summary="Compare a physical count with computed stock without modifying it",
+)
+def check_inventory_audit(
+    payload: InventoryAuditCreate,
+    session: Session = Depends(get_db),
+    _caller: UserInDB = Depends(get_current_user),
+) -> InventoryAuditRead:
+    """Return a traceable comparison; stock remains derived from movements."""
+    sku = _get_sku_or_404(session, payload.sku_id)
+    if sku.warehouse != payload.warehouse:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"SKU '{sku.sku}' belongs to {sku.warehouse.value}; "
+                f"it cannot be audited as {payload.warehouse.value}."
+            ),
+        )
+
+    client_id = telemetry_client_id(sku.client_name)
+    if client_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This SKU's client has no governed telemetry identifier yet.",
+        )
+
+    system_quantity = _available_stock(session, payload.sku_id, payload.warehouse)
+    variance = payload.physical_quantity - system_quantity
+    return InventoryAuditRead(
+        audit_id=uuid4(),
+        sku_id=payload.sku_id,
+        warehouse=payload.warehouse,
+        client_id=client_id,
+        product_id=sku.sku,
+        product_category=sku.category,
+        system_quantity=system_quantity,
+        physical_quantity=payload.physical_quantity,
+        variance_quantity=variance,
+        discrepancy_detected=variance != 0,
+    )
 
 
 # ---------------------------------------------------------------------------

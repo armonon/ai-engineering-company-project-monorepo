@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { AppChrome } from "@/components/AppChrome";
+import { TelemetryRuntime } from "@/components/TelemetryRuntime";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
             It is client-side by necessity: the token lives in
             localStorage, which Next.js middleware cannot read. */}
         <AuthProvider>
+          <TelemetryRuntime />
           <AppChrome>{children}</AppChrome>
         </AuthProvider>
       </body>

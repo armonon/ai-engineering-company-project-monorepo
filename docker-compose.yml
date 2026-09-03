@@ -8,6 +8,8 @@ services:
     env_file: .env
     environment:
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-/trackflow-api}
+      NEXT_PUBLIC_TELEMETRY_ENDPOINT: ${NEXT_PUBLIC_TELEMETRY_ENDPOINT:-/trackflow-api/telemetry/events}
+      NEXT_PUBLIC_APP_RELEASE: ${NEXT_PUBLIC_APP_RELEASE:-development}
       TRACKFLOW_API_INTERNAL_URL: http://backend:8000
     ports:
       - "3000:3000"
@@ -34,6 +36,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-sqlite:////workspace/services/api/data/inventory.db}
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:3001}
+      TELEMETRY_ENDPOINT: ${TELEMETRY_ENDPOINT:-http://backend:8000/telemetry/events}
     ports:
       - "8000:8000"
     volumes:
