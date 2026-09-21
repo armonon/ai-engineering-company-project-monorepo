@@ -20,6 +20,14 @@ Flow driven through the real UI, in order:
   7. PATCH /inventory/products/1            → direct stock edit, rejected 400
                                               (stock unchanged: 145)
 
+DevTools evidence (Chrome, Network panel, Preserve log on, page reloaded
+and left for the 10-second flush):
+  devtools-telemetry-200-headers.png   Request URL
+                                       http://localhost:3100/trackflow-api/telemetry/events,
+                                       Request Method POST, Status Code 200 OK,
+                                       server: uvicorn, content-type: application/json
+  devtools-telemetry-200-response.png  Response tab: {"received":1}
+
 Browser network log (read from the page; every batch answered 200):
   POST /trackflow-api/telemetry/events → 200 OK   (×14 over the run)
   POST /trackflow-api/auth/login → 200 OK
