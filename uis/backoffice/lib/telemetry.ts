@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/lib/api";
 import eventCatalogueJson from "../../../docs/telemetry/event-schemas.json";
 
 type JsonValue = string | number | boolean | null;
@@ -143,9 +144,17 @@ export function telemetrySessionAgeSeconds(): number {
   return Math.max(0, Math.floor((Date.now() - (sessionStartedAt ?? Date.now())) / 1000));
 }
 
+/**
+ * Where batches go. `NEXT_PUBLIC_TELEMETRY_ENDPOINT` wins when set;
+ * otherwise the receiver lives next to the rest of the API, so the same
+ * resolved base every other call uses (including the `/trackflow-api`
+ * proxy default) is reused. Reading the raw env var here instead used to
+ * return "" under the default configuration, which silently dropped
+ * every batch.
+ */
 export function resolveTelemetryEndpoint(
   configured = process.env.NEXT_PUBLIC_TELEMETRY_ENDPOINT,
-  apiBase = process.env.NEXT_PUBLIC_API_BASE_URL,
+  apiBase = API_BASE_URL,
 ): string {
   const explicit = configured?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");

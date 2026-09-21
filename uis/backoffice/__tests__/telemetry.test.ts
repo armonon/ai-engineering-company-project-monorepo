@@ -187,6 +187,17 @@ describe("telemetry helpers", () => {
     );
   });
 
+  it("falls back to the resolved API base under the default configuration", async () => {
+    // No NEXT_PUBLIC_* variables at all: every other call goes through the
+    // /trackflow-api proxy, and telemetry must follow it rather than
+    // resolve to "" and drop batches.
+    delete process.env.NEXT_PUBLIC_TELEMETRY_ENDPOINT;
+    delete process.env.NEXT_PUBLIC_API_BASE_URL;
+    delete process.env.NEXT_PUBLIC_INVENTORY_API_URL;
+    const { resolveTelemetryEndpoint } = await freshTelemetry();
+    expect(resolveTelemetryEndpoint()).toBe("/trackflow-api/telemetry/events");
+  });
+
   it("normalises record ids out of endpoint templates", async () => {
     const { endpointTemplate } = await freshTelemetry();
     expect(endpointTemplate("/inventory/products/42?include=stock")).toBe(

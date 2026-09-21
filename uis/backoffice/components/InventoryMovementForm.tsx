@@ -111,6 +111,12 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
     [products, skuId],
   );
   const numericQuantity = Number(quantity);
+  // The submit button is disabled while the stock warning shows, so the
+  // guard inside handleSubmit can never run for an over-stock quantity.
+  // The attempt is still a business-rule rejection the plan wants counted,
+  // so it is emitted when the operator leaves the field — once per
+  // (product, quantity) pair, not on every keystroke.
+  const lastRejectedAttempt = useRef<string | null>(null);
   const stockWarning =
     direction === "outbound" && product && quantity
       ? outboundStockWarning(
@@ -119,6 +125,24 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
           product.warehouse,
         )
       : null;
+
+  function handleQuantityBlur() {
+    if (direction !== "outbound" || !product || !stockWarning) return;
+    if (!Number.isInteger(numericQuantity) || numericQuantity <= 0) return;
+    const attempt = `${product.id}:${numericQuantity}`;
+    if (lastRejectedAttempt.current === attempt) return;
+    lastRejectedAttempt.current = attempt;
+    touchWorkflow("validation_failed");
+    const telemetryDimensions = inventoryTelemetryDimensions(product);
+    if (!telemetryDimensions) return;
+    track("outbound_order_rejected", {
+      ...telemetryDimensions,
+      quantity: numericQuantity,
+      available_quantity: product.current_stock,
+      exit_type: exitType,
+      reason_code: "insufficient_stock",
+    });
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -319,7 +343,7 @@ export function InventoryMovementForm({ direction }: { direction: "inbound" | "o
 
       <label className="block text-sm font-medium text-slate-700">
         Quantity
-        <input required min="1" step="1" type="number" value={quantity} onChange={(event) => { setQuantity(event.target.value); setQuantityError(null); if (event.target.value) touchWorkflow("details_entered"); }} aria-describedby={direction === "outbound" && (stockWarning || quantityError) ? "quantity-stock-error" : undefined} className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2" />
+        <input required min="1" step="1" type="number" value={quantity} onChange={(event) => { setQuantity(event.target.value); setQuantityError(null); if (event.target.value) touchWorkflow("details_entered"); }} onBlur={handleQuantityBlur} aria-describedby={direction === "outbound" && (stockWarning || quantityError) ? "quantity-stock-error" : undefined} className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2" />
         {direction === "outbound" && (quantityError || stockWarning) && (
           <span id="quantity-stock-error" role="alert" className="mt-1 block text-sm text-red-700">
             {quantityError ?? stockWarning}

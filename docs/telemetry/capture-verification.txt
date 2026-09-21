@@ -1,17 +1,85 @@
 TrackFlow telemetry Phase 2 — live browser verification
-Date: 2026-09-02
+Date: 2026-09-21
 
-Browser page:
-  http://localhost:3100/login
+Setup:
+  Backoffice  http://localhost:3100  (next dev, default configuration: no
+              NEXT_PUBLIC_* variables set, so every call — telemetry
+              included — goes through the /trackflow-api proxy)
+  API         http://localhost:8000  (uvicorn, throwaway SQLite inventory
+              seeded with seed_inventory.py, throwaway TinyDB user)
 
-Frontend configuration:
-  NEXT_PUBLIC_TELEMETRY_ENDPOINT=http://127.0.0.1:8001/telemetry/events
+Flow driven through the real UI, in order:
+  1. /login                                 → sign in
+  2. /backoffice/inventory/orders           → movement history loads
+  3. /backoffice/inventory/orders/outbound  → dispatch 35 × CSM-SRM-030
+                                              (stock 42 → 7, minimum 10)
+  4. same form                              → loss 2 × TEC-EAR-001
+  5. /backoffice/inventory/orders/inbound   → receive 40 × TEC-CHG-065
+  6. /backoffice/inventory/audit            → physical 85 vs system 90
+                                              for CLT-SNK-W-42-Z
+  7. PATCH /inventory/products/1            → direct stock edit, rejected 400
+                                              (stock unchanged: 145)
 
-Observed FastAPI development-server output after the 10-second queue interval:
-  INFO: Telemetry batch received count=1 event_types=['page_viewed'] endpoint=http://127.0.0.1:8001/telemetry/events
-  INFO: 127.0.0.1 - "POST /telemetry/events HTTP/1.1" 200 OK
+Browser network log (read from the page; every batch answered 200):
+  POST /trackflow-api/telemetry/events → 200 OK   (×14 over the run)
+  POST /trackflow-api/auth/login → 200 OK
+  POST /trackflow-api/inventory/orders/outbound → 201 Created
+  POST /trackflow-api/inventory/orders/inbound → 201 Created
 
-The browser rendered the TrackFlow sign-in page without an application error.
-No credentials were entered for this verification. The receiver logged only the
-batch count and event-type label; no event properties or personal data appeared
-in the server output.
+FastAPI console, in arrival order (count and event_type labels only —
+the receiver never logs properties):
+  Telemetry batch received count=1 event_types=['page_viewed']
+  Telemetry batch received count=2 event_types=['login_succeeded', 'page_viewed']
+  Telemetry batch received count=3 event_types=['page_viewed', 'audit_history_viewed', 'audit_history_viewed']
+  Telemetry batch received count=2 event_types=['page_viewed', 'api_latency_recorded']
+  Telemetry batch received count=1 event_types=['workflow_started']
+  Telemetry batch received count=3 event_types=['outbound_order_created', 'stock_threshold_triggered', 'workflow_completed']
+  Telemetry batch received count=1 event_types=['workflow_started']
+  Telemetry batch received count=2 event_types=['inventory_loss_recorded', 'workflow_completed']
+  Telemetry batch received count=3 event_types=['workflow_started', 'inbound_order_created', 'workflow_completed']
+  Telemetry batch received count=1 event_types=['inventory_discrepancy_detected']
+  Telemetry batch received count=1 event_types=['direct_stock_edit_rejected']
+
+One batch body as sent by the browser (ids truncated), showing the
+envelope the service generated and the allowlisted properties:
+  {
+    "events": [
+      {
+        "eventId": "…", "timestamp": "2026-09-21T16:…Z",
+        "sessionId": "sess_a14de21…", "userId": "usr_0122d922…",
+        "event_type": "inventory_loss_recorded", "schemaVersion": "1.0.0",
+        "requestId": "req_d75a8e…",
+        "properties": {
+          "warehouse": "los_angeles",
+          "client_id": "client_01JTF000000000000000000002",
+          "product_id": "TEC-EAR-001", "product_category": "electronics",
+          "quantity": 2, "order_id": "5", "exit_type": "loss",
+          "stock_after": 66
+        }
+      },
+      {
+        "event_type": "workflow_completed", "schemaVersion": "1.0.0", …,
+        "properties": {
+          "workflow_name": "inventory_outbound",
+          "flow_instance_id": "220679be-…", "duration_ms": 23346,
+          "step_count": 5, "outcome": "success"
+        }
+      }
+    ]
+  }
+
+All five mandatory events were observed end to end. The same sessionId
+followed the whole browser session and the userId was the HMAC pseudonym,
+never the account id or email.
+
+Not observable in this run: `page_load_recorded`. The automated browser
+pane loads its tab hidden (document.visibilityState === "hidden" from
+t=0) and Chromium does not report LCP for hidden documents, so the Web
+Vitals hook had nothing to forward. It is covered by the hook's unit path
+and fires in a normal foreground tab.
+
+Defect found and fixed during this run: under the default configuration
+the browser resolved the telemetry endpoint to "" (it read the raw
+NEXT_PUBLIC_API_BASE_URL instead of the resolved API base) and silently
+discarded every batch. resolveTelemetryEndpoint now falls back to the
+same API_BASE_URL the rest of the app uses; regression test added.
