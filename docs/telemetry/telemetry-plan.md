@@ -392,3 +392,26 @@ must prove its envelope and allowlist validate, a forbidden property must fail,
 the business transaction and event must agree, duplicate `eventId` values must
 not double-count, and the resulting aggregate must answer the documented
 decision question.
+
+## 9. Persistent storage mapping
+
+Phase 3 persists accepted events in the append-only PostgreSQL table
+`telemetry_events`. The browser envelope remains unchanged. The receiver maps
+each valid event as follows:
+
+| Storage column | Mapping |
+| --- | --- |
+| `timestamp` | Envelope `timestamp`, retained as `timestamptz` |
+| `service` | `api` when `properties.service` is `trackflow_api` or the event is server-originated; otherwise `backoffice` |
+| `event_type` | Envelope `event_type` |
+| `level` | `error` for captured frontend/API failures, `warn` for rejection/security/discrepancy/threshold events, otherwise `info` |
+| `value` | The event's governed analytical numeric when one exists: quantity, duration, occurrence count, load duration, or variance according to event type |
+| `message` | Null by default; unbounded browser or exception text is never persisted |
+| `tags` | The event-specific `properties` allowlist plus `event_id`, `session_id`, `user_id`, `schema_version`, and `request_id` for correlation and downstream deduplication |
+
+No display name, email, credential, raw exception, tracking number, receipt
+reference, full URL, or other excluded value is added during mapping. The
+receiver revalidates every property against `event-schemas.json` before the
+row is constructed. Valid rows from one request are inserted in one database
+operation; invalid siblings are counted and discarded without cancelling the
+batch.
