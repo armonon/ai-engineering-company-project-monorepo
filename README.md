@@ -22,7 +22,7 @@ This repository is the canonical home for the **TrackFlow transversal project**.
 - Read [`MILESTONES.md`](./MILESTONES.md) before choosing a branch.
 - Treat [`CONTEXT.md`](./CONTEXT.md) as the canonical TrackFlow company context.
 - Use [`AGENTS.md`](./AGENTS.md), `skills/`, and directory-level README files as working guidance.
-- Use [`OPENCLAW.md`](./OPENCLAW.md) to register the dedicated coursework agent.
+- The coursework agent lives in its own repository: [4geeks-coursework-agent](https://github.com/armonon/4geeks-coursework-agent).
 
 ---
 
