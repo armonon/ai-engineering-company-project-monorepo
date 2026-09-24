@@ -4,6 +4,30 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-09-02 · Backoffice telemetry event capture
+
+**Branch:** `codex/telemetry-event-capture`
+
+- Added the temporary FastAPI `POST /telemetry/events` receiver with the exact
+  approved standard envelope, safe count/type-only logging, environment-based
+  target configuration, and no persistence.
+- Built one catalogue-validated browser `TelemetryService`: 10-second / 20-event
+  batching, three exponential-backoff retries, reliable `sendBeacon` flush,
+  automatic correlation/session fields, and HMAC-pseudonymous user identity.
+- Instrumented all 23 approved event types across TrackFlow inventory,
+  authentication/security, navigation/workflows, API performance/errors,
+  frontend errors, and Next.js LCP Web Vitals. All five CONTEXT-mandatory
+  events have concrete decision points.
+- Added governed opaque ids and per-SKU threshold policy for the CONTEXT seed
+  catalogue, plus zero-stock SKU registration and a non-mutating physical-count
+  audit view so no event relies on fabricated dimensions.
+- Added regression coverage for envelope rejection, safe logs, batching,
+  allowlists, retry timing, beacon flushing, pseudonymisation, direct-stock
+  rejection, and discrepancy comparisons.
+
+The implementation and privacy handoff live in
+`docs/telemetry/capture-implementation.md` (`DOC-1`).
+
 ## 2026-09-01 · TrackFlow telemetry design plan
 
 **Branch:** `codex/telemetry-design-plan`

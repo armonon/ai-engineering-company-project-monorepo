@@ -19,6 +19,8 @@ Names follow CONTEXT-trackflow.md exactly — SKU, StockEntry, StockExit.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -67,10 +69,19 @@ class SKURead(BaseModel):
     name: str
     sku: str
     client_name: str
+    client_id: str | None = Field(
+        default=None,
+        description="Opaque governed identifier used by telemetry; never the display name.",
+    )
     category: SKUCategory
     warehouse: Warehouse
     current_stock: int
     stock_by_warehouse: dict[str, int] = Field(default_factory=dict)
+    minimum_stock: int | None = Field(
+        default=None,
+        ge=0,
+        description="Configured telemetry threshold for this SKU, when governed.",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -189,3 +200,77 @@ class MovementRead(BaseModel):
     reference: str | None = None
     exit_type: ExitType | None = None
     tracking_number: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Inventory audit — compares physical and computed stock without mutating it
+# ---------------------------------------------------------------------------
+
+
+class InventoryAuditCreate(BaseModel):
+    sku_id: int
+    warehouse: Warehouse
+    physical_quantity: int = Field(ge=0)
+    detection_method: Literal["cycle_count", "full_audit"]
+
+
+class InventoryAuditRead(BaseModel):
+    audit_id: UUID
+    sku_id: int
+    warehouse: Warehouse
+    client_id: str
+    product_id: str
+    product_category: SKUCategory
+    system_quantity: int
+    physical_quantity: int
+    variance_quantity: int
+    discrepancy_detected: bool
+
+
+class DirectStockEditAttempt(BaseModel):
+    """A forbidden mutation shape, accepted only so it can be rejected safely."""
+
+    warehouse: Warehouse
+    quantity: int
+    attempted_operation: Literal["set", "increment", "decrement"]
+
+
+# ---------------------------------------------------------------------------
+# Telemetry capture — exact standard envelope from the approved Phase 1 plan
+# ---------------------------------------------------------------------------
+
+
+class TelemetryEvent(BaseModel):
+    """One capture event. Phase 3 will add per-event validation/storage."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    eventId: UUID
+    timestamp: datetime
+    sessionId: str = Field(min_length=1)
+    userId: str = Field(pattern=r"^(anonymous|system|usr_[a-f0-9]{64})$")
+    event_type: str = Field(pattern=r"^[a-z][a-z0-9]*(_[a-z0-9]+)+$")
+    schemaVersion: str = Field(pattern=r"^[1-9][0-9]*\.[0-9]+\.[0-9]+$")
+    requestId: str = Field(min_length=1)
+    properties: dict[str, Any]
+
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def _timestamp_is_utc_iso8601(cls, value: Any) -> Any:
+        if isinstance(value, datetime):
+            offset = value.utcoffset()
+            if offset is not None and offset.total_seconds() == 0:
+                return value
+        if not isinstance(value, str) or not value.endswith("Z"):
+            raise ValueError("timestamp must be an ISO 8601 UTC value ending in Z")
+        return value
+
+
+class TelemetryBatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    events: list[TelemetryEvent]
+
+
+class TelemetryReceipt(BaseModel):
+    received: int

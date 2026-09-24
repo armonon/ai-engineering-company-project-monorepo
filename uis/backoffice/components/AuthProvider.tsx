@@ -19,6 +19,13 @@ import {
   type CurrentUser,
 } from "@/lib/auth";
 import { toUserMessage } from "@/lib/errors";
+import {
+  endTelemetrySession,
+  endpointTemplate,
+  identifyTelemetryUser,
+  telemetrySessionAgeSeconds,
+  track,
+} from "@/lib/telemetry";
 
 interface AuthContextValue {
   user: CurrentUser | null;
@@ -67,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const publicRoute = isPublicRoute(pathname);
 
   const logout = useCallback(() => {
+    endTelemetrySession();
     clearToken();
     setUser(null);
     router.replace("/login");
@@ -80,7 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      setUser(await fetchCurrentUser());
+      const currentUser = await fetchCurrentUser();
+      identifyTelemetryUser(currentUser.telemetry_user_id);
+      setUser(currentUser);
       setSessionError(null);
     } catch (err) {
       if (err instanceof UnauthorizedError) {
@@ -109,12 +119,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Any 401 from a protected call anywhere in the app lands here.
   useEffect(() => {
-    setUnauthorizedHandler(() => {
+    setUnauthorizedHandler((reason) => {
+      track("session_expired", {
+        session_age_seconds: telemetrySessionAgeSeconds(),
+        expiry_reason: reason,
+        route_template: endpointTemplate(pathname),
+      });
+      endTelemetrySession();
       setUser(null);
       router.replace("/login");
     });
     return () => setUnauthorizedHandler(null);
-  }, [router]);
+  }, [pathname, router]);
 
   // Verify the session on mount and whenever the route changes.
   useEffect(() => {

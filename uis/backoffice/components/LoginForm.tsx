@@ -3,8 +3,9 @@
 import { toUserMessage } from "@/lib/errors";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { login } from "@/lib/auth";
+import { useRef, useState } from "react";
+import { LoginError, login } from "@/lib/auth";
+import { beginTelemetrySession, track } from "@/lib/telemetry";
 
 export function LoginForm() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export function LoginForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const failedAttempts = useRef(0);
 
   function validate(): Record<string, string> {
     const errs: Record<string, string> = {};
@@ -34,10 +36,24 @@ export function LoginForm() {
 
     setSubmitting(true);
     try {
-      await login(email.trim(), password);
+      const session = await login(email.trim(), password);
+      beginTelemetrySession(session.telemetry_user_id);
+      track("login_succeeded", {
+        auth_method: "password",
+        role: session.role,
+        session_age_seconds: 0,
+      });
+      failedAttempts.current = 0;
       // Token is stored; go to the main authenticated view.
       router.replace("/");
     } catch (err) {
+      failedAttempts.current += 1;
+      track("login_failed", {
+        auth_method: "password",
+        reason_code:
+          err instanceof LoginError ? err.reasonCode : "network_error",
+        attempt_number: failedAttempts.current,
+      });
       setApiError(
         toUserMessage(err, "Could not sign in. Try again."),
       );

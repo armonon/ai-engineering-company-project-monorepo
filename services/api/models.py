@@ -309,6 +309,10 @@ class MeOut(BaseModel):
     email: EmailStr
     role: Role
     is_active: bool
+    telemetry_user_id: str = Field(
+        ...,
+        description="Pseudonymous identifier for telemetry; never the TinyDB id.",
+    )
     profile: ProfileOut | None = None
 
 
@@ -316,6 +320,11 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int = Field(..., description="Token lifetime in seconds.")
+    telemetry_user_id: str = Field(
+        ...,
+        description="Pseudonymous telemetry identity; never the raw TinyDB id.",
+    )
+    role: Role
 
 
 # ---------------------------------------------------------------------------

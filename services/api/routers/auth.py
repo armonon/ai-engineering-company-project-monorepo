@@ -29,6 +29,7 @@ from security import (
     create_access_token,
     get_current_user,
     hash_password,
+    pseudonymous_user_id,
     verify_password,
 )
 from services_users import get_profile_by_user_id, get_user_by_email, get_user_by_id
@@ -107,6 +108,8 @@ async def login(request: Request) -> Token:
         access_token=token,
         token_type="bearer",
         expires_in=access_token_expire_minutes() * 60,
+        telemetry_user_id=pseudonymous_user_id(user.id),
+        role=user.role,
     )
 
 
@@ -118,6 +121,7 @@ def read_me(caller: UserInDB = Depends(get_current_user)) -> MeOut:
         email=caller.email,
         role=caller.role,
         is_active=caller.is_active,
+        telemetry_user_id=pseudonymous_user_id(caller.id),
         profile=get_profile_by_user_id(caller.id),
     )
 

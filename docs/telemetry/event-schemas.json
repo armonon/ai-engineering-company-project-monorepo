@@ -358,7 +358,7 @@
     },
     "login_failed": {
       "event_type": "login_failed",
-      "schemaVersion": "1.0.0",
+      "schemaVersion": "1.1.0",
       "classification": "identified_opportunity",
       "category": "authentication_security",
       "description": "A login attempt fails without revealing whether an account exists.",
@@ -369,7 +369,7 @@
         "additionalProperties": false,
         "fields": {
           "auth_method": { "type": "string", "required": true, "enum": ["password"], "description": "Authentication method attempted." },
-          "reason_code": { "type": "string", "required": true, "enum": ["invalid_credentials", "inactive_account", "rate_limited"], "description": "Non-enumerating failure code returned to telemetry." },
+          "reason_code": { "type": "string", "required": true, "enum": ["invalid_credentials", "inactive_account", "rate_limited", "network_error"], "description": "Non-enumerating failure code returned to telemetry." },
           "principal_hash": { "type": "string", "required": false, "pattern": "^ph_[a-f0-9]{64}$", "description": "Rotating HMAC pseudonym for abuse correlation." },
           "attempt_number": { "type": "integer", "required": true, "minimum": 1, "description": "Failure count in the current server-side rate-limit window." }
         }

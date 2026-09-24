@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { captureFrontendError } from "@/lib/telemetry";
 
 /**
  * Last-resort boundary: catches errors thrown by the root layout itself,
@@ -20,6 +21,7 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     console.error(error);
+    void captureFrontendError(error, "app/global-error", true);
   }, [error]);
 
   return (

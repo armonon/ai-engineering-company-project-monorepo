@@ -1,5 +1,11 @@
 import { API_BASE_URL } from "@/lib/api";
 import { readJson } from "@/lib/errors";
+import {
+  endpointTemplate,
+  telemetryRequestHeaders,
+  track,
+  trackApiRequestCompleted,
+} from "@/lib/telemetry";
 
 /**
  * Token lifecycle for the backoffice.
@@ -44,6 +50,7 @@ export interface CurrentUser {
   email: string;
   role: Role;
   is_active: boolean;
+  telemetry_user_id: string;
   profile: Profile | null;
 }
 
@@ -139,10 +146,46 @@ export async function readApiError(res: Response): Promise<string> {
 // ---------------------------------------------------------------------------
 
 /** Called when any protected request comes back 401. Set by AuthProvider. */
-let onUnauthorized: (() => void) | null = null;
+export type SessionExpiryReason = "token_expired" | "token_revoked";
 
-export function setUnauthorizedHandler(handler: (() => void) | null): void {
+let onUnauthorized: ((reason: SessionExpiryReason) => void) | null = null;
+
+export function setUnauthorizedHandler(
+  handler: ((reason: SessionExpiryReason) => void) | null,
+): void {
   onUnauthorized = handler;
+}
+
+function sessionExpiryReason(token: string | null): SessionExpiryReason {
+  if (!token) return "token_revoked";
+  try {
+    const encoded = token.split(".")[1];
+    if (!encoded) return "token_revoked";
+    const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(window.atob(padded)) as { exp?: unknown };
+    return typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()
+      ? "token_expired"
+      : "token_revoked";
+  } catch {
+    return "token_revoked";
+  }
+}
+
+function roleFromToken(token: string | null): Role | null {
+  if (!token) return null;
+  try {
+    const encoded = token.split(".")[1];
+    if (!encoded) return null;
+    const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(window.atob(padded)) as { role?: unknown };
+    return ["admin", "manager", "user"].includes(String(payload.role))
+      ? payload.role as Role
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -159,12 +202,41 @@ export async function authFetch(
   const token = getToken();
   const headers = new Headers(init.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
+  const correlation = telemetryRequestHeaders();
+  for (const [name, value] of Object.entries(correlation.headers)) {
+    headers.set(name, value);
+  }
 
+  const startedAt = typeof performance === "undefined" ? Date.now() : performance.now();
   const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+  const finishedAt = typeof performance === "undefined" ? Date.now() : performance.now();
+  trackApiRequestCompleted({
+    path,
+    method: init.method ?? "GET",
+    status: res.status,
+    durationMs: finishedAt - startedAt,
+    requestId: correlation.requestId,
+  });
+
+  if (res.status === 403) {
+    const actualRole = roleFromToken(token);
+    if (actualRole) {
+      track("authorization_denied", {
+        endpoint_template: endpointTemplate(path),
+        method: (init.method ?? "GET").toUpperCase(),
+        required_role: path.startsWith("/users/") ? "owner" : "admin",
+        actual_role: actualRole,
+        reason_code: path.startsWith("/users/")
+          ? "ownership_mismatch"
+          : "role_insufficient",
+      });
+    }
+  }
 
   if (res.status === 401) {
+    const reason = sessionExpiryReason(token);
     clearToken();
-    onUnauthorized?.();
+    onUnauthorized?.(reason);
     throw new UnauthorizedError(
       "Your session has expired. Please sign in again.",
     );
@@ -186,25 +258,60 @@ export async function authJson<T>(
 // Auth API
 // ---------------------------------------------------------------------------
 
-interface TokenResponse {
+export interface AuthenticatedSession {
   access_token: string;
   token_type: string;
   expires_in: number;
+  telemetry_user_id: string;
+  role: Role;
 }
 
-export async function login(email: string, password: string): Promise<string> {
+export type LoginFailureReason =
+  | "invalid_credentials"
+  | "inactive_account"
+  | "rate_limited"
+  | "network_error";
+
+export class LoginError extends Error {
+  constructor(
+    message: string,
+    readonly reasonCode: LoginFailureReason,
+  ) {
+    super(message);
+    this.name = "LoginError";
+  }
+}
+
+export async function login(
+  email: string,
+  password: string,
+): Promise<AuthenticatedSession> {
   // Not authFetch: there is no token yet, and a 401 here means "bad
   // credentials", which the form shows inline rather than redirecting.
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error(await readApiError(res));
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new LoginError("Could not reach the sign-in service.", "network_error");
+  }
+  if (!res.ok) {
+    const responseText = await res.clone().text();
+    const reason: LoginFailureReason =
+      res.status === 429
+        ? "rate_limited"
+        : res.status === 401 && responseText.toLowerCase().includes("deactivated")
+          ? "inactive_account"
+          : "invalid_credentials";
+    throw new LoginError(await readApiError(res), reason);
+  }
 
-  const data = await readJson<TokenResponse>(res);
+  const data = await readJson<AuthenticatedSession>(res);
   setToken(data.access_token);
-  return data.access_token;
+  return data;
 }
 
 export interface RegisterInput {
@@ -219,7 +326,9 @@ export interface RegisterInput {
  * Register, then immediately log in with the same credentials so the
  * user lands authenticated instead of on a second form.
  */
-export async function register(input: RegisterInput): Promise<string> {
+export async function register(
+  input: RegisterInput,
+): Promise<AuthenticatedSession> {
   const res = await fetch(`${API_BASE_URL}/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -268,15 +377,21 @@ interface MessageResponse {
  * registered, so this never reveals which emails exist — the caller
  * shows one confirmation message regardless.
  */
-export async function forgotPassword(email: string): Promise<string> {
+export async function forgotPassword(email: string): Promise<{
+  message: string;
+  outcome: "accepted" | "rate_limited";
+}> {
   const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
+  if (res.status === 429) {
+    return { message: await readApiError(res), outcome: "rate_limited" };
+  }
   if (!res.ok) throw new Error(await readApiError(res));
   const data = await readJson<MessageResponse>(res);
-  return data.message;
+  return { message: data.message, outcome: "accepted" };
 }
 
 /** Set a new password using the token from the reset link. */

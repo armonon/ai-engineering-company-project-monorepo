@@ -21,6 +21,31 @@ The four inventory views use the assignment paths:
 - `/backoffice/inventory/orders/outbound`
 - `/backoffice/inventory/orders`
 
+## Telemetry capture
+
+Set `NEXT_PUBLIC_TELEMETRY_ENDPOINT` in the untracked `.env.local` file. For
+native development it is normally:
+
+```text
+NEXT_PUBLIC_TELEMETRY_ENDPOINT=http://localhost:8000/telemetry/events
+```
+
+All browser capture is centralised in `lib/telemetry.ts`. It validates event
+properties against `docs/telemetry/event-schemas.json`, adds the standard
+envelope, batches at 20 events or 10 seconds, retries a failed batch three times
+with exponential backoff, and flushes pending events with `sendBeacon` when the
+tab is hidden. The shared runtime captures navigation, LCP, and uncaught errors;
+domain components add business events only at their confirmed decision points.
+
+Additional governed inventory views support the approved event catalogue:
+
+- `/backoffice/inventory/products/new` registers a zero-stock SKU.
+- `/backoffice/inventory/audit` compares physical and computed stock without
+  mutating it.
+
+See [`../../docs/telemetry/capture-implementation.md`](../../docs/telemetry/capture-implementation.md)
+for the complete event-to-component map and privacy contract.
+
 ## Getting Started
 
 First, run the development server:
