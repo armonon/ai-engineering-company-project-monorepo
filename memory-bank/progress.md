@@ -4,6 +4,28 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-09-23 · Persistent telemetry storage
+
+**Branch:** `codex/telemetry-event-storage`
+
+- Replaced the temporary receiver with per-event partial validation and a
+  single bulk insert into the existing Supabase/PostgreSQL connection.
+- Added the eight-column append-only `telemetry_events` SQLModel table, UUID
+  database default, timestamp/event-type indexes, JSONB GIN index, constrained
+  service/severity values, and an idempotent SQL migration.
+- Reused the Phase 2 `TelemetryEvent` model unchanged and added a loose outer
+  batch model so one invalid item cannot make FastAPI reject valid siblings.
+- Revalidated every accepted event against the approved TrackFlow catalogue,
+  preserving only property allowlists and documented correlation tags.
+- Added regression coverage for mixed batches, whole-envelope 422 boundaries,
+  safe logging, exact storage mapping, the table/index contract, and exactly
+  one INSERT for a heterogeneous valid batch.
+- Kept the backoffice unchanged; the same URL and payload contract remain in
+  place.
+
+The mapping and operational handoff live in
+`docs/telemetry/storage-implementation.md` (`DOC-1`).
+
 ## 2026-09-02 · Backoffice telemetry event capture
 
 **Branch:** `codex/telemetry-event-capture`

@@ -34,7 +34,7 @@ from sqlmodel import Session, col, func, select
 from database import get_db
 from inventory_telemetry_config import minimum_stock_for_sku, telemetry_client_id
 from models import SKU, StockEntry, StockExit, UserInDB, Warehouse
-from routers.telemetry import record_stub_batch
+from routers.telemetry import persist_internal_event
 from schemas import (
     DirectStockEditAttempt,
     InventoryAuditCreate,
@@ -47,7 +47,6 @@ from schemas import (
     StockEntryRead,
     StockExitCreate,
     StockExitRead,
-    TelemetryBatch,
     TelemetryEvent,
 )
 from security import get_current_user, pseudonymous_user_id
@@ -274,38 +273,30 @@ def reject_direct_stock_edit(
     sku = _get_sku_or_404(session, sku_id)
     client_id = telemetry_client_id(sku.client_name)
     if client_id is not None:
-        record_stub_batch(
-            TelemetryBatch(
-                events=[
-                    TelemetryEvent(
-                        eventId=uuid4(),
-                        timestamp=datetime.now(UTC),
-                        sessionId=(
-                            request.headers.get("x-telemetry-session-id")
-                            or f"svc_{uuid4()}"
-                        ),
-                        userId=pseudonymous_user_id(caller.id),
-                        event_type="direct_stock_edit_rejected",
-                        schemaVersion="1.0.0",
-                        requestId=(
-                            request.headers.get("x-request-id") or f"req_{uuid4()}"
-                        ),
-                        properties={
-                            "warehouse": (
-                                "los_angeles"
-                                if sku.warehouse is Warehouse.LA
-                                else "zaragoza"
-                            ),
-                            "client_id": client_id,
-                            "product_id": sku.sku,
-                            "product_category": sku.category.value,
-                            "quantity": payload.quantity,
-                            "attempted_operation": payload.attempted_operation,
-                            "endpoint_template": "/inventory/products/{id}",
-                            "reason_code": "stock_is_derived",
-                        },
-                    )
-                ]
+        persist_internal_event(
+            session,
+            TelemetryEvent(
+                eventId=uuid4(),
+                timestamp=datetime.now(UTC),
+                sessionId=(
+                    request.headers.get("x-telemetry-session-id") or f"svc_{uuid4()}"
+                ),
+                userId=pseudonymous_user_id(caller.id),
+                event_type="direct_stock_edit_rejected",
+                schemaVersion="1.0.0",
+                requestId=request.headers.get("x-request-id") or f"req_{uuid4()}",
+                properties={
+                    "warehouse": (
+                        "los_angeles" if sku.warehouse is Warehouse.LA else "zaragoza"
+                    ),
+                    "client_id": client_id,
+                    "product_id": sku.sku,
+                    "product_category": sku.category.value,
+                    "quantity": payload.quantity,
+                    "attempted_operation": payload.attempted_operation,
+                    "endpoint_template": "/inventory/products/{id}",
+                    "reason_code": "stock_is_derived",
+                },
             )
         )
 

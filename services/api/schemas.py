@@ -272,5 +272,21 @@ class TelemetryBatch(BaseModel):
     events: list[TelemetryEvent]
 
 
+class TelemetryIngestBatch(BaseModel):
+    """Loose batch envelope for per-event partial acceptance.
+
+    Items stay untyped until the route calls ``TelemetryEvent.model_validate``
+    on each one. Typing this as ``list[TelemetryEvent]`` would make FastAPI
+    reject a mixed batch with 422 before the handler could preserve valid
+    events.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    events: list[Any]
+
+
 class TelemetryReceipt(BaseModel):
     received: int
+    stored: int
+    rejected: int
