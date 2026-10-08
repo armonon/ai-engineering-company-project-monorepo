@@ -4,6 +4,40 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-07 · Coursework verification maintenance
+
+**Branch:** `codex/coursework-verification-maintenance`
+
+- Resolved the existing production npm-audit blockers discovered while
+  reviewing telemetry storage: all three UIs and their ESLint configurations
+  move together to Next.js 16.3.8; compatible transitive updates select
+  sharp 0.35.5 and source-map-js 1.2.2.
+- Cleared incident-analyzer import-ordering, `collections.abc.Iterable`, and
+  public export ordering findings without changing business rules or outputs.
+- Kept this work separate from PR #29 so the storage submission remains
+  frontend-free. No root workspace graph, CI configuration, company context,
+  application UI source, telemetry model, or live database changes.
+- Supersedes the Next.js 16.3.6 dependency proposals (#31/#32); that version
+  does not clear the newer advisory ranges. Do not close or merge those PRs
+  automatically; review this coordinated patch first.
+- Fresh local checks passed: clean npm install, workspace bootstrap and
+  typechecking, 96 JS/TS tests, 335 API tests, 10 incident-analyzer tests,
+  all production builds, all UI linters, repository-wide Ruff, changed-package
+  formatting, and production npm audit (zero vulnerabilities).
+- Real Chromium exercised the patched backoffice against the isolated storage
+  API: failed/successful login, inbound/outbound orders, technical/business
+  telemetry, exact mixed-batch receipt, and zero page errors. Website rendering
+  and sharp-backed image optimization also passed. No external candidate data
+  or live Supabase data was used.
+- The builds' generated website/tracker tsconfig edits were restored; only
+  manifests, the lockfile, incident-analyzer lint/formatting and memory-bank
+  documentation belong in this maintenance diff.
+
+Traceability: `DOC-1`, `MONO-2`, and the existing tech-context requirement for
+one patched Next.js version across the three UIs.
+
+---
+
 ## 2026-09-02 · Backoffice telemetry event capture
 
 **Branch:** `codex/telemetry-event-capture`

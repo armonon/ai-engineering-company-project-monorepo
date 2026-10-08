@@ -12,13 +12,14 @@ from __future__ import annotations
 
 import csv
 import io
+from collections.abc import Iterable
 from pathlib import Path
-from typing import IO, Iterable
+from typing import IO
 
 from .analyzer import (
-    AnalysisResult,
     RULE_LABELS,
     RULE_ORDER,
+    AnalysisResult,
 )
 
 
@@ -51,9 +52,7 @@ def result_to_csv_rows(result: AnalysisResult) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
 
     def add(metric: str, category: str, value) -> None:
-        rows.append(
-            {"metric": metric, "category": category, "value": _stringify(value)}
-        )
+        rows.append({"metric": metric, "category": category, "value": _stringify(value)})
 
     add("totals", "total_rows", result.total_rows)
     add("totals", "valid_records", result.valid_count)
