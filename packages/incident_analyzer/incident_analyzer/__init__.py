@@ -23,8 +23,8 @@ from .analyzer import (
     analyse,
     validate_record,
 )
-from .csv_io import read_csv, result_to_csv_rows
 from .console import render_console
+from .csv_io import read_csv, result_to_csv_rows
 
 __all__ = [
     "AnalysisResult",
@@ -34,8 +34,8 @@ __all__ = [
     "SatisfactionSummary",
     "StatusBreakdown",
     "analyse",
-    "validate_record",
     "read_csv",
-    "result_to_csv_rows",
     "render_console",
+    "result_to_csv_rows",
+    "validate_record",
 ]
