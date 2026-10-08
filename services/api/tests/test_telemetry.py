@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import shlex
 from collections.abc import Iterator
 from decimal import Decimal
 from pathlib import Path
@@ -103,6 +104,49 @@ def test_endpoint_persists_a_batch_and_logs_only_safe_metadata(
     assert "received=2 stored=2 rejected=0" in caplog.text
     assert "page_viewed" in caplog.text
     assert "route_template" not in caplog.text
+
+
+def test_backend_image_packages_the_runtime_catalogue(
+    api: TestClient,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Exercise ingestion using only the catalogue shipped by Docker COPY.
+
+    This is a filesystem packaging regression, not a Docker execution test.
+    It fails if the image omits the catalogue or puts it at the wrong path.
+    """
+    from routers import telemetry
+
+    root = Path(__file__).resolve().parents[3]
+    catalogue = root / "docs/telemetry/event-schemas.json"
+    image_root = tmp_path / "image/workspace"
+    for line in (root / "services/Dockerfile").read_text().splitlines():
+        if not line.startswith("COPY "):
+            continue
+        parts = shlex.split(line)
+        for source in parts[1:-1]:
+            source_path = root / source
+            if source_path == catalogue:
+                destination = image_root / parts[-1]
+                if parts[-1].endswith("/"):
+                    destination /= catalogue.name
+            elif catalogue.is_relative_to(source_path):
+                destination = image_root / parts[-1] / catalogue.relative_to(source_path)
+            else:
+                continue
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(catalogue.read_bytes())
+
+    monkeypatch.setattr(telemetry, "_CATALOGUE_PATH", image_root / catalogue.relative_to(root))
+    telemetry._catalogue_events.cache_clear()
+    try:
+        response = api.post("/telemetry/events", json={"events": [telemetry_event()]})
+        assert response.status_code == 200
+        assert response.json() == {"received": 1, "stored": 1, "rejected": 0}
+        assert len(stored_rows()) == 1
+    finally:
+        telemetry._catalogue_events.cache_clear()
 
 
 @pytest.mark.parametrize(

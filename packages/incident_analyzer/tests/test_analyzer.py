@@ -9,16 +9,16 @@ from pathlib import Path
 from incident_analyzer import (
     analyse,
     read_csv,
-    result_to_csv_rows,
     render_console,
+    result_to_csv_rows,
     validate_record,
 )
 from incident_analyzer.analyzer import (
-    RULE_INVALID_TRACKING,
-    RULE_MISSING_CARRIER_COUNTRY,
+    RULE_CLOSED_NO_SCORE,
     RULE_INVALID_CATEGORY,
     RULE_INVALID_EMAIL,
-    RULE_CLOSED_NO_SCORE,
+    RULE_INVALID_TRACKING,
+    RULE_MISSING_CARRIER_COUNTRY,
 )
 
 # scripts/incidents-trackflow.csv lives two levels up from tests/

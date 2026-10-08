@@ -5,7 +5,7 @@
 | Layer                    | Choice                                | Notes                                                        |
 | ------------------------ | ------------------------------------- | ------------------------------------------------------------ |
 | Package manager          | **npm** (workspaces)                  | One root `package.json` declares workspaces under `packages/*`, `uis/*`. |
-| Frontend framework       | **Next.js 16.3.3** (App Router) + React 19 | Website, backoffice, and talent tracker share one patched major. |
+| Frontend framework       | **Next.js 16.3.8** (App Router) + React 19 | Website, backoffice, and talent tracker share one patched major. |
 | Business-logic package   | **TypeScript** (`tsc` builds to `dist/`) | `packages/business-logic`, pure functions, unit-tested with `node --test`. |
 | Package linking          | Workspace protocol (`"@trackflow/business-logic": "*"`) | Backoffice imports the package by name; no relative `../` reach across `uis/`. |
 | Node                     | **≥ 20.9**                            | Next.js 16 minimum, enforced by the root `engines`.          |

@@ -47,14 +47,16 @@ database migration, reseeding, or credential copying was performed.
 
 - `npm ci --no-audit --no-fund` and `npm run bootstrap`: passed.
 - `npm run typecheck`: passed across every workspace.
-- `npm run test`: 96 JavaScript/TypeScript tests and 361 API tests passed.
-  The telemetry module accounts for 35 API cases, including 16 added during
+- `npm run test`: 96 JavaScript/TypeScript tests and 362 API tests passed.
+  The telemetry module accounts for 36 API cases, including 17 added during
   this review.
 - `npm run build`: all packages and three production frontends passed.
   Next regenerated `jsx` in two frontend tsconfigs; only those generated
   edits were restored, preserving the zero-frontend-diff contract.
 - `npm run lint --workspaces --if-present`: all three UI linters passed.
-- `ruff check services/api` and
+- `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
+- `services/api/.venv/bin/python -m pytest packages/incident_analyzer/tests -q`: 10 passed.
+- `ruff check .` and
   `ruff format --check services/api/tests/test_telemetry.py`: passed.
 - Gitleaks v8.30.1 found no secrets in the storage branch's commits relative
   to `origin/main`. Scanning tracked working files flagged one pre-existing
@@ -64,25 +66,38 @@ database migration, reseeding, or credential copying was performed.
   are tracked; the environment paths remain ignored.
 - A real Chromium session against the production backoffice and local API
   performed failed login, successful login, inbound receipt, and outbound
-  dispatch. The isolated SQLite database contained 21 events across nine
-  types before the manual mixed batch. Browser page errors: zero. Company
+  dispatch. The final synchronized run produced 14 new events across eight
+  types in isolated SQLite before the manual mixed batch. A pre-run row
+  boundary excluded historical events from these assertions. Browser page errors: zero. Company
   dimensions were preserved; generated login credentials, receipt reference,
   and tracking number were absent from stored telemetry. The manual request
   returned HTTP 200 and `{"received":2,"stored":1,"rejected":1}`; exactly
   one matching row persisted. These are local events, **not Supabase evidence**.
 
-## Known baseline verification blockers
+## Independent review and prerequisite integration
 
-- `npm audit --omit=dev --audit-level=high` reports three vulnerable production
-  packages: `next` (critical), `sharp` (high), and `source-map-js` (high).
-  The lockfile is unchanged from `origin/main`; these are not introduced by
-  telemetry storage. Dependency remediation belongs in a separate maintenance
-  PR so the storage assignment retains its zero-frontend-change requirement.
-- Repository-wide `ruff check .` reports seven existing findings in
-  `packages/incident_analyzer/`: import ordering, two deprecated typing imports,
-  and `__all__` ordering. The package is unchanged from `origin/main`.
-- Docker execution is not claimed: no Docker runtime is installed here. The
-  storage assignment does not require a new Docker deliverable.
+- Independent OpenAI/Sol reviewers assessed maintenance PR #33 and storage
+  PR #29 in separate contexts. Maintenance had no actionable blockers and
+  landed on main as `d60df41` after green CI; storage is synchronized with it.
+  Both original memory-bank histories were retained during synchronization.
+- The production dependency and repository-wide Ruff blockers described in
+  the earlier review are resolved by that prerequisite. The storage PR still
+  has no frontend diff against the updated main.
+- Storage review found a genuine deployment defect: the backend image omitted
+  the runtime catalogue required by `event_matches_catalogue`. The added COPY
+  in `services/Dockerfile` ships the existing approved JSON at its expected
+  path, without altering the catalogue or Phase 2 model.
+- `test_backend_image_packages_the_runtime_catalogue` in
+  `services/api/tests/test_telemetry.py` checks Docker COPY filesystem mapping
+  and exercises actual endpoint ingestion against the staged catalogue.
+  Temporarily omitting the COPY reproduced `FileNotFoundError`; restoring it
+  passed. Independent re-review passed all 36 telemetry cases and cleared
+  the deployment finding.
+- This packaging test is **not Docker execution**. No Docker runtime is
+  installed on this host, so an actual image build/run is not claimed.
+  The storage assignment does not require a new Docker deliverable.
+- The real Supabase Table Editor screenshot remains blocked by trusted login.
+  Required GitHub checks must be green on the final pushed storage head.
 
 ## Submission and teacher demonstration
 

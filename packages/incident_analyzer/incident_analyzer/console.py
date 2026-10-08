@@ -9,12 +9,12 @@ Contains no I/O. `scripts/analyze.py` is the one that prints.
 from __future__ import annotations
 
 from .analyzer import (
-    AnalysisResult,
     CATEGORIES,
+    COUNTRIES,
     RULE_LABELS,
     RULE_ORDER,
     STATUSES,
-    COUNTRIES,
+    AnalysisResult,
 )
 
 _DIVIDER = "=" * 60
@@ -43,9 +43,7 @@ def render_console(result: AnalysisResult, source_filename: str) -> str:
     add("")
 
     add("INVALID RECORDS BREAKDOWN")
-    invalid_present = [
-        rule for rule in RULE_ORDER if result.invalid_breakdown.counts.get(rule, 0)
-    ]
+    invalid_present = [rule for rule in RULE_ORDER if result.invalid_breakdown.counts.get(rule, 0)]
     for i, rule in enumerate(invalid_present):
         prefix = "└" if i == len(invalid_present) - 1 else "├"
         label = RULE_LABELS[rule]
@@ -61,9 +59,7 @@ def render_console(result: AnalysisResult, source_filename: str) -> str:
         count = result.category_breakdown.counts.get(category, 0)
         prefix = "└" if i == len(CATEGORIES) - 1 else "├"
         pct = _fmt_pct(count, valid_total)
-        add(
-            f"  {prefix}─ {category.ljust(20, '.')} {count:>3}  ({pct})"
-        )
+        add(f"  {prefix}─ {category.ljust(20, '.')} {count:>3}  ({pct})")
     add("")
 
     add("BREAKDOWN BY STATUS (valid records)")
