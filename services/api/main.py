@@ -28,6 +28,7 @@ from routers.inventory import router as inventory_router
 from routers.profiles import router as profiles_router
 from routers.suppliers import router as suppliers_router
 from routers.telemetry import router as telemetry_router
+from routers.telemetry_report import router as telemetry_report_router
 from routers.users import router as users_router
 
 logger = logging.getLogger("trackflow.api")
@@ -35,7 +36,7 @@ logger = logging.getLogger("trackflow.api")
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Startup: make sure the inventory tables exist in Supabase.
+    """Startup: make sure the inventory and telemetry tables exist in Supabase.
 
     Deliberately non-fatal when DATABASE_URL is absent. The inventory
     routes will fail loudly on use, but auth, suppliers and incidents —
@@ -50,10 +51,10 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     try:
         if create_inventory_schema():
-            logger.info("Inventory schema ready in Supabase")
+            logger.info("Inventory and telemetry schema ready in Supabase")
         else:
             logger.warning(
-                "DATABASE_URL not set - /inventory routes are unavailable. "
+                "DATABASE_URL not set - /inventory and telemetry storage are unavailable. "
                 "See services/api/.env.example."
             )
     except Exception:
@@ -143,6 +144,7 @@ app.include_router(incidents_manager_router)
 app.include_router(incidents_router)
 app.include_router(inventory_router)
 app.include_router(telemetry_router)
+app.include_router(telemetry_report_router)
 
 
 @app.get("/", tags=["health"])

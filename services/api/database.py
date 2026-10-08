@@ -175,12 +175,12 @@ def reset_db() -> None:
 
 
 # ===========================================================================
-# Inventory — the second database connection (Milestone 5)
+# PostgreSQL/Supabase — the second database connection
 #
 # Two stores, used deliberately:
 #
 #   TinyDB (above)   users, auth, profiles, suppliers, incidents
-#   Supabase (here)  SKUs and stock movements — the inventory domain
+#   Supabase (here)  SKUs, stock movements, and append-only telemetry
 #
 # They never mix. The inventory tables hold `user_uuid` as a plain string
 # pointing at a TinyDB user id; no account data is copied into Postgres.
@@ -189,7 +189,7 @@ def reset_db() -> None:
 # this module would require DATABASE_URL to be set and Supabase to be
 # reachable before *any* endpoint could serve — including the auth routes
 # that have nothing to do with inventory. Lazy construction keeps the
-# rest of the service working when the inventory database is unavailable,
+# rest of the service working when the PostgreSQL database is unavailable,
 # and keeps the existing test suite runnable without Postgres.
 # ===========================================================================
 
@@ -236,7 +236,7 @@ def inventory_engine() -> Engine:
 
 
 def create_inventory_schema() -> bool:
-    """Create the inventory tables if they do not exist.
+    """Create the inventory and telemetry tables if they do not exist.
 
     Called once on application startup. Returns False when DATABASE_URL
     is absent so startup can log it and carry on rather than refusing to
