@@ -28,6 +28,7 @@ from routers.inventory import router as inventory_router
 from routers.profiles import router as profiles_router
 from routers.suppliers import router as suppliers_router
 from routers.telemetry import router as telemetry_router
+from routers.telemetry_report import router as telemetry_report_router
 from routers.users import router as users_router
 
 logger = logging.getLogger("trackflow.api")
@@ -143,6 +144,7 @@ app.include_router(incidents_manager_router)
 app.include_router(incidents_router)
 app.include_router(inventory_router)
 app.include_router(telemetry_router)
+app.include_router(telemetry_report_router)
 
 
 @app.get("/", tags=["health"])

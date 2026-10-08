@@ -4,6 +4,30 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-07 · Technical telemetry report
+
+**Branch:** `codex/telemetry-technical-report`
+
+- Added the independently packaged read-only Pandas analysis at the rubric's
+  exact `services/telemetry/analysis.py` path and authenticated cached
+  `GET /telemetry/report` in the existing FastAPI app.
+- Four metrics cover event volume, error-event share, API latency and login
+  failure rate. Every metric uses SQL event-type/time bounds, UTC conversion,
+  vectorised aggregation and JSON-safe output; no business KPIs or dashboard.
+- Added 19 meaningful SQL/Pandas/date/cache/auth tests. Independent OpenAI/Sol
+  review found an extreme-date UTC overflow; fixed and independently reverified.
+  Full API suite:381 passed. JS/TS tests:96 passed; typechecks/builds, UI lint,
+  repository Ruff, formatting and production npm audit also passed.
+- Real local Chromium generated login and inventory activity; authenticated
+  report, cache repeat,401 and422 behavior passed. Supabase remains signed out,
+  so live prerequisite/report evidence is still blocked, not fabricated.
+- This branch includes verified storage29 as a prerequisite. Keep the report
+  PR draft until29 lands and real Supabase evidence/current CI are complete.
+- Traceability: `DOC-1`, `MONO-2`; see exact rubric mapping in
+  `docs/telemetry/report-submission-review.md`.
+
+---
+
 ## 2026-10-07 · Independent storage review and prerequisite integration
 
 **Branch:** `codex/telemetry-event-storage`

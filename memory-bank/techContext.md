@@ -117,3 +117,12 @@ npm run typecheck
 npm run test
 npm run build
 ```
+
+## Technical reporting extension (2026-10-07)
+
+- `services/telemetry` is a local editable Python dependency of the existing
+  API, not a new HTTP service. It owns Pandas technical metrics; `uv.lock`
+  records Pandas/NumPy and supported Python-version resolution.
+- `GET /telemetry/report` uses existing authentication and a bounded per-worker
+  60-second monotonic cache. Business pipeline outputs remain a separate later
+  design; no technical report rewrite or frontend dependency is introduced.

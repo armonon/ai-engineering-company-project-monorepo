@@ -1,0 +1,14 @@
+[project]
+name = "trackflow-telemetry"
+version = "0.1.0"
+description = "Read-only TrackFlow technical telemetry analysis"
+requires-python = ">=3.11"
+dependencies = ["pandas>=2.2,<4", "sqlalchemy>=2.0,<3"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["telemetry"]
+package-dir = { telemetry = "." }
