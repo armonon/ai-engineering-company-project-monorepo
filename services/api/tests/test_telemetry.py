@@ -6,6 +6,7 @@ import logging
 from collections.abc import Iterator
 from decimal import Decimal
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -277,9 +278,7 @@ def test_table_has_the_required_columns_and_indexes(api: TestClient) -> None:
         "ix_telemetry_events_event_type",
         "ix_telemetry_events_tags_gin",
     }
-    assert indexes["ix_telemetry_events_tags_gin"].dialect_options["postgresql"][
-        "using"
-    ] == "gin"
+    assert indexes["ix_telemetry_events_tags_gin"].dialect_options["postgresql"]["using"] == "gin"
 
 
 def test_phase_two_telemetry_event_model_is_reused_unchanged() -> None:
@@ -305,6 +304,148 @@ def test_backend_reads_telemetry_endpoint_from_environment(
 
     monkeypatch.setenv("TELEMETRY_ENDPOINT", "https://events.internal.example/v1")
     assert telemetry_endpoint() == "https://events.internal.example/v1"
+
+
+@pytest.mark.parametrize("warehouse", ["los_angeles", "zaragoza"])
+@pytest.mark.parametrize("event_type", ["inbound_order_created", "outbound_order_created"])
+def test_business_events_preserve_company_dimensions(
+    api: TestClient,
+    warehouse: str,
+    event_type: str,
+) -> None:
+    properties = {
+        "warehouse": warehouse,
+        "client_id": "client_test",
+        "product_id": "CLT-SNK-W-42" if warehouse == "los_angeles" else "CLT-SNK-W-42-Z",
+        "product_category": "fashion",
+        "quantity": 3,
+        "order_id": "order_test",
+    }
+    if event_type == "outbound_order_created":
+        properties["exit_type"] = "dispatch"
+    response = api.post(
+        "/telemetry/events",
+        json={"events": [telemetry_event(event_type=event_type, properties=properties)]},
+    )
+    assert response.json() == {"received": 1, "stored": 1, "rejected": 0}
+    row = stored_rows()[0]
+    assert row.event_type == event_type
+    assert row.service == "backoffice"
+    assert row.value == Decimal("3")
+    assert {key: row.tags[key] for key in properties} == properties
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("duration_ms", -1),
+        ("duration_ms", True),
+        ("duration_ms", "47"),
+        ("duration_ms", 1.5),
+        ("slo_exceeded", 1),
+        ("method", "TRACE"),
+        ("endpoint_template", ""),
+    ],
+)
+def test_invalid_property_values_do_not_discard_valid_siblings(
+    api: TestClient,
+    field: str,
+    value: object,
+) -> None:
+    invalid = api_latency_event()
+    invalid["properties"] = {**invalid["properties"], field: value}
+    response = api.post(
+        "/telemetry/events",
+        json={"events": [telemetry_event(), invalid]},
+    )
+    assert response.json() == {"received": 2, "stored": 1, "rejected": 1}
+    assert [row.event_type for row in stored_rows()] == ["page_viewed"]
+
+
+@pytest.mark.parametrize("status_code", [399, 600])
+def test_error_status_range_is_enforced(api: TestClient, status_code: int) -> None:
+    properties = {
+        "service": "trackflow_api",
+        "endpoint_template": "/inventory/products",
+        "method": "GET",
+        "status_code": status_code,
+        "error_code": "REQUEST_FAILED",
+        "duration_ms": 0,
+        "retryable": False,
+    }
+    response = api.post(
+        "/telemetry/events",
+        json={"events": [telemetry_event(event_type="api_error_returned", properties=properties)]},
+    )
+    assert response.json() == {"received": 1, "stored": 0, "rejected": 1}
+    assert stored_rows() == []
+
+
+def test_pattern_uuid_and_version_failures_are_rejected_per_event(api: TestClient) -> None:
+    invalid_hash = telemetry_event(
+        event_type="login_failed",
+        properties={
+            "auth_method": "password",
+            "reason_code": "invalid_credentials",
+            "attempt_number": 1,
+            "principal_hash": "not-a-pseudonym",
+        },
+    )
+    invalid_uuid = telemetry_event(
+        event_type="workflow_started",
+        properties={
+            "workflow_name": "inventory_inbound",
+            "flow_instance_id": "not-a-uuid",
+            "entry_point": "navigation",
+        },
+    )
+    response = api.post(
+        "/telemetry/events",
+        json={
+            "events": [
+                invalid_hash,
+                invalid_uuid,
+                telemetry_event(schemaVersion="2.0.0"),
+                telemetry_event(),
+            ]
+        },
+    )
+    assert response.json() == {"received": 4, "stored": 1, "rejected": 3}
+    assert len(stored_rows()) == 1
+
+
+def test_empty_batch_does_not_create_rows(api: TestClient) -> None:
+    response = api.post("/telemetry/events", json={"events": []})
+    assert response.status_code == 200
+    assert response.json() == {"received": 0, "stored": 0, "rejected": 0}
+    assert stored_rows() == []
+
+
+def test_failed_bulk_insert_rolls_back_every_row_and_session_recovers(
+    api: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A real database constraint failure must not leave an accepted prefix."""
+    import database
+    from routers import telemetry
+    from schemas import TelemetryEvent
+
+    duplicate_id = uuid4()
+    monkeypatch.setattr(telemetry, "uuid4", lambda: duplicate_id)
+    events = [
+        TelemetryEvent.model_validate(telemetry_event()),
+        TelemetryEvent.model_validate(api_latency_event()),
+    ]
+
+    from sqlalchemy.exc import IntegrityError
+
+    with Session(database.inventory_engine()) as session:
+        with pytest.raises(IntegrityError):
+            telemetry.persist_telemetry_events(session, events, received=2, rejected=0)
+        assert list(session.exec(select(TelemetryEventRecord)).all()) == []
+        receipt = telemetry.persist_telemetry_events(session, events[:1], received=1, rejected=0)
+        assert receipt.stored == 1
+    assert len(stored_rows()) == 1
 
 
 def test_login_and_me_return_the_same_non_identifying_user_id(

@@ -4,6 +4,29 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-07 · Telemetry storage submission review
+
+**Branch:** `codex/telemetry-event-storage`
+
+- Rechecked the official storage rubric and TrackFlow telemetry context;
+  added exact rubric-to-file traceability and an honest evidence handoff in
+  `docs/telemetry/storage-submission-review.md` (`DOC-1`).
+- Extended storage tests for both warehouses' inbound/outbound dimensions,
+  per-event property type/range/enum/pattern/UUID/version failures, empty
+  batches, and real database rollback/recovery after a bulk-insert failure.
+- No runtime model, frontend source, dependency, or database schema changes.
+- Kept PR #29 draft: Supabase sign-in is required for its real Table Editor
+  screenshot. Historical live evidence is not presented as a fresh check.
+- Recorded existing production dependency-audit and incident-analyzer lint
+  blockers separately, rather than mixing maintenance into this storage PR.
+- Fresh checks passed: 96 JS/TS tests, 361 API tests (35 telemetry cases),
+  typechecking, all production builds, UI lint and API lint. Real local
+  Chromium login/inbound/outbound flows persisted technical/business events;
+  the mixed batch returned 2 received, 1 stored, 1 rejected. Supabase evidence
+  remains distinct from this isolated SQLite verification.
+
+---
+
 ## 2026-09-23 · Persistent telemetry storage
 
 **Branch:** `codex/telemetry-event-storage`
