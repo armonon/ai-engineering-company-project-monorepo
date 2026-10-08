@@ -23,6 +23,25 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-07 · Weekly warehouse/client business pipeline design
+
+**Branch:** `milestone-6-business-pipeline-design`
+
+- Added design-only assignment at `data/pipelines/PIPELINE_DESIGN.md` after complete official rubric
+  and scoped context review. No ETL code, migrations, live writes or schedules.
+- Exact rubric mapping, source/destination contracts, update/dedup behavior,
+  failure recovery, observability and scoped concurrency decisions are explicit.
+- Independent OpenAI/Sol review findings were fixed and re-reviewed: Veridian
+  cross-batch publication locking; business source-idempotency/retry contract
+  clearly labelled a future, separately reviewed ingestion change.
+- Existing monorepo checks passed unchanged runtime code:96 JS/TS tests and335
+  API tests, typechecking and all production builds. Only generated tsconfig
+  rewrites were restored. No automated ETL test/code claims for a design task.
+- Traceability: `DOC-1`; purpose and complete assignment mapping live in the
+  design document. No new repository or canonical company-context changes.
+
+---
+
 ## 2026-10-07 · Coursework verification maintenance
 
 **Branch:** `codex/coursework-verification-maintenance`
