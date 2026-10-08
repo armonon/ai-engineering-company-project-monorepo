@@ -10,7 +10,7 @@
 | Package linking          | Workspace protocol (`"@trackflow/business-logic": "*"`) | Backoffice imports the package by name; no relative `../` reach across `uis/`. |
 | Node                     | **≥ 20.9**                            | Next.js 16 minimum, enforced by the root `engines`.          |
 | Backend services         | **FastAPI**                            | Central API under `services/api`, managed with `uv`.          |
-| Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers existing local data; inventory uses PostgreSQL/Supabase. |
+| Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers auth/local data; inventory and append-only telemetry use PostgreSQL/Supabase. |
 | Coursework agent         | **OpenClaw 2026.7.1+**                 | Dedicated agent uses this repository as its workspace.       |
 | CI                       | **GitHub Actions**                     | PRs and `main` run bootstrap, typecheck, JS/Python tests, builds, and production audit. |
 | Local containers         | **Docker Compose**                     | One UI container (website + backoffice) and one reloadable FastAPI container. |
@@ -30,7 +30,7 @@
 ./uis/website/                   — public corporate Next.js site
 ./uis/backoffice/                — internal Next.js app, imports @trackflow/business-logic
 ./uis/talent-pipeline-tracker/    — recruiting workflow UI
-./services/api/                  — FastAPI auth, incidents, suppliers, and inventory
+./services/api/                  — FastAPI auth, incidents, suppliers, inventory, and telemetry storage
 ./docker-compose.yml             — two-service local development environment
 ./skills/                        — OpenClaw-visible reusable coursework skills
 ```
@@ -81,6 +81,10 @@
 - **UI linting uses native flat configs.** Next.js 16's exported configs are
   spread directly into each `eslint.config.mjs`; `FlatCompat` must not wrap
   them.
+- **Telemetry ingestion is partially accepting and append-only.** The outer
+  batch is loose, each item is validated against the unchanged envelope model
+  and approved catalogue, and all valid rows use one PostgreSQL bulk insert.
+  No update/delete path exists for historical events.
 
 ## Known technical debt
 

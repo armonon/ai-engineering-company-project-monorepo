@@ -311,14 +311,20 @@ uv run pytest
 reset/change, 39 for the supplier directory, and 7 for incident
 analysis.
 
-## Telemetry verification receiver
+## Telemetry storage
 
-`POST /telemetry/events` is the Phase 2 non-persistent stub. It accepts
-`{"events": [...]}`, validates every standard envelope, logs only the batch
-count and `event_type` labels, and returns `{"received": N}`. It never logs
-event properties or writes them to a database. The future target is declared
-with `TELEMETRY_ENDPOINT` in the untracked `.env` file so Phase 3 can replace
-the implementation without changing browser callers.
+`POST /telemetry/events` is the persistent Phase 3 receiver. It accepts the
+same `{"events": [...]}` browser envelope, parses every item separately with
+the unchanged `TelemetryEvent` model, enforces the event-specific catalogue,
+and writes all valid siblings to Supabase/PostgreSQL with one bulk insert. It
+returns `{"received": N, "stored": M, "rejected": R}`; one invalid item does
+not cancel the batch. Event properties and rejected payloads are never logged.
+
+The `telemetry_events` table is append-only, has timestamp and event-type
+indexes plus a JSONB GIN index, and is created from SQLModel metadata on
+startup. The matching idempotent SQL migration lives at
+`migrations/20260923_create_telemetry_events.sql`. The public target remains
+declared with `TELEMETRY_ENDPOINT`, so no frontend configuration changed.
 
 Authentication responses also include an HMAC-pseudonymised
 `telemetry_user_id`. Set a dedicated `TELEMETRY_HMAC_KEY` in `.env`; raw TinyDB

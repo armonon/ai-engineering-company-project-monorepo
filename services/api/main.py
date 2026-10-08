@@ -35,7 +35,7 @@ logger = logging.getLogger("trackflow.api")
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    """Startup: make sure the inventory tables exist in Supabase.
+    """Startup: make sure the inventory and telemetry tables exist in Supabase.
 
     Deliberately non-fatal when DATABASE_URL is absent. The inventory
     routes will fail loudly on use, but auth, suppliers and incidents —
@@ -50,10 +50,10 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     try:
         if create_inventory_schema():
-            logger.info("Inventory schema ready in Supabase")
+            logger.info("Inventory and telemetry schema ready in Supabase")
         else:
             logger.warning(
-                "DATABASE_URL not set - /inventory routes are unavailable. "
+                "DATABASE_URL not set - /inventory and telemetry storage are unavailable. "
                 "See services/api/.env.example."
             )
     except Exception:
