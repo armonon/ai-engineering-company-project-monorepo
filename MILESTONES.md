@@ -51,5 +51,5 @@ corresponding 4Geeks assignment identifies the required deliverable.
 Run the read-only OpenClaw audit whenever the branch map needs checking:
 
 ```bash
-node skills/coursework-repository-audit/scripts/audit.mjs
+COURSEWORK_REPO=. node ../4geeks-coursework-agent/.openclaw/skills/coursework-repository-audit/scripts/audit.mjs
 ```

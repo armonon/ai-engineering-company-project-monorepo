@@ -7,7 +7,7 @@ This folder contains **agent skills** (reusable capabilities) that help you work
 
 Coursework operations currently include read-only skills for milestone branch
 auditing, 4Geeks authentication, project status, pending work, and progress.
-See [`OPENCLAW.md`](../OPENCLAW.md) for the dedicated agent setup.
+The coursework agent and its 4Geeks skills moved to [4geeks-coursework-agent](https://github.com/armonon/4geeks-coursework-agent).
 
 > _Spanish version: [README.es.md](./README.es.md)._
 

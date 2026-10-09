@@ -26,17 +26,8 @@ The bundled `incidents-trackflow.csv` is the 100-row sample from the
 syllabus. Expected values are documented in `CONTEXT.md`
 (§ Data Distribution).
 
-## Read-only 4Geeks status scripts
+## 4Geeks coursework scripts
 
-Copy `.env.example` to the ignored `.env` file and add the student token,
-then run any of these from the repository root:
-
-```bash
-node scripts/verify-4geeks-session.mjs
-node scripts/query-4geeks-projects.mjs
-node scripts/query-4geeks-pending.mjs
-node scripts/query-4geeks-progress.mjs
-```
-
-The shared `4geeks-client.mjs` performs authenticated GET requests only and
-does not print the token or personal profile fields.
+Moved to [4geeks-coursework-agent](https://github.com/armonon/4geeks-coursework-agent) — they query the
+4Geeks student API and belong with the agent that calls them, not with
+TrackFlow's build tooling.
