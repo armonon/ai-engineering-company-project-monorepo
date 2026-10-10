@@ -10,7 +10,7 @@
 | Package linking          | Workspace protocol (`"@trackflow/business-logic": "*"`) | Backoffice imports the package by name; no relative `../` reach across `uis/`. |
 | Node                     | **≥ 20.9**                            | Next.js 16 minimum, enforced by the root `engines`.          |
 | Backend services         | **FastAPI**                            | Central API under `services/api`, managed with `uv`.          |
-| Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers existing local data; inventory uses PostgreSQL/Supabase. |
+| Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers auth/local data; inventory and append-only telemetry use PostgreSQL/Supabase. |
 | Coursework agent         | **OpenClaw 2026.7.1+**                 | Dedicated agent uses this repository as its workspace.       |
 | CI                       | **GitHub Actions**                     | PRs and `main` run bootstrap, typecheck, JS/Python tests, builds, and production audit. |
 | Local containers         | **Docker Compose**                     | One UI container (website + backoffice) and one reloadable FastAPI container. |
@@ -28,9 +28,9 @@
 ./.openclaw/                     — allowlisted public warehouse-agent deliverables
 ./packages/business-logic/       — Milestone 2 TypeScript module (freight quote)
 ./uis/website/                   — public corporate Next.js site
-./uis/backoffice/                — internal Next.js app, imports @trackflow/business-logic
-./uis/talent-pipeline-tracker/    — recruiting workflow UI
-./services/api/                  — FastAPI auth, incidents, suppliers, and inventory
+./uis/backoffice/                — unified internal app: operations, inventory, talent, suppliers
+./uis/talent-pipeline-tracker/    — historical Milestone 3 submission workspace
+./services/api/                  — FastAPI auth, incidents, suppliers, inventory, and telemetry storage
 ./docker-compose.yml             — two-service local development environment
 ./skills/                        — OpenClaw-visible reusable coursework skills
 ```
@@ -61,8 +61,9 @@
    the website and backoffice on ports 3000 and 3001 through `uis/start.sh`;
    the backend image runs the centralized FastAPI app on port 8000. Compose
    bind mounts source for hot reload and keeps dependencies/data in named
-   volumes. Browser requests use the same-origin `/trackflow-api` path; the
-   backoffice Next.js server proxies it to the `backend` service name.
+  volumes. Browser requests use the same-origin `/trackflow-api` and
+  `/talent-api` paths; the backoffice Next.js server proxies them to the local
+  backend and the 4Geeks Talent Tracker respectively.
 
 ## Active technical constraints
 
@@ -81,15 +82,20 @@
 - **UI linting uses native flat configs.** Next.js 16's exported configs are
   spread directly into each `eslint.config.mjs`; `FlatCompat` must not wrap
   them.
+- **Telemetry ingestion is partially accepting and append-only.** The outer
+  batch is loose, each item is validated against the unchanged envelope model
+  and approved catalogue, and all valid rows use one PostgreSQL bulk insert.
+  No update/delete path exists for historical events.
 
 ## Known technical debt
 
-- No shared UI kit; `uis/website` and `uis/backoffice` each duplicate
-  a `Button` component. The talent tracker is the third UI, but extraction is
-  deferred until the components share an actual API instead of only a name.
-- The warehouse-agent brief is versioned, but its authenticated transcript
-  remains intentionally absent until a real operative account and live
-  inventory API are available. It must never be fabricated.
+- No shared UI kit; `uis/website`, the cumulative backoffice, and the retained
+  Milestone 3 snapshot still own their presentation components independently.
+  Do not extract a component library until the interfaces actually converge.
+- The warehouse agent is proven locally with an authenticated operative and a
+  real acceptance transcript. Its private `.env`, OpenAI state, and session
+  log remain outside Git; only the public contract and visible transcript are
+  versioned.
 - Milestones 7 and 8 and the warehouse agent's official milestone number
   remain unmapped until the 4Geeks project pages provide their identifiers.
 
@@ -113,3 +119,12 @@ npm run typecheck
 npm run test
 npm run build
 ```
+
+## Technical reporting extension (2026-10-07)
+
+- `services/telemetry` is a local editable Python dependency of the existing
+  API, not a new HTTP service. It owns Pandas technical metrics; `uv.lock`
+  records Pandas/NumPy and supported Python-version resolution.
+- `GET /telemetry/report` uses existing authentication and a bounded per-worker
+  60-second monotonic cache. Business pipeline outputs remain a separate later
+  design; no technical report rewrite or frontend dependency is introduced.

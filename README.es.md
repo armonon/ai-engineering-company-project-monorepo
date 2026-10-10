@@ -22,7 +22,7 @@ Este repositorio es la fuente canónica del proyecto transversal de **TrackFlow*
 - Lee [`MILESTONES.md`](./MILESTONES.md) antes de elegir una rama.
 - Trata [`CONTEXT.md`](./CONTEXT.md) como contexto compartido y respeta los contextos específicos documentados para cada proyecto.
 - Usa [`AGENTS.md`](./AGENTS.md), `skills/` y los `README.md` por carpeta como guía de trabajo.
-- Usa [`OPENCLAW.md`](./OPENCLAW.md) para el agente dedicado al curso.
+- El agente del curso vive en su propio repositorio: [4geeks-coursework-agent](https://github.com/armonon/4geeks-coursework-agent).
 
 ---
 

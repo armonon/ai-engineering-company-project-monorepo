@@ -2,6 +2,68 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-10 · Account-wide agent integration
+
+Reconciled telemetry storage and authenticated technical reporting with current main,
+preserving the newer pipeline design documents and dependency maintenance.
+The combined follow-up also integrates warehouse-agent and talent workflows,
+keeps telemetry navigation/packaging intact, extracts the coursework steward to
+its existing dedicated repository, and applies the pending PyJWT/js-yaml updates.
+Final local workspace typechecks, 101 JS tests, 384 API tests and all production
+builds passed. Live PostgreSQL migration/deployment is not claimed.
+Traceability: DOC-1, MONO-2; the existing telemetry capture/storage plan.
+
+
+---
+
+## 2026-10-07 · Technical telemetry report
+
+**Branch:** `codex/telemetry-technical-report`
+
+- Added the independently packaged read-only Pandas analysis at the rubric's
+  exact `services/telemetry/analysis.py` path and authenticated cached
+  `GET /telemetry/report` in the existing FastAPI app.
+- Four metrics cover event volume, error-event share, API latency and login
+  failure rate. Every metric uses SQL event-type/time bounds, UTC conversion,
+  vectorised aggregation and JSON-safe output; no business KPIs or dashboard.
+- Added 19 meaningful SQL/Pandas/date/cache/auth tests. Independent OpenAI/Sol
+  review found an extreme-date UTC overflow; fixed and independently reverified.
+  Full API suite:381 passed. JS/TS tests:96 passed; typechecks/builds, UI lint,
+  repository Ruff, formatting and production npm audit also passed.
+- Real local Chromium generated login and inventory activity; authenticated
+  report, cache repeat,401 and422 behavior passed. Supabase remains signed out,
+  so live prerequisite/report evidence is still blocked, not fabricated.
+- This branch includes verified storage29 as a prerequisite. Keep the report
+  PR draft until29 lands and real Supabase evidence/current CI are complete.
+- Traceability: `DOC-1`, `MONO-2`; see exact rubric mapping in
+  `docs/telemetry/report-submission-review.md`.
+
+---
+
+## 2026-10-07 · Independent storage review and prerequisite integration
+
+**Branch:** `codex/telemetry-event-storage`
+
+- Independent OpenAI/Sol review cleared maintenance PR #33, now merged into
+  main as `d60df41`; synchronized that base while preserving both progress
+  histories and the storage milestone's zero-frontend-diff boundary.
+- Fixed the storage review's deployment finding: `services/Dockerfile` now
+  copies the approved telemetry catalogue to its required runtime path.
+- Added a regression exercising real ingestion against catalogue packaging
+  derived from Docker COPY entries; removing the COPY reproduces the missing
+  file failure. All 36 telemetry cases passed independent re-review.
+- Final local gates passed: 96 JS/TS tests, 362 API tests, 10 analyzer tests,
+  typechecks, all production builds, UI lint, repository Ruff and changed-test
+  formatting. Production npm audit: zero vulnerabilities.
+- Fresh production-browser verification passed login, inbound and outbound
+  workflows with 14 new events across eight types, zero page errors, and
+  mixed-batch receipt 2/1/1 with exactly one matching row. This is isolated
+  SQLite evidence, not a live Supabase claim.
+- No actual Docker execution is claimed; the host lacks a Docker runtime.
+  Supabase remains at trusted sign-in and the required live screenshot is
+  still outstanding. PR #29 remains draft until every evidence/check gate
+  is complete (`DOC-1`).
+
 ---
 
 ## 2026-10-07 · Veridian ETL design exercise
@@ -75,6 +137,51 @@ Traceability: `DOC-1`, `MONO-2`, and the existing tech-context requirement for
 one patched Next.js version across the three UIs.
 
 ---
+
+## 2026-10-07 · Telemetry storage submission review
+
+**Branch:** `codex/telemetry-event-storage`
+
+- Rechecked the official storage rubric and TrackFlow telemetry context;
+  added exact rubric-to-file traceability and an honest evidence handoff in
+  `docs/telemetry/storage-submission-review.md` (`DOC-1`).
+- Extended storage tests for both warehouses' inbound/outbound dimensions,
+  per-event property type/range/enum/pattern/UUID/version failures, empty
+  batches, and real database rollback/recovery after a bulk-insert failure.
+- No runtime model, frontend source, dependency, or database schema changes.
+- Kept PR #29 draft: Supabase sign-in is required for its real Table Editor
+  screenshot. Historical live evidence is not presented as a fresh check.
+- Recorded existing production dependency-audit and incident-analyzer lint
+  blockers separately, rather than mixing maintenance into this storage PR.
+- Fresh checks passed: 96 JS/TS tests, 361 API tests (35 telemetry cases),
+  typechecking, all production builds, UI lint and API lint. Real local
+  Chromium login/inbound/outbound flows persisted technical/business events;
+  the mixed batch returned 2 received, 1 stored, 1 rejected. Supabase evidence
+  remains distinct from this isolated SQLite verification.
+
+---
+
+## 2026-09-23 · Persistent telemetry storage
+
+**Branch:** `codex/telemetry-event-storage`
+
+- Replaced the temporary receiver with per-event partial validation and a
+  single bulk insert into the existing Supabase/PostgreSQL connection.
+- Added the eight-column append-only `telemetry_events` SQLModel table, UUID
+  database default, timestamp/event-type indexes, JSONB GIN index, constrained
+  service/severity values, and an idempotent SQL migration.
+- Reused the Phase 2 `TelemetryEvent` model unchanged and added a loose outer
+  batch model so one invalid item cannot make FastAPI reject valid siblings.
+- Revalidated every accepted event against the approved TrackFlow catalogue,
+  preserving only property allowlists and documented correlation tags.
+- Added regression coverage for mixed batches, whole-envelope 422 boundaries,
+  safe logging, exact storage mapping, the table/index contract, and exactly
+  one INSERT for a heterogeneous valid batch.
+- Kept the backoffice unchanged; the same URL and payload contract remain in
+  place.
+
+The mapping and operational handoff live in
+`docs/telemetry/storage-implementation.md` (`DOC-1`).
 
 ## 2026-09-02 · Backoffice telemetry event capture
 
@@ -704,3 +811,39 @@ Three consequential edits came with it:
 - Docker was not installed on the authoring machine, so image execution was
   not claimed. Static Dockerfile/Compose validation and the full repository
   typecheck, test, and build workflow are the available verification gates.
+
+## 2026-08-29 — Warehouse Steward acceptance proof
+
+- Added the dedicated public OpenClaw workspace under `.openclaw/`: Warehouse
+  Steward identity, six hard safety constraints, authenticated HTTP-only tool
+  contract, read-only `stock-check`, confirmation-gated `log-movement`, and a
+  shared Node adapter that never logs credentials or retries writes.
+- Registered the isolated `trackflow-warehouse` agent and verified the existing
+  OpenAI runtime with a real embedded turn. Private operative credentials stay
+  only in ignored `.openclaw/.env`; no bearer token is persisted.
+- Ran the documented seed command against the Docker API. That exposed three
+  real packaging omissions (`seed_inventory`, `routers*`, and `schemas`) in
+  `services/api/pyproject.toml`; fixed them and added regression tests for all
+  console-script imports.
+- Captured `.openclaw/TRANSCRIPT.md` from a real session: two white-sneaker
+  candidates were disambiguated, LA stock was freshly read as 145, a separately
+  confirmed 60-unit receipt produced movement 6 and stock 205, a declined loss
+  wrote nothing, and a 999-unit dispatch returned the API's exact HTTP 400
+  insufficient-stock message without a retry.
+- Independently checked the movement feed after the conversation: one matching
+  receipt exists, no declined serum loss exists, no refused tracking number
+  exists, and LA stock remains 205.
+
+## 2026-08-29 — Talent Pipeline consolidated into backoffice
+
+- Added a protected `Talent pipeline` section to the existing backoffice at
+  `/talent`, with the full Milestone 3 list/search/filter, register, detail,
+  edit, stage/status update, and internal-note workflows.
+- Kept candidate traffic isolated behind `lib/talent-api.ts` and a same-origin
+  `/talent-api` rewrite; it does not reuse the authenticated TrackFlow
+  inventory/auth base URL or depend on cross-origin browser policy.
+- Added focused tests for API URL normalization and candidate filter query
+  construction. Backoffice typecheck, 49 tests, and lint pass.
+- Preserved `milestone-3-talent-pipeline` and the historical standalone
+  workspace as assessment evidence while making the cumulative backoffice the
+  single current demo surface.

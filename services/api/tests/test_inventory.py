@@ -359,7 +359,7 @@ def test_no_user_table_exists_in_the_inventory_database(api: TestClient) -> None
     from sqlmodel import SQLModel
 
     tables = set(SQLModel.metadata.tables)
-    assert tables == {"sku", "stock_entry", "stock_exit"}
+    assert tables == {"sku", "stock_entry", "stock_exit", "telemetry_events"}
 
 
 # ---------------------------------------------------------------------------

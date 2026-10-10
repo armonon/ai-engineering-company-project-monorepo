@@ -1,3 +1,4 @@
 -e ../packages/incident_analyzer
 -e ../packages/shared
 -e ./api
+-e ./telemetry

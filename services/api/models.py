@@ -9,9 +9,14 @@ depend on these exact strings.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from enum import Enum
+from typing import Any
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
+from sqlalchemy import JSON, CheckConstraint, Column, DateTime, Index, Numeric, Text, text
+from sqlalchemy.dialects.postgresql import JSONB
 
 # ---------------------------------------------------------------------------
 # Enumerations — the closed value sets from CONTEXT.md
@@ -473,3 +478,66 @@ class StockExit(SQLModel, table=True):
     warehouse: Warehouse = SQLField(index=True)
     created_at: datetime = SQLField(default_factory=lambda: datetime.now(UTC))
     user_uuid: str = SQLField(index=True)
+
+
+# ===========================================================================
+# Telemetry storage (Phase 3)
+#
+# Telemetry shares the existing PostgreSQL/Supabase engine with inventory but
+# remains a separate, append-only domain. There are deliberately no update or
+# delete helpers/routes for this model: events are immutable facts.
+# ===========================================================================
+
+
+class TelemetryEventRecord(SQLModel, table=True):
+    """One persisted telemetry fact.
+
+    Fixed columns support the high-volume analytical filters used by the next
+    milestone. ``tags`` keeps only the event-specific property allowlist plus
+    the standard correlation fields; arbitrary payloads never reach it.
+    """
+
+    __tablename__ = "telemetry_events"
+    __table_args__ = (
+        CheckConstraint(
+            "service IN ('backoffice', 'api')",
+            name="ck_telemetry_events_service",
+        ),
+        CheckConstraint(
+            "level IN ('info', 'warn', 'error')",
+            name="ck_telemetry_events_level",
+        ),
+        Index("ix_telemetry_events_timestamp", "timestamp"),
+        Index("ix_telemetry_events_event_type", "event_type"),
+        Index(
+            "ix_telemetry_events_tags_gin",
+            "tags",
+            postgresql_using="gin",
+        ),
+    )
+
+    id: UUID = SQLField(
+        default_factory=uuid4,
+        primary_key=True,
+        sa_column_kwargs={"server_default": text("gen_random_uuid()")},
+    )
+    timestamp: datetime = SQLField(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    service: str = SQLField(sa_type=Text, nullable=False)
+    event_type: str = SQLField(sa_type=Text, nullable=False)
+    level: str = SQLField(
+        default="info",
+        sa_type=Text,
+        nullable=False,
+        sa_column_kwargs={"server_default": text("'info'")},
+    )
+    value: Decimal | None = SQLField(default=None, sa_type=Numeric)
+    message: str | None = SQLField(default=None, sa_type=Text)
+    tags: dict[str, Any] = SQLField(
+        sa_column=Column(
+            JSON().with_variant(JSONB, "postgresql"),
+            nullable=False,
+            server_default=text("'{}'"),
+        )
+    )

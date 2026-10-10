@@ -11,6 +11,7 @@ services:
       NEXT_PUBLIC_TELEMETRY_ENDPOINT: ${NEXT_PUBLIC_TELEMETRY_ENDPOINT:-/trackflow-api/telemetry/events}
       NEXT_PUBLIC_APP_RELEASE: ${NEXT_PUBLIC_APP_RELEASE:-development}
       TRACKFLOW_API_INTERNAL_URL: http://backend:8000
+      TALENT_API_INTERNAL_URL: ${TALENT_API_INTERNAL_URL:-https://playground.4geeks.com/tracker/api/v1}
     ports:
       - "3000:3000"
       - "3001:3001"

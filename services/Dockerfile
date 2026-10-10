@@ -9,9 +9,11 @@ RUN pip install --no-cache-dir uv
 
 COPY packages/incident_analyzer packages/incident_analyzer
 COPY packages/shared packages/shared
+COPY docs/telemetry/event-schemas.json docs/telemetry/event-schemas.json
 COPY scripts/seed_incidents.py scripts/incidents-trackflow.csv scripts/
 COPY services/requirements.txt services/requirements.txt
 COPY services/api services/api
+COPY services/telemetry services/telemetry
 
 WORKDIR /workspace/services
 RUN uv pip install --system -r requirements.txt
