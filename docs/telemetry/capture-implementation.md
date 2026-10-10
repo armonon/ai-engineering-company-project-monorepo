@@ -16,9 +16,11 @@ enter the queue. Rejected values are never written to the console.
 - Events flush as `{ "events": [...] }` every 10 seconds or at 20 queued events,
   whichever comes first. A failed batch gets three exponential-backoff retries.
 - A hidden or closing tab uses `navigator.sendBeacon` for its pending batch.
-- `POST /telemetry/events` validates the full envelope, logs only count and
-  `event_type` labels, returns `{ "received": N }`, and intentionally stores
-  nothing in this phase.
+- Phase 2 originally used a non-persistent verification stub. Phase 3 keeps the
+  same `POST /telemetry/events` URL and browser payload, validates each event
+  independently, bulk-inserts valid rows, and returns
+  `{ "received": N, "stored": M, "rejected": R }`. The frontend still uses
+  only the HTTP status and did not change for the storage substitution.
 
 ## Instrumentation map
 
@@ -68,7 +70,9 @@ identity stability, 20-event and 10-second flushes, allowlist rejection,
 three-retry backoff, `sendBeacon`, inventory audit non-mutation, direct-edit
 rejection, environment resolution, and governed inventory dimensions.
 
-The reproducible live transcript is recorded in
+The Phase 2 reproducible live transcript is recorded in
 [`capture-verification.txt`](capture-verification.txt): a real backoffice page
 queued `page_viewed`, the browser posted the batch after 10 seconds, and the
-local FastAPI stub responded HTTP 200 without logging properties.
+local FastAPI receiver responded HTTP 200 without logging properties. The
+Phase 3 database contract and verification are documented in
+[`storage-implementation.md`](storage-implementation.md).
