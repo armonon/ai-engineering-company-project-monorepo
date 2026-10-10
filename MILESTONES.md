@@ -22,6 +22,11 @@ The older `milestone-2-programming-fundamentals` branch is retained as
 the original draft. Use `milestone-2-fold-in` for the version integrated
 into the monorepo architecture.
 
+The Talent Pipeline Tracker's stable Milestone 3 submission remains on
+`milestone-3-talent-pipeline`. The cumulative company app now also exposes
+that complete workflow as the protected `/talent` section of
+`uis/backoffice`, so the assessment demo can stay in one backoffice.
+
 Both backend architecture and inventory ORM were genuinely assigned and
 merged under the label "Milestone 5" in different coursework sequences. Use
 the full branch name—not the number alone—when submitting or discussing one
@@ -51,5 +56,5 @@ corresponding 4Geeks assignment identifies the required deliverable.
 Run the read-only OpenClaw audit whenever the branch map needs checking:
 
 ```bash
-node skills/coursework-repository-audit/scripts/audit.mjs
+COURSEWORK_REPO=. node ../4geeks-coursework-agent/.openclaw/skills/coursework-repository-audit/scripts/audit.mjs
 ```
