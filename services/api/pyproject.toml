@@ -21,6 +21,9 @@ dependencies = [
     "sqlmodel>=0.0.39",
     "psycopg2-binary>=2.9.12",
     "trackflow-telemetry",
+    "trackflow-pipeline",
+    "trackflow-process",
+    "trackflow-reporting",
 ]
 
 [project.scripts]
@@ -58,6 +61,9 @@ pythonpath = ["."]
 incident-analyzer = { path = "../../packages/incident_analyzer", editable = true }
 trackflow-shared = { path = "../../packages/shared", editable = true }
 trackflow-telemetry = { path = "../telemetry", editable = true }
+trackflow-pipeline = { path = "../../data/pipelines", editable = true }
+trackflow-process = { path = "../../data/process", editable = true }
+trackflow-reporting = { path = "../reporting", editable = true }
 
 [tool.ruff]
 extend-exclude = [".venv"]

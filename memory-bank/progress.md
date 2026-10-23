@@ -2,6 +2,28 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-23 · Milestone 6 resilient business performance pipeline
+
+**Branch:** `milestone-6-resilient-pipeline`
+
+- Implemented the approved TrackFlow Prefect 3 flow with independent extract,
+  cached transform, atomic/idempotent load, durable run metadata, database
+  retries, and an optional evaluation snapshot invoked with `return_state=True`.
+- Added the pure four-event transformation and exact weekly warehouse/client
+  KPI grain from the TrackFlow briefing; conflicting logical duplicates and
+  malformed mandatory dimensions fail publication rather than becoming zeros.
+- Added the separate authenticated `services/reporting/` module with latest-run,
+  manager/admin manual-trigger, and exact KPI response-contract endpoints.
+- Added deterministic SQLite acceptance coverage for KPI definitions,
+  conflicting duplicates, repeat-run idempotency, optional-task failure, and
+  all three HTTP contracts. Container packaging and hot-reload mounts now carry
+  the pipeline/process/reporting modules without changing technical telemetry.
+- Updated all three Next.js apps and their lint configuration together from
+  16.3.8 to the non-breaking 16.4.3 security release; the final production and
+  development dependency audits report zero known vulnerabilities.
+- Traceability: `DOC-1`, `MONO-2`; `data/pipelines/PIPELINE_DESIGN.md` and the
+  official TrackFlow Business Performance Pipeline briefing.
+
 ## 2026-10-10 · Account-wide agent integration
 
 Reconciled telemetry storage and authenticated technical reporting with current main,

@@ -25,6 +25,10 @@ services/api/data/
 .coverage.*
 htmlcov/
 
+# Pipeline run artefacts are reproducible and may contain internal identifiers.
+data/raw/pipeline-runs/
+data/eval/pipeline-runs/
+
 # OpenClaw local memory and private workspace context
 /USER.md
 /MEMORY.md

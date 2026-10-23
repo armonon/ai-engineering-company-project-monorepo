@@ -5,12 +5,13 @@
 | Layer                    | Choice                                | Notes                                                        |
 | ------------------------ | ------------------------------------- | ------------------------------------------------------------ |
 | Package manager          | **npm** (workspaces)                  | One root `package.json` declares workspaces under `packages/*`, `uis/*`. |
-| Frontend framework       | **Next.js 16.3.8** (App Router) + React 19 | Website, backoffice, and talent tracker share one patched major. |
+| Frontend framework       | **Next.js 16.4.3** (App Router) + React 19 | Website, backoffice, and talent tracker share one patched major. |
 | Business-logic package   | **TypeScript** (`tsc` builds to `dist/`) | `packages/business-logic`, pure functions, unit-tested with `node --test`. |
 | Package linking          | Workspace protocol (`"@trackflow/business-logic": "*"`) | Backoffice imports the package by name; no relative `../` reach across `uis/`. |
 | Node                     | **≥ 20.9**                            | Next.js 16 minimum, enforced by the root `engines`.          |
 | Backend services         | **FastAPI**                            | Central API under `services/api`, managed with `uv`.          |
 | Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers auth/local data; inventory and append-only telemetry use PostgreSQL/Supabase. |
+| Business pipeline        | **Prefect 3 + SQLAlchemy**              | Resilient weekly warehouse/client KPI ETL with cached pure transforms and idempotent reporting upserts. |
 | Coursework agent         | **OpenClaw 2026.7.1+**                 | Dedicated agent uses this repository as its workspace.       |
 | CI                       | **GitHub Actions**                     | PRs and `main` run bootstrap, typecheck, JS/Python tests, builds, and production audit. |
 | Local containers         | **Docker Compose**                     | One UI container (website + backoffice) and one reloadable FastAPI container. |
@@ -31,6 +32,9 @@
 ./uis/backoffice/                — unified internal app: operations, inventory, talent, suppliers
 ./uis/talent-pipeline-tracker/    — historical Milestone 3 submission workspace
 ./services/api/                  — FastAPI auth, incidents, suppliers, inventory, and telemetry storage
+./services/reporting/            — authenticated pipeline status, trigger, and KPI endpoints
+./data/pipelines/                — Prefect business pipeline, queries, and reporting schema
+./data/process/                  — pure reusable business-event transformation
 ./docker-compose.yml             — two-service local development environment
 ./skills/                        — OpenClaw-visible reusable coursework skills
 ```

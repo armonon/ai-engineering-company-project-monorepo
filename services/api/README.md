@@ -27,6 +27,23 @@ uv run uvicorn main:app --reload
 
 Swagger UI: <http://127.0.0.1:8000/docs>
 
+## Business reporting pipeline
+
+The Prefect 3 implementation lives under `data/pipelines/`, with reusable pure
+transformation code under `data/process/`. Its HTTP boundary is the independent
+`services/reporting/` package mounted by this API:
+
+| Method | Endpoint | Access |
+| --- | --- | --- |
+| `GET` | `/reporting/pipeline-runs/latest` | authenticated |
+| `POST` | `/reporting/pipeline-runs` | manager or admin |
+| `GET` | `/reporting/weekly-warehouse-client-performance` | authenticated |
+
+The pipeline uses the existing `DATABASE_URL`, reads `telemetry_events`
+read-only, and writes only to the dedicated `reporting` schema. Run it directly
+from the repository root with
+`services/api/.venv/bin/python data/pipelines/pipeline.py`.
+
 
 ## Authentication
 
@@ -307,9 +324,8 @@ Carried over from the previous milestone, now mounted as a router:
 uv run pytest
 ```
 
-169 tests — 52 for the incident manager, 51 for auth, 20 for password
-reset/change, 39 for the supplier directory, and 7 for incident
-analysis.
+389 tests cover authentication, inventory, suppliers, incidents, telemetry
+capture/storage/reporting, and the business-performance pipeline contracts.
 
 ## Telemetry storage
 
