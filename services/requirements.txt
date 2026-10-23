@@ -2,3 +2,6 @@
 -e ../packages/shared
 -e ./api
 -e ./telemetry
+-e ../data/process
+-e ../data/pipelines
+-e ./reporting

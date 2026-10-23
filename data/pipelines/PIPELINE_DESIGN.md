@@ -1,7 +1,9 @@
 # TrackFlow — Weekly Warehouse & Client Performance Pipeline
 
-Design phase only (Milestone 6, Part 1 of 3). No orchestration code, new table,
-endpoint or schedule is deployed by this document.
+Originally approved in Milestone 6 Part 1; implemented in Part 2 by
+`data/pipelines/pipeline.py`, the pure transformation in `data/process/`, and
+the authenticated `services/reporting/` endpoints. A production schedule is
+documented here but is not activated by this repository.
 
 Sources, read in full 2026-10-07:
 - [Official design assignment](https://github.com/4GeeksAcademy/ai-engineering-syllabus/blob/main/content/projects/ai-eng-milestone-data-pipeline-design/README.md).
@@ -13,21 +15,18 @@ Sources, read in full 2026-10-07:
 ## 1. Current State and Business Gap
 
 The accepted capture milestone instruments 23 event types via the existing
-backoffice and `POST /telemetry/events`. Storage PR #29 (`cfc11a6`) replaces the
-stub with per-event validation, bulk append-only storage and correlation tags
-in `public.telemetry_events`. It is reviewed and CI-green, **not yet merged**;
-its required real Supabase screenshot still needs trusted login. Historical
-verification found 34 rows of nine types; this design does not assert a fresh
-live audit or complete business coverage from that historical sample.
+backoffice and `POST /telemetry/events`. Storage PR #29 and the later integration
+PR #37 are merged: per-event validation, bulk append-only storage, correlation
+tags, and authenticated technical reporting now live on `main`. Historical
+verification found live Supabase events, but this document does not reinterpret
+that sample as proof of complete business coverage for an arbitrary report week.
 
-The next report branch, `codex/telemetry-technical-report`, implements four
-technical metrics in `services/telemetry/analysis.py`: events/day/type,
+The technical report implements four metrics in
+`services/telemetry/analysis.py`: events/day/type,
 error-event share/day/service, latency/day/endpoint and login-failure share/day,
 served by authenticated `GET /telemetry/report` with 60-second in-memory cache.
-That implementation is in review, not accepted main. Its local SQL/Pandas tests
-are not evidence of a live business report. This design can be reviewed from
-main independently; implementation must consume the verified prerequisite
-schema after its delivery gates clear.
+It remains independent from this business report. Local SQL/Pandas tests are
+not evidence of live business KPI publication.
 
 Those technical metrics help engineering debug the system. They do not answer
 Thomas's or Ana's weekly question: how much each client's warehouse received,
@@ -44,7 +43,7 @@ Frequency and Discrepancy Rate from `inbound_order_created`,
 `outbound_order_created`, `stock_threshold_triggered` and
 `inventory_discrepancy_detected`, grouped by UTC ISO week, warehouse and client.**
 
-Schedule proposal for implementation: Monday 05:00 UTC, with a 06:00 UTC
+Intended production schedule: Monday 05:00 UTC, with a 06:00 UTC
 freshness target and alert if no successful publication by then. The completed
 week is `[previous Monday 00:00 UTC, current Monday 00:00 UTC)`. This explicit
 UTC contract matches CONTEXT; warehouse-local dates do not redefine buckets.
@@ -52,7 +51,10 @@ Default scheduled recomputation covers that completed week plus the previous
 three completed weeks (28-day late-arrival lookback). Older late corrections
 require explicit backfill. The exact operational alert target is a proposed
 service target; weekly Monday freshness is the actual assignment requirement.
-No schedule is activated in this design milestone.
+No schedule is activated in this implementation milestone; the flow is ready
+for a later Prefect deployment. Run it from the repository root with
+`services/api/.venv/bin/python data/pipelines/pipeline.py` (optionally add
+`--week-start YYYY-MM-DD` for a completed UTC ISO week).
 
 ## 3. Extraction Format, Types and Coverage
 

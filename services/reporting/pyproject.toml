@@ -1,0 +1,20 @@
+[project]
+name = "trackflow-reporting"
+version = "0.1.0"
+description = "FastAPI endpoints for TrackFlow's business reporting pipeline"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "trackflow-pipeline>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["reporting"]
+package-dir = { reporting = "." }
+
+[tool.uv.sources]
+trackflow-pipeline = { path = "../../data/pipelines", editable = true }

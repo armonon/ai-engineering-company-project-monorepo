@@ -44,6 +44,9 @@ services:
       - ./services/api:/workspace/services/api
       - ./packages/incident_analyzer:/workspace/packages/incident_analyzer
       - ./packages/shared:/workspace/packages/shared
+      - ./data/process:/workspace/data/process
+      - ./data/pipelines:/workspace/data/pipelines
+      - ./services/reporting:/workspace/services/reporting
       - api_data:/workspace/services/api/data
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=2)"]

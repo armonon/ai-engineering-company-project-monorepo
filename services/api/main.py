@@ -20,6 +20,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from reporting import router as reporting_router
 
 from routers.auth import router as auth_router
 from routers.incidents import router as incidents_router
@@ -96,6 +97,7 @@ def allowed_origins() -> list[str]:
         raise RuntimeError("ALLOWED_ORIGINS must list explicit browser origins, never '*'.")
     return origins
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins(),
@@ -103,6 +105,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
@@ -122,9 +125,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     So: the real exception is logged with its traceback here, and the
     client gets a fixed, structured, human-readable body.
     """
-    logger.exception(
-        "Unhandled exception on %s %s", request.method, request.url.path, exc_info=exc
-    )
+    logger.exception("Unhandled exception on %s %s", request.method, request.url.path, exc_info=exc)
     return JSONResponse(
         status_code=500,
         content={
@@ -145,6 +146,7 @@ app.include_router(incidents_router)
 app.include_router(inventory_router)
 app.include_router(telemetry_router)
 app.include_router(telemetry_report_router)
+app.include_router(reporting_router)
 
 
 @app.get("/", tags=["health"])

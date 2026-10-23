@@ -1,0 +1,23 @@
+[project]
+name = "trackflow-pipeline"
+version = "0.1.0"
+description = "Resilient TrackFlow weekly warehouse/client performance pipeline"
+requires-python = ">=3.11"
+dependencies = [
+    "prefect>=3,<4",
+    "psycopg2-binary>=2.9.12",
+    "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0,<3",
+    "trackflow-process>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["trackflow_pipeline"]
+package-dir = { trackflow_pipeline = "." }
+
+[tool.uv.sources]
+trackflow-process = { path = "../process", editable = true }
