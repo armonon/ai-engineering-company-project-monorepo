@@ -10,10 +10,13 @@ This folder contains the evidence package for the 4Geeks project
 - OpenAI is available through the existing authenticated Codex provider.
 - The latest security audit reports no critical findings.
 - The secrets audit reports no plaintext, unresolved, or shadowed secrets.
+- Zapier MCP is OAuth-authorized and passes the OpenClaw connectivity probe.
+- Zapier exposes only the required Google Docs `Create Document From Text` and
+  Google Calendar `Create Detailed Event` actions for this project.
 
-The external integrations remain incomplete until the dedicated test accounts are
-authenticated. They must not be represented as complete before the end-to-end
-workflow has actually run.
+Telegram and the end-to-end workflow remain incomplete until the dedicated bot is
+connected and the real workflow has actually run. They must not be represented as
+complete before that verification.
 
 ## Final evidence checklist
 
