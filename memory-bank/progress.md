@@ -2,6 +2,26 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-26 · OpenClaw Telegram, Docs, and Calendar acceptance
+
+**Branch:** `codex/openclaw-connection`
+
+- Connected and paired the dedicated Telegram bot to the
+  `4geeks-coursework` agent without placing its credential in Git.
+- Authorized Zapier MCP and limited the enabled surface to Google Docs
+  Create Document From Text and Google Calendar Create Detailed Event.
+- Applied a model-scoped OpenClaw runtime policy for
+  `openai/gpt-5.6-sol`, then verified that Telegram-routed turns can use both
+  Zapier actions through the existing OpenAI OAuth profile.
+- Completed the real acceptance conversation: the agent requested all five
+  missing scheduling fields, created the TrackFlow review document, created a
+  confirmed 30-minute Calendar event, embedded the document link, and returned
+  the usable link in Telegram.
+- The secrets audit reports no plaintext, unresolved, or shadowed secrets.
+  Sanitized screenshot capture remains the only manual submission-evidence step.
+- Traceability: `DOC-1`; the official Connect Your Agent acceptance workflow
+  and `openclaw-connection/README.md`.
+
 ## 2026-10-26 · Python Todo List CLI
 
 **Branch:** `codex/todo-list-cli-python`

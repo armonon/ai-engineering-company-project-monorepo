@@ -6,6 +6,8 @@
 - The current security audit has no critical findings; the gateway remains bound to loopback.
 - Zapier MCP is OAuth-authorized and passes the OpenClaw connectivity probe.
 - Zapier exposes Google Docs Create Document From Text and Google Calendar Create Detailed Event.
-- The built-in Telegram plugin is enabled; a dedicated bot must still be connected before testing.
-- Final screenshots and these notes will be updated only after the real workflow is verified.
+- The dedicated Telegram bot is connected, paired, and routed to the `4geeks-coursework` agent.
+- Telegram turns use the model-scoped OpenClaw runtime so both approved Zapier actions are available.
+- The verified run asked for title, date, start time, duration, and timezone before creating anything.
+- Zapier created the TrackFlow review Doc and the confirmed October 27, 2026 Calendar event with the Doc link.
 
