@@ -290,7 +290,17 @@ under disjoint dispositions; business totals are checked separately.
 ## 9. Prefect Mapping and Configuration
 
 Main flow: `weekly_warehouse_client_performance_flow(window_start, window_end)`
-in `data/pipelines/pipeline.py`. At least these tasks:
+in `data/pipelines/pipeline.py`. It composes three required subflows with
+explicit inputs and outputs:
+
+1. `extract_weekly_warehouse_client_events` — receives the UTC window and
+   returns the governed source event population.
+2. `transform_weekly_warehouse_client_kpis` — receives those events and returns
+   the validated, deduplicated KPI rows plus quality metadata.
+3. `load_weekly_warehouse_client_performance` — receives the run/window and
+   transformed output and returns the committed row count.
+
+The subflows retain independently testable tasks at their boundaries:
 
 1. `extract_business_events` — SQL scope, snapshot/manifest/checkpoint; transient
    database retry at most 3 attempts, exponential backoff/jitter.
@@ -298,13 +308,15 @@ in `data/pipelines/pipeline.py`. At least these tasks:
    validate, dedup, aggregate exact KPIs; deterministic, no database writes.
 3. `load_weekly_performance` — atomic replacement/upsert and run completion;
    reconcile uncertain COMMIT before retrying.
-4. `record_run_failure` / quality/checkpoint helpers — safe recovery metadata.
+4. `record_pipeline_run_failure` / quality/checkpoint helpers — safe recovery
+   metadata.
 
 Relevant Prefect states: Running while a task/flow executes; Completed only
 after durable publication; Failed after validation or exhausted retry. Retrying
-is not Completed. No second flow is required for this phase; later Part 3 will
-split stages into subflows while preserving the business contract. Script-based
-execution of `python data/pipelines/pipeline.py` is planned for implementation.
+is not Completed. The optional `write_weekly_performance_evaluation` subflow is
+invoked with `return_state=True`; its failure is reported without reversing a
+successful business publication. Direct script execution remains available via
+`python data/pipelines/pipeline.py`.
 
 Prefect blocks: a secret source connection (read-only telemetry privileges), a
 separate reporting-writer connection constrained to `reporting`, private raw
@@ -330,6 +342,12 @@ APIs isolated; Thomas/Ana's cross-client report is only for authorized TrackFlow
 internal operations. Inputs are validated/parameterized. No public report.
 If no week is published, return an explicit empty/not-ready result, never
 fabricated KPI rows. Prior completed data remains queryable after a later failure.
+
+The authenticated backoffice route `/reporting` consumes only the final KPI
+endpoint. It presents the completed UTC Monday-through-Sunday period, all five
+exact TrackFlow KPIs in nontechnical summary cards, and the approved
+warehouse/client grain in a detail table. It does not read `telemetry_events`,
+recompute business logic, or expose a public report.
 
 ## 11. Ten Failure/Design Questions Answered
 

@@ -307,6 +307,43 @@ def write_evaluation_snapshot(run_id: str, transformed: dict[str, Any]) -> str:
     return str(path)
 
 
+@flow(name="extract_weekly_warehouse_client_events")
+def extract_weekly_warehouse_client_events(
+    window_start: datetime,
+    window_end: datetime,
+) -> list[dict[str, Any]]:
+    """Extract the four governed business event types for one UTC window."""
+    return extract_business_events(window_start, window_end)
+
+
+@flow(name="transform_weekly_warehouse_client_kpis")
+def transform_weekly_warehouse_client_kpis(
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Validate, deduplicate, and aggregate TrackFlow's five exact KPIs."""
+    return transform_weekly_performance(events)
+
+
+@flow(name="load_weekly_warehouse_client_performance")
+def load_weekly_warehouse_client_performance(
+    run_id: str,
+    window_start: datetime,
+    window_end: datetime,
+    transformed: dict[str, Any],
+) -> int:
+    """Idempotently publish the absolute weekly warehouse/client rows."""
+    return load_weekly_performance(run_id, window_start, window_end, transformed)
+
+
+@flow(name="write_weekly_performance_evaluation")
+def write_weekly_performance_evaluation(
+    run_id: str,
+    transformed: dict[str, Any],
+) -> str:
+    """Run the optional local evaluation output outside the critical path."""
+    return write_evaluation_snapshot(run_id, transformed)
+
+
 @flow(name="weekly_warehouse_client_performance_flow", log_prints=True)
 def weekly_warehouse_client_performance_flow(
     window_start: datetime | None = None,
@@ -335,9 +372,14 @@ def weekly_warehouse_client_performance_flow(
     try:
         record_pipeline_run_start(run_id, window_start, window_end, trigger)
         started = True
-        extracted = extract_business_events(window_start, window_end)
-        transformed = transform_weekly_performance(extracted)
-        committed = load_weekly_performance(run_id, window_start, window_end, transformed)
+        extracted = extract_weekly_warehouse_client_events(window_start, window_end)
+        transformed = transform_weekly_warehouse_client_kpis(extracted)
+        committed = load_weekly_warehouse_client_performance(
+            run_id,
+            window_start,
+            window_end,
+            transformed,
+        )
     except Exception as exc:
         if started:
             # Persist only the exception class. Source payloads, SQL text, and
@@ -348,7 +390,7 @@ def weekly_warehouse_client_performance_flow(
     # This task is intentionally non-critical. Prefect returns a Failed state
     # instead of raising, and the already committed business publication stays
     # Completed even if the convenience snapshot cannot be written.
-    optional_state = write_evaluation_snapshot(
+    optional_state = write_weekly_performance_evaluation(
         run_id,
         transformed,
         return_state=True,

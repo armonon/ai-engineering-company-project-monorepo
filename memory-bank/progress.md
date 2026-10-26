@@ -887,3 +887,21 @@ Three consequential edits came with it:
 - Preserved `milestone-3-talent-pipeline` and the historical standalone
   workspace as assessment evidence while making the cumulative backoffice the
   single current demo surface.
+
+## 2026-10-26 — Milestone 6 Part 3 pipeline enhancement
+
+- Refactored the weekly warehouse/client pipeline into explicit Prefect
+  extraction, transformation, and load subflows with typed stage boundaries.
+  The optional evaluation snapshot is also a subflow and uses
+  `return_state=True`, so a convenience-artifact failure cannot invalidate a
+  successfully committed report.
+- Added database-free root tests for the pure TrackFlow transform, including
+  hand-calculated discrepancy-rate coverage, warehouse partitioning, stockout
+  counting, and malformed timestamp rejection.
+- Added the protected `/reporting` backoffice dashboard. It calls the existing
+  authenticated reporting endpoint, renders the completed UTC reporting
+  period and all five approved KPIs, and includes loading, empty, failure,
+  retry, summary, and warehouse/client detail states.
+- Kept `telemetry_events` and `services/telemetry/analysis.py` unchanged; the
+  dashboard reads only the reporting service and performs presentation-level
+  aggregation for its summary cards.
