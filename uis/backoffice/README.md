@@ -57,6 +57,7 @@ for the complete event-to-component map and privacy contract.
 - Freight quote calculator
 - Incident manager and incident analysis
 - Inventory products, receipts, dispatches, losses, and movement history
+- Weekly Warehouse & Client Performance reporting under `/reporting`
 - Talent Pipeline Tracker under `/talent`
 - Supplier directory
 - Profile, password recovery, and session management
@@ -82,6 +83,12 @@ at <http://localhost:3001>.
 
 All routes except authentication and password recovery require a TrackFlow
 account. Create one through `/register` or use an existing local account.
+
+The reporting dashboard consumes the authenticated
+`GET /reporting/weekly-warehouse-client-performance` endpoint. It shows the
+completed UTC reporting period and all five approved TrackFlow KPIs, both as
+stakeholder summary cards and by warehouse/client grain. It never queries the
+telemetry storage table directly.
 
 ## Environment
 

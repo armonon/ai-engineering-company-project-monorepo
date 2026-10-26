@@ -13,6 +13,7 @@ const NAV = [
   { href: "/backoffice/inventory/products", label: "Inventory" },
   { href: "/backoffice/inventory/orders", label: "Stock movements" },
   { href: "/backoffice/inventory/audit", label: "Inventory audit" },
+  { href: "/reporting", label: "Weekly reporting" },
   { href: "/talent", label: "Talent pipeline" },
   { href: "/suppliers", label: "Supplier directory" },
   { href: "/account/profile", label: "My profile" },

@@ -11,7 +11,7 @@
 | Node                     | **≥ 20.9**                            | Next.js 16 minimum, enforced by the root `engines`.          |
 | Backend services         | **FastAPI**                            | Central API under `services/api`, managed with `uv`.          |
 | Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers auth/local data; inventory and append-only telemetry use PostgreSQL/Supabase. |
-| Business pipeline        | **Prefect 3 + SQLAlchemy**              | Resilient weekly warehouse/client KPI ETL with cached pure transforms and idempotent reporting upserts. |
+| Business pipeline        | **Prefect 3 + SQLAlchemy**              | Three-stage weekly warehouse/client KPI subflows with cached pure transforms and idempotent reporting upserts. |
 | Coursework agent         | **OpenClaw 2026.7.1+**                 | Dedicated agent uses this repository as its workspace.       |
 | CI                       | **GitHub Actions**                     | PRs and `main` run bootstrap, typecheck, JS/Python tests, builds, and production audit. |
 | Local containers         | **Docker Compose**                     | One UI container (website + backoffice) and one reloadable FastAPI container. |
@@ -29,12 +29,13 @@
 ./.openclaw/                     — allowlisted public warehouse-agent deliverables
 ./packages/business-logic/       — Milestone 2 TypeScript module (freight quote)
 ./uis/website/                   — public corporate Next.js site
-./uis/backoffice/                — unified internal app: operations, inventory, talent, suppliers
+./uis/backoffice/                — unified internal app: operations, inventory, weekly reporting, talent, suppliers
 ./uis/talent-pipeline-tracker/    — historical Milestone 3 submission workspace
 ./services/api/                  — FastAPI auth, incidents, suppliers, inventory, and telemetry storage
 ./services/reporting/            — authenticated pipeline status, trigger, and KPI endpoints
 ./data/pipelines/                — Prefect business pipeline, queries, and reporting schema
 ./data/process/                  — pure reusable business-event transformation
+./tests/pipelines/               — database-free unit tests for business KPI transformation
 ./docker-compose.yml             — two-service local development environment
 ./skills/                        — OpenClaw-visible reusable coursework skills
 ```
