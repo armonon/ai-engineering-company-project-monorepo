@@ -1,0 +1,8 @@
+# Never place integration credentials in the coursework evidence folder.
+.env
+.env.*
+*token*
+*secret*
+*credential*
+auth/
+
