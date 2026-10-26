@@ -58,9 +58,10 @@ the created document link in its description.
 - [x] Zapier MCP exposes Google Docs create-document and Google Calendar create-event actions.
 - [x] The generated document and calendar event exist in the dedicated Google test account.
 - [x] `notes.md` contains five to ten accurate lines describing the completed setup.
-- [ ] Every screenshot is readable and contains no credential or personal-data leakage.
+- [x] Every screenshot is readable and contains no credential or personal-data leakage.
 
-The final checkbox remains a manual evidence-capture step because the screenshots
-must be cropped or blurred before they are committed. Runtime verification is
-complete; do not substitute unsanitized account screens for the required evidence.
+All five sanitized screenshots are committed beside this README. They show the
+connected Telegram channel, healthy Zapier MCP probe, completed Telegram workflow,
+verified Google Doc, and confirmed linked Calendar event without exposing account
+emails, personal names, credentials, tokens, or unrelated conversations.
 
