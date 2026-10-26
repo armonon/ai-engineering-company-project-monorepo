@@ -2,6 +2,24 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-26 · Python Todo List CLI
+
+**Branch:** `codex/todo-list-cli-python`
+
+- Added the official evaluator-facing `app.py` function contract under
+  `internal/todo-list-cli-python` so the introductory Python assignment stays
+  in the cumulative monorepo without being folded into an unrelated service.
+- Implemented standard-library-only add, positioned list, delete, CSV save,
+  CSV load, and interactive menu flows, including non-destructive validation
+  for empty titles and invalid positions.
+- Added isolated acceptance coverage for the complete rubric, the official
+  plain-line CSV fixture, CSV quoting, missing-file startup, and repeated use.
+- Verification passed the unmodified five-test course evaluator, eight local
+  CLI tests, 101 workspace tests, 389 API tests, all typechecks, and all
+  production builds.
+- Traceability: `DOC-1`; official 4Geeks Todo List CLI rubric and the
+  repository's documented `internal/` CLI boundary.
+
 ## 2026-10-23 · Milestone 6 resilient business performance pipeline
 
 **Branch:** `milestone-6-resilient-pipeline`
