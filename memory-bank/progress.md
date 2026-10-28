@@ -924,3 +924,16 @@ Three consequential edits came with it:
   A standalone SQLite demonstration produced one CSV row, completed the real
   Prefect subprocess, skipped the duplicate run, and persisted a forced second
   date as `failed` with no `processing` zombie.
+
+## 2026-10-28 — Triage Queue priority manager
+
+- Added the standard-library-only `internal/triage-queue` assignment with a
+  validated `Patient` model and a thread-safe `TriageQueue` heap.
+- Preserved strict clinical ordering: triage level 1 before 2 before 3, UTC
+  arrival order inside a level, and an enqueue sequence as the deterministic
+  tie-breaker for identical timestamps.
+- Implemented all five required queue operations, per-level statistics, clear
+  empty-queue errors, and an interactive menu that survives invalid input.
+- Documented heap efficiency and mutation-first concurrent ownership, with
+  acceptance coverage for priority, FIFO, snapshots, validation, CLI recovery,
+  and duplicate-free concurrent dequeues.
