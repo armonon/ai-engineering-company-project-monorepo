@@ -8,13 +8,14 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
 from trackflow_agent import AgentRuntime, CompanyToolsMCPClient, MemoryStore, build_graph
 
 from agent_observability import change_status, record_task, start_flow
 from database import inventory_engine
 from models import UserInDB
+from rate_limit import enforce_model_rate_limit
 from security import get_current_user
 
 logger = logging.getLogger("trackflow.agent")
@@ -48,7 +49,18 @@ runtime: AgentRuntime = build_graph(
 
 
 class AgentQuery(BaseModel):
-    question: str = Field(max_length=500)
+    question: str = Field(min_length=1, max_length=500)
+
+    @field_validator("question")
+    @classmethod
+    def sanitize_question(cls, value: str) -> str:
+        """Normalize whitespace and reject hidden control characters pre-model."""
+        cleaned = " ".join(value.split()).strip()
+        if not cleaned:
+            raise ValueError("question must contain visible text")
+        if any(ord(character) < 32 and character not in "\t\n\r" for character in value):
+            raise ValueError("question contains unsupported control characters")
+        return cleaned
 
 
 class AgentAnswer(BaseModel):
@@ -74,8 +86,9 @@ def query_agent(
     _caller: UserInDB = Depends(get_current_user),
 ) -> AgentAnswer:
     """Invoke the already-compiled graph; no orchestration belongs here."""
+    principal = f"{_caller.role.value}:{_caller.id}"
+    enforce_model_rate_limit(principal)
     try:
-        principal = f"{_caller.role.value}:{_caller.id}"
         result = runtime.invoke(payload.question, user_id=principal)
         try:
             with Session(inventory_engine()) as observation_session:
