@@ -1127,3 +1127,19 @@ Three consequential edits came with it:
 - Added fixed abuse fixtures covering three jailbreak variants, the required
   unauthorized order and policy-mixing cases, RAG poisoning, all output failure
   classes, legitimate domain use, and observable summary counts.
+
+## 2026-10-28 — Agentic RFP workflow Part 1: intake and routing
+
+- Added a dedicated `rfp_intake` LangGraph pipeline under `data/pipelines/`
+  with PDF-to-Markdown conversion before analysis, formal/informal RFP
+  classification, TrackFlow metadata extraction, deterministic readability
+  metrics, department orchestration, parallel workers, and synthesis.
+- Added PostgreSQL SQLModel entities for the continuous RFP ticket, metadata,
+  and department sections; runtime PDFs/Markdown are gitignored artifacts, not
+  the source of truth.
+- Added an asynchronous upload/polling API on the existing FastAPI service and
+  a protected backoffice RFP page that shows status, metadata, per-department
+  key aspects, open questions, and the fixed briefing owners.
+- Verified the three official briefing PDFs through MarkItDown: ModaViva routes
+  to warehouse/reverse in EUR, Luna Cosmetics to warehouse/last-mile in USD,
+  and the RapidShip carrier pitch is discarded.

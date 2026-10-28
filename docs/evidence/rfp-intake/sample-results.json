@@ -1,0 +1,32 @@
+{
+  "source": "official TrackFlow briefing PDFs processed locally through MarkItDown",
+  "results": [
+    {
+      "file": "trackflow-request-1.pdf",
+      "status": "intake_complete",
+      "client_name": "ModaViva, S.L.",
+      "client_country": "Spain",
+      "currency": "EUR",
+      "departments_needed": ["warehouse", "reverse"],
+      "contacts": ["Ana Whitfield", "Sofía Ramos"],
+      "estimated_tokens": 351
+    },
+    {
+      "file": "trackflow-request-2.pdf",
+      "status": "intake_complete",
+      "client_name": "Luna Cosmetics",
+      "client_country": "USA",
+      "currency": "USD",
+      "monthly_volume": 5000,
+      "departments_needed": ["warehouse", "lastmile"],
+      "contacts": ["Ana Whitfield", "Carlos Vega"],
+      "estimated_tokens": 176
+    },
+    {
+      "file": "trackflow-request-3.pdf",
+      "status": "discarded",
+      "reason": "supplier_pitch_not_client_rfp",
+      "departments_needed": []
+    }
+  ]
+}

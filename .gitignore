@@ -30,6 +30,8 @@ data/raw/pipeline-runs/
 data/eval/pipeline-runs/
 data/raw/telemetry_*.csv
 data/raw/.telemetry_*.tmp
+data/raw/*.pdf
+data/processed/rfp/
 
 # OpenClaw local memory and private workspace context
 /USER.md

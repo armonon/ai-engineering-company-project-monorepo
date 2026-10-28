@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Resilient TrackFlow weekly warehouse/client performance pipeline"
 requires-python = ">=3.11"
 dependencies = [
+    "langgraph>=1.2,<2",
+    "markitdown[pdf]>=0.1,<1",
     "prefect>=3.9,<4",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
@@ -16,8 +18,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["trackflow_pipeline"]
-package-dir = { trackflow_pipeline = "." }
+packages = ["trackflow_pipeline", "rfp_intake"]
+package-dir = { trackflow_pipeline = ".", rfp_intake = "rfp_intake" }
 
 [tool.uv.sources]
 trackflow-process = { path = "../process", editable = true }
