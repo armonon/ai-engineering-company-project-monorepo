@@ -40,6 +40,9 @@ services:
       TELEMETRY_ENDPOINT: ${TELEMETRY_ENDPOINT:-http://backend:8000/telemetry/events}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
+      COMPANY_MCP_URL: http://company-tools-mcp:8010/mcp
+      COMPANY_MCP_ACCESS_TOKEN: ${COMPANY_MCP_ACCESS_TOKEN:-}
+      COMPANY_MCP_TIMEOUT_SECONDS: ${COMPANY_MCP_TIMEOUT_SECONDS:-5}
     ports:
       - "8000:8000"
     volumes:
@@ -60,6 +63,28 @@ services:
       redis:
         condition: service_healthy
       qdrant:
+        condition: service_healthy
+    networks:
+      - trackflow
+
+  company-tools-mcp:
+    build:
+      context: .
+      dockerfile: mcps/company_tools/Dockerfile
+    env_file: .env
+    environment:
+      MCP_RESOURCE_URL: ${MCP_RESOURCE_URL:-http://localhost:8010/mcp}
+      MCP_AUTH_ISSUER: ${MCP_AUTH_ISSUER:-}
+      COMPANY_API_URL: http://backend:8000
+      COMPANY_API_TOKEN: ${COMPANY_API_TOKEN:-}
+      MCP_UPSTREAM_TIMEOUT_SECONDS: ${MCP_UPSTREAM_TIMEOUT_SECONDS:-4}
+      MCP_AUDIT_LOG: /app/data/company_tools_audit.jsonl
+    ports:
+      - "8010:8010"
+    volumes:
+      - mcp_audit_data:/app/data
+    depends_on:
+      backend:
         condition: service_healthy
     networks:
       - trackflow
@@ -140,3 +165,4 @@ volumes:
   api_data:
   redis_data:
   qdrant_data:
+  mcp_audit_data:
