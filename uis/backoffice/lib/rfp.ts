@@ -1,6 +1,14 @@
 import { authFetch, authJson, readApiError } from "@/lib/auth";
 
-export type RfpStatus = "analyzing" | "discarded" | "intake_complete";
+export type RfpStatus =
+  | "analyzing"
+  | "discarded"
+  | "intake_complete"
+  | "drafting"
+  | "under_evaluation"
+  | "needs_human_review"
+  | "waiting_for_approval"
+  | "done";
 
 export interface RfpMetadata {
   client_name: string;
@@ -18,6 +26,14 @@ export interface RfpSection {
   department_id: string;
   contact: string;
   key_aspects: string[];
+  draft_content: string | null;
+  evaluation_result: {
+    overall_pass: boolean;
+    readability: { pass: boolean; score: number; details: Record<string, unknown> };
+    relevance: { pass: boolean; missing_aspects: string[] };
+    compliance: { pass: boolean; rule_ids: string[]; violations: string[] };
+    feedback_for_generator: string;
+  } | null;
   approval_status: string;
 }
 
@@ -51,4 +67,16 @@ export function fetchRfpTickets(): Promise<RfpTicket[]> {
 
 export function fetchRfpTicket(ticketId: string): Promise<RfpTicket> {
   return authJson<RfpTicket>(`/rfp/tickets/${encodeURIComponent(ticketId)}`);
+}
+
+export async function startRfpGeneration(ticketId: string): Promise<{
+  ticket_id: string;
+  status: "drafting";
+}> {
+  const response = await authFetch(
+    `/rfp/tickets/${encodeURIComponent(ticketId)}/generate`,
+    { method: "POST" },
+  );
+  if (!response.ok) throw new Error(await readApiError(response));
+  return response.json();
 }
