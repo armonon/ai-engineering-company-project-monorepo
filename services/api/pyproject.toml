@@ -24,6 +24,7 @@ dependencies = [
     "trackflow-pipeline",
     "trackflow-process",
     "trackflow-reporting",
+    "trackflow-job-runner",
 ]
 
 [project.scripts]
@@ -64,6 +65,7 @@ trackflow-telemetry = { path = "../telemetry", editable = true }
 trackflow-pipeline = { path = "../../data/pipelines", editable = true }
 trackflow-process = { path = "../../data/process", editable = true }
 trackflow-reporting = { path = "../reporting", editable = true }
+trackflow-job-runner = { path = "../job_runner", editable = true }
 
 [tool.ruff]
 extend-exclude = [".venv"]

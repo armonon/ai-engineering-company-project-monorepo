@@ -17,6 +17,7 @@ COPY services/requirements.txt services/requirements.txt
 COPY services/api services/api
 COPY services/telemetry services/telemetry
 COPY services/reporting services/reporting
+COPY services/job_runner services/job_runner
 
 WORKDIR /workspace/services
 RUN uv pip install --system -r requirements.txt

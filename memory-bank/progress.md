@@ -900,8 +900,27 @@ Three consequential edits came with it:
   counting, and malformed timestamp rejection.
 - Added the protected `/reporting` backoffice dashboard. It calls the existing
   authenticated reporting endpoint, renders the completed UTC reporting
-  period and all five approved KPIs, and includes loading, empty, failure,
+  period and all four approved KPIs, and includes loading, empty, failure,
   retry, summary, and warehouse/client detail states.
 - Kept `telemetry_events` and `services/telemetry/analysis.py` unchanged; the
   dashboard reads only the reporting service and performs presentation-level
   aggregation for its summary cards.
+
+## 2026-10-28 — Background Processes nightly job
+
+- Added the independent `scripts/nightly_export.py` process. It resolves the
+  previous UTC calendar day (or `TARGET_DATE`), writes an atomic daily
+  `data/raw/telemetry_YYYY-MM-DD.csv` audit snapshot, and launches the existing
+  Milestone 6 Prefect pipeline as a subprocess rather than on FastAPI's thread.
+- Added the `services/job_runner` persistence boundary and PostgreSQL migration
+  for `job_runs`. The lifecycle is `pending → processing → completed | failed`;
+  the `processing` status and its partial unique index are the only distributed
+  lock, while `(job_name, target_date)` enforces per-day idempotency.
+- Added the UTC system-crontab configuration at
+  `infra/cron/trackflow-nightly-export.cron` (`0 2 * * *`). OS cron was chosen
+  to keep the job's execution and failure boundary independent from the API.
+- Added acceptance coverage for UTC date selection, filtered/atomic CSV output,
+  duplicate-day skipping, failure cleanup, and two simultaneous instances.
+  A standalone SQLite demonstration produced one CSV row, completed the real
+  Prefect subprocess, skipped the duplicate run, and persisted a forced second
+  date as `failed` with no `processing` zombie.
