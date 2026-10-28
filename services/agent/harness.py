@@ -36,6 +36,7 @@ class OutputGuardDecision:
 
 _INJECTION_PATTERNS = (
     re.compile(r"\bignore (?:all |any |your )?(?:previous|prior|system) instructions?\b", re.I),
+    re.compile(r"\bignore (?:all |any )?your instructions?\b", re.I),
     re.compile(r"\b(?:act|behave|respond) as (?:if )?(?:you |an? )?.*\bno rules?\b", re.I),
     re.compile(r"\bforget (?:that you work for|about) trackflow\b", re.I),
     re.compile(

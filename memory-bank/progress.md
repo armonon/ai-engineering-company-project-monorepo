@@ -1207,3 +1207,16 @@ Three consequential edits came with it:
 - Replaced informational action labels with status-aware backoffice controls and
   added tests for checkpoint persistence, exact resume, terminal cancel, invalid
   transitions, two-client pub/sub, recovery, and audit identity.
+
+## 2026-10-28 — Secure practices for AI integration
+
+- Completed the TrackFlow AI inventory with owners, vendor/TrackFlow control
+  boundaries, GDPR and CCPA/CPRA scope, and external-input data-flow map.
+- Added authenticated per-principal rate limiting to the model-backed support
+  endpoint, including a verifiable HTTP 429 response and `Retry-After` header.
+- Tightened pre-model input validation and documented the existing immutable
+  system/user boundary, read-only typed tools, deny-by-default order access,
+  indirect-context isolation, output leakage checks, and decision traces.
+- Added reproducible direct and indirect prompt-injection tests grounded in the
+  TrackFlow briefing, plus the complete six-function NIST roadmap and incident
+  response/recovery priorities.
