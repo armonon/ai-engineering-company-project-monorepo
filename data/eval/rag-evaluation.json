@@ -1,0 +1,132 @@
+{
+  "metric": "Recall@3",
+  "query_count": 12,
+  "hits": 12,
+  "recall_at_3": 1.0,
+  "required_minimum": 0.8,
+  "passed": true,
+  "evaluation_encoder": "offline TF-IDF char n-gram substitute (CI evidence only)",
+  "runtime_embedding_model": "downtown-miami/openrouter/perplexity/pplx-embed-v1-0.6b",
+  "results": [
+    {
+      "question": "How long does standard domestic shipping take?",
+      "source_document": "trackflow-sla-delivery.en.md",
+      "retrieved_sources": [
+        "trackflow-sla-delivery.en.md",
+        "trackflow-returns-policy.en.md",
+        "trackflow-storage-pricing.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Can I promise express delivery during Black Friday?",
+      "source_document": "trackflow-sla-delivery.en.md",
+      "retrieved_sources": [
+        "trackflow-sla-delivery.en.md",
+        "trackflow-sla-delivery.en.md",
+        "trackflow-carrier-coverage.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "What compensation applies after two months below the on-time SLA?",
+      "source_document": "trackflow-sla-delivery.en.md",
+      "retrieved_sources": [
+        "trackflow-sla-delivery.en.md",
+        "trackflow-storage-pricing.en.md",
+        "trackflow-carrier-coverage.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "How many days does a customer normally have to return an order?",
+      "source_document": "trackflow-returns-policy.en.md",
+      "retrieved_sources": [
+        "trackflow-returns-policy.en.md",
+        "trackflow-sla-delivery.en.md",
+        "trackflow-returns-policy.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Can an international return be processed automatically?",
+      "source_document": "trackflow-returns-policy.en.md",
+      "retrieved_sources": [
+        "trackflow-returns-policy.en.md",
+        "trackflow-returns-policy.en.md",
+        "trackflow-storage-pricing.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Who pays return shipping when TrackFlow delivered the wrong product?",
+      "source_document": "trackflow-returns-policy.en.md",
+      "retrieved_sources": [
+        "trackflow-returns-policy.en.md",
+        "trackflow-returns-policy.en.md",
+        "trackflow-sla-delivery.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Which carrier is best for a heavy package in the United States?",
+      "source_document": "trackflow-carrier-coverage.en.md",
+      "retrieved_sources": [
+        "trackflow-carrier-coverage.en.md",
+        "trackflow-carrier-coverage.en.md",
+        "trackflow-carrier-coverage.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Can an account manager manually choose a carrier?",
+      "source_document": "trackflow-carrier-coverage.en.md",
+      "retrieved_sources": [
+        "trackflow-carrier-coverage.en.md",
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "What is the monthly Zaragoza storage rate per cubic meter?",
+      "source_document": "trackflow-storage-pricing.en.md",
+      "retrieved_sources": [
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md",
+        "trackflow-sla-delivery.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "When does the long-term inventory surcharge begin?",
+      "source_document": "trackflow-storage-pricing.en.md",
+      "retrieved_sources": [
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Who must approve a preferential storage price?",
+      "source_document": "trackflow-storage-pricing.en.md",
+      "retrieved_sources": [
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md"
+      ],
+      "hit_at_3": true
+    },
+    {
+      "question": "Can clients obtain an inventory aging report automatically?",
+      "source_document": "trackflow-storage-pricing.en.md",
+      "retrieved_sources": [
+        "trackflow-storage-pricing.en.md",
+        "trackflow-storage-pricing.en.md",
+        "trackflow-returns-policy.en.md"
+      ],
+      "hit_at_3": true
+    }
+  ]
+}

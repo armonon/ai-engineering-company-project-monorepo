@@ -1,0 +1,14 @@
+[
+  {"question": "How long does standard domestic shipping take?", "source_document": "trackflow-sla-delivery.en.md"},
+  {"question": "Can I promise express delivery during Black Friday?", "source_document": "trackflow-sla-delivery.en.md"},
+  {"question": "What compensation applies after two months below the on-time SLA?", "source_document": "trackflow-sla-delivery.en.md"},
+  {"question": "How many days does a customer normally have to return an order?", "source_document": "trackflow-returns-policy.en.md"},
+  {"question": "Can an international return be processed automatically?", "source_document": "trackflow-returns-policy.en.md"},
+  {"question": "Who pays return shipping when TrackFlow delivered the wrong product?", "source_document": "trackflow-returns-policy.en.md"},
+  {"question": "Which carrier is best for a heavy package in the United States?", "source_document": "trackflow-carrier-coverage.en.md"},
+  {"question": "Can an account manager manually choose a carrier?", "source_document": "trackflow-carrier-coverage.en.md"},
+  {"question": "What is the monthly Zaragoza storage rate per cubic meter?", "source_document": "trackflow-storage-pricing.en.md"},
+  {"question": "When does the long-term inventory surcharge begin?", "source_document": "trackflow-storage-pricing.en.md"},
+  {"question": "Who must approve a preferential storage price?", "source_document": "trackflow-storage-pricing.en.md"},
+  {"question": "Can clients obtain an inventory aging report automatically?", "source_document": "trackflow-storage-pricing.en.md"}
+]

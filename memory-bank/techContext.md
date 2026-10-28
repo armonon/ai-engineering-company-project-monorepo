@@ -105,6 +105,11 @@
   fold verifies chronology and causal feature provenance before fitting; the
   2024-2025 holdout is reserved for confirmation after a corrective change is
   selected.
+- **RAG is evidence-only and uses distinct models.** Approved Markdown is
+  embedded into the `trackflow_knowledge` Qdrant collection; retrieval uses a
+  dedicated embedding model and generation uses a different chat model. A
+  missing or low-score context must never fall back to an ungrounded policy
+  answer, and provider credentials remain only in ignored environment files.
 
 ## Known technical debt
 
