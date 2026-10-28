@@ -28,6 +28,8 @@ htmlcov/
 # Pipeline run artefacts are reproducible and may contain internal identifiers.
 data/raw/pipeline-runs/
 data/eval/pipeline-runs/
+data/raw/telemetry_*.csv
+data/raw/.telemetry_*.tmp
 
 # OpenClaw local memory and private workspace context
 /USER.md

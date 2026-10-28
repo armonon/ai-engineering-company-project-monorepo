@@ -5,3 +5,4 @@
 -e ../data/process
 -e ../data/pipelines
 -e ./reporting
+-e ./job_runner

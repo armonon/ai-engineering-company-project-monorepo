@@ -1,0 +1,3 @@
+# TrackFlow DEV-53 — system crontab format (UTC, including the service user).
+CRON_TZ=UTC
+0 2 * * * trackflow cd /srv/trackflow && /srv/trackflow/services/api/.venv/bin/python scripts/nightly_export.py >> /var/log/trackflow/nightly_export.log 2>&1

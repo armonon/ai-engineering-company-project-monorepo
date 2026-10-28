@@ -2,6 +2,26 @@
 
 Standalone scripts for TrackFlow runtime work and read-only coursework checks.
 
+## `nightly_export.py` — independent nightly telemetry job
+
+```bash
+services/api/.venv/bin/python scripts/nightly_export.py
+TARGET_DATE=2026-07-15 services/api/.venv/bin/python scripts/nightly_export.py
+```
+
+The script exports the selected UTC day from `telemetry_events` to the ignored
+`data/raw/telemetry_YYYY-MM-DD.csv` audit file, then launches the existing
+Milestone 6 pipeline as a subprocess. It records the full lifecycle in
+`job_runs`, uses `processing` as its only cross-process lock, and skips a date
+that is already `completed`.
+
+Production uses the checked-in system crontab at
+`infra/cron/trackflow-nightly-export.cron`: `0 2 * * *` in UTC. OS cron was
+chosen because the job must remain operationally independent from FastAPI; a
+framework scheduler in the API process would share its failure and restart
+boundary. Ensure `/var/log/trackflow` exists and install the crontab with the
+deployment configuration for the `trackflow` service account.
+
 ## `analyze.py` — Incident Report Analyser (Phase 1)
 
 ```bash
