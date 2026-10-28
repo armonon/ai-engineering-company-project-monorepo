@@ -12,6 +12,12 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from trackflow_pipeline.rag import NO_INFORMATION, generate_answer, retrieve
 
+from .harness import (
+    TicketAuthorizer,
+    classify_input,
+    isolate_external_context,
+    validate_output,
+)
 from .memory import MemoryStore, classify_decision, evaluate_memory_candidate
 from .tools import (
     IncidentReader,
@@ -43,6 +49,8 @@ class AgentState(TypedDict, total=False):
     error: str
     memory_decision_only: bool
     memory_decision: str
+    guard_action: str
+    guard_reason: str
 
 
 @dataclass(frozen=True)
@@ -64,6 +72,7 @@ class AgentRuntime:
         user_id: str = "anonymous",
     ) -> AgentRun:
         actual_run_id = run_id or str(uuid4())
+        self.traces.register_run(actual_run_id, user_id)
         final = self.graph.invoke(
             {"question": question, "run_id": actual_run_id, "user_id": user_id},
             config={"configurable": {"thread_id": actual_run_id}},
@@ -82,6 +91,7 @@ def build_graph(
     incident_reader: IncidentReader | None = None,
     inventory_reader: InventoryReader | None = None,
     memory_store: MemoryStore | None = None,
+    ticket_authorizer: TicketAuthorizer | None = None,
 ) -> AgentRuntime:
     """Define and compile the graph before any request can execute it."""
     traces = trace_store or TraceStore()
@@ -158,10 +168,46 @@ def build_graph(
         )
         return {"tool_context": context}
 
+    def input_guard_node(state: AgentState) -> AgentState:
+        decision = classify_input(
+            state["question"],
+            user_id=state["user_id"],
+            ticket_authorizer=ticket_authorizer,
+        )
+        output: AgentState = {
+            "guard_action": decision.action,
+            "guard_reason": decision.reason,
+        }
+        if decision.action != "allow":
+            answer = decision.response
+            if state.get("memory_decision"):
+                answer = f"{state['memory_decision']} {answer}"
+            output["answer"] = answer
+            traces.append(
+                state["run_id"],
+                "guardrail",
+                {
+                    "stage": "input",
+                    "action": decision.action,
+                    "reason": decision.reason,
+                    "failure_type": decision.failure_type,
+                },
+            )
+        else:
+            traces.append(
+                state["run_id"],
+                "input_guard",
+                {"action": "allow", "reason": decision.reason},
+            )
+        return output
+
     def route_node(state: AgentState) -> AgentState:
         question = state["question"]
         lowered = question.lower()
-        incident_signal = any(word in lowered for word in ("incident", "ticket", "case"))
+        incident_signal = any(
+            word in lowered
+            for word in ("incident", "ticket", "case", "order", "tracking", "shipment")
+        )
         inventory_signal = any(
             word in lowered for word in ("inventory", "stock", "sku", "units available")
         )
@@ -178,7 +224,8 @@ def build_graph(
             )
         )
         ticket_match = re.search(
-            r"(?:incident|ticket|case)\s*(?:id|number|#|no\.)?\s*[:#-]?\s*(\d+)",
+            r"(?:incident|ticket|case|order|tracking|shipment)"
+            r"\s*(?:id|number|#|no\.)?\s*[:#-]?\s*(\d+)",
             lowered,
         )
         ticket_id = int(ticket_match.group(1)) if ticket_match else 0
@@ -268,17 +315,19 @@ def build_graph(
         return {"context": context}
 
     def generate_node(state: AgentState) -> AgentState:
-        combined_context = [*state.get("tool_context", []), *state.get("context", [])]
+        combined_context = isolate_external_context(
+            [*state.get("tool_context", []), *state.get("context", [])]
+        )
         answer = generator(state["question"], combined_context)
-        traces.append(state["run_id"], "generate", {"answer": answer})
+        traces.append(state["run_id"], "generate", {"answer_length": len(answer)})
         if state.get("memory_decision"):
             answer = f"{state['memory_decision']} {answer}"
         return {"answer": answer}
 
     def tool_answer_node(state: AgentState) -> AgentState:
-        context = state.get("tool_context", [])
+        context = isolate_external_context(state.get("tool_context", []))
         if context:
-            answer = " ".join(str(item["text"]) for item in context)
+            answer = " ".join(str(item["text"]).partition("\n")[2] for item in context)
         elif state.get("route") == "incident":
             if state.get("ticket_id"):
                 answer = (
@@ -295,7 +344,7 @@ def build_graph(
         traces.append(
             state["run_id"],
             "tool_answer",
-            {"answer": answer, "used_live_context": bool(context)},
+            {"answer_length": len(answer), "used_live_context": bool(context)},
         )
         if state.get("memory_decision"):
             answer = f"{state['memory_decision']} {answer}"
@@ -312,6 +361,31 @@ def build_graph(
             answer = f"{state['memory_decision']} {answer}"
         traces.append(state["run_id"], "no_context", {"answer": answer})
         return {"answer": answer}
+
+    def output_guard_node(state: AgentState) -> AgentState:
+        decision = validate_output(state.get("answer"))
+        if not decision.allowed:
+            traces.append(
+                state["run_id"],
+                "guardrail",
+                {
+                    "stage": "output",
+                    "action": "block",
+                    "reason": decision.reason,
+                    "failure_type": decision.failure_type,
+                },
+            )
+        else:
+            traces.append(
+                state["run_id"],
+                "output_guard",
+                {
+                    "action": "allow",
+                    "reason": decision.reason,
+                    "answer": decision.response,
+                },
+            )
+        return {"answer": decision.response}
 
     def memory_review_node(state: AgentState) -> AgentState:
         """Evaluate after answering and request consent; never write here."""
@@ -348,10 +422,15 @@ def build_graph(
     def after_receive(state: AgentState) -> str:
         if state.get("error"):
             return "invalid_question"
-        return "memory_decision" if memories else "route"
+        return "memory_decision" if memories else "input_guard"
 
     def after_memory_decision(state: AgentState) -> str:
-        return END if state.get("memory_decision_only") else "memory_lookup"
+        return END if state.get("memory_decision_only") else "input_guard"
+
+    def after_input_guard(state: AgentState) -> str:
+        if state.get("guard_action") != "allow":
+            return END
+        return "memory_lookup" if memories else "route"
 
     def after_route(state: AgentState) -> str:
         if state.get("route") == "incident":
@@ -377,6 +456,7 @@ def build_graph(
     workflow.add_node("receive", receive_node)
     workflow.add_node("memory_decision", memory_decision_node)
     workflow.add_node("memory_lookup", memory_lookup_node)
+    workflow.add_node("input_guard", input_guard_node)
     workflow.add_node("route", route_node)
     workflow.add_node("ticket_lookup", incident_tool_node)
     workflow.add_node("inventory_lookup", inventory_tool_node)
@@ -385,6 +465,7 @@ def build_graph(
     workflow.add_node("tool_answer", tool_answer_node)
     workflow.add_node("invalid_question", invalid_question_node)
     workflow.add_node("no_context", no_context_node)
+    workflow.add_node("output_guard", output_guard_node)
     workflow.add_node("memory_review", memory_review_node)
     workflow.add_edge(START, "receive")
     workflow.add_conditional_edges(
@@ -392,14 +473,19 @@ def build_graph(
         after_receive,
         {
             "memory_decision": "memory_decision",
-            "route": "route",
+            "input_guard": "input_guard",
             "invalid_question": "invalid_question",
         },
     )
     workflow.add_conditional_edges(
         "memory_decision",
         after_memory_decision,
-        {"memory_lookup": "memory_lookup", END: END},
+        {"input_guard": "input_guard", END: END},
+    )
+    workflow.add_conditional_edges(
+        "input_guard",
+        after_input_guard,
+        {"memory_lookup": "memory_lookup", "route": "route", END: END},
     )
     workflow.add_edge("memory_lookup", "route")
     workflow.add_conditional_edges(
@@ -430,10 +516,11 @@ def build_graph(
         after_retrieve,
         {"generate": "generate", "no_context": "no_context"},
     )
-    workflow.add_edge("generate", "memory_review" if memories else END)
-    workflow.add_edge("tool_answer", "memory_review" if memories else END)
+    workflow.add_edge("generate", "output_guard")
+    workflow.add_edge("tool_answer", "output_guard")
     workflow.add_edge("invalid_question", END)
-    workflow.add_edge("no_context", "memory_review" if memories else END)
+    workflow.add_edge("no_context", "output_guard")
+    workflow.add_edge("output_guard", "memory_review" if memories else END)
     workflow.add_edge("memory_review", END)
 
     # Compilation validates the state machine before requests reach it.

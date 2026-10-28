@@ -6,6 +6,7 @@ import json
 import os
 import sqlite3
 import threading
+from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -41,6 +42,29 @@ class TraceStore:
                 )
                 """
             )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS agent_trace_runs (
+                    run_id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL
+                )
+                """
+            )
+
+    def register_run(self, run_id: str, user_id: str) -> None:
+        with self._lock, self._connect() as connection:
+            connection.execute(
+                "INSERT OR IGNORE INTO agent_trace_runs (run_id, user_id) VALUES (?, ?)",
+                (run_id, user_id),
+            )
+
+    def is_owner(self, run_id: str, user_id: str) -> bool:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT 1 FROM agent_trace_runs WHERE run_id = ? AND user_id = ?",
+                (run_id, user_id),
+            ).fetchone()
+        return row is not None
 
     def append(self, run_id: str, node: str, output: dict[str, Any]) -> None:
         """Append one sanitised node result without overwriting history."""
@@ -85,3 +109,19 @@ class TraceStore:
             }
             for row in rows
         ]
+
+    def guardrail_summary(self) -> dict[str, dict[str, int] | int]:
+        """Aggregate persisted block/redirect events without exposing prompts."""
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT output_json FROM agent_trace_events WHERE node = 'guardrail'"
+            ).fetchall()
+        events = [json.loads(row["output_json"]) for row in rows]
+        return {
+            "total": len(events),
+            "by_failure_type": dict(
+                Counter(str(event.get("failure_type") or "unknown") for event in events)
+            ),
+            "by_action": dict(Counter(str(event.get("action") or "unknown") for event in events)),
+            "by_reason": dict(Counter(str(event.get("reason") or "unknown") for event in events)),
+        }

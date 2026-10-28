@@ -1,6 +1,13 @@
 """TrackFlow LangGraph support agent."""
 
 from .graph import AgentRun, AgentRuntime, AgentState, build_graph
+from .harness import (
+    InputGuardDecision,
+    OutputGuardDecision,
+    classify_input,
+    isolate_external_context,
+    validate_output,
+)
 from .mcp_client import CompanyToolsMCPClient
 from .memory import (
     Decision,
@@ -27,18 +34,23 @@ __all__ = [
     "AgentState",
     "CompanyToolsMCPClient",
     "Decision",
+    "InputGuardDecision",
     "InventoryLookupInput",
     "InventoryLookupOutput",
     "InventoryProduct",
     "MemoryCandidate",
     "MemoryRecord",
     "MemoryStore",
+    "OutputGuardDecision",
     "PendingProposal",
     "TicketLookupInput",
     "TicketLookupOutput",
     "TraceStore",
     "build_graph",
     "classify_decision",
+    "classify_input",
     "contains_forbidden_memory",
     "evaluate_memory_candidate",
+    "isolate_external_context",
+    "validate_output",
 ]
