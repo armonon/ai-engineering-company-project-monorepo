@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AgentControlClient, ControlAction } from "@/lib/agent-control";
 import {
   AgentDetail,
   consumeObservationStream,
@@ -42,6 +43,9 @@ export function AgentObservability() {
   const [agentFilter, setAgentFilter] = useState("");
   const [flowFilter, setFlowFilter] = useState("");
   const [error, setError] = useState("");
+  const [controlStatus, setControlStatus] = useState("");
+  const [controlError, setControlError] = useState("");
+  const controlClient = useRef<AgentControlClient | null>(null);
 
   const loadAgents = useCallback(async () => {
     const values = await fetchObservedAgents();
@@ -83,6 +87,39 @@ export function AgentObservability() {
     }, controller.signal);
     return () => controller.abort();
   }, [loadAgents, selectedAgent]);
+
+  const activeFlowId = detail?.last_5_flows[0]?.flow_id ?? "";
+
+  useEffect(() => {
+    controlClient.current?.close();
+    controlClient.current = null;
+    if (!selectedAgent || !activeFlowId) return;
+    const client = new AgentControlClient(selectedAgent, activeFlowId, (event, data) => {
+      if (event === "control_state") {
+        setControlStatus(data.agent_status ?? "");
+        setControlError("");
+      } else if (event === "control_applied") {
+        setControlStatus(data.status ?? "");
+        setControlError("");
+        void loadAgents();
+        void fetchAgentDetail(selectedAgent).then(setDetail);
+      } else if (event === "control_error") {
+        setControlError(data.message ?? "The control action was rejected.");
+      }
+    });
+    controlClient.current = client;
+    client.connect();
+    return () => client.close();
+  }, [activeFlowId, loadAgents, selectedAgent]);
+
+  function control(action: ControlAction) {
+    try {
+      setControlError("");
+      controlClient.current?.send(action);
+    } catch (reason) {
+      setControlError(reason instanceof Error ? reason.message : "The control action failed.");
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -127,12 +164,15 @@ export function AgentObservability() {
               <h2 className="mt-1 text-xl font-semibold text-slate-950">{detail.name}</h2>
               <p className="mt-1 text-sm text-slate-600">{detail.owner_area}</p>
             </div>
-            <div className="flex flex-wrap gap-2" aria-label="Available actions, informational only">
-              {detail.available_actions.map((action) => (
-                <span key={action} className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600">
-                  {action} available
-                </span>
-              ))}
+            <div className="text-right">
+              <p className="text-xs text-slate-500">Operational control · {controlStatus || detail.status}</p>
+              <div className="mt-2 flex flex-wrap justify-end gap-2" aria-label="Agent operational controls">
+                <button type="button" onClick={() => control("pause")} disabled={!(["running", "waiting_for_human"].includes(controlStatus))} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold disabled:opacity-40">Pause</button>
+                <button type="button" onClick={() => control("resume")} disabled={controlStatus !== "paused"} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold disabled:opacity-40">Resume</button>
+                <button type="button" onClick={() => control("cancel")} disabled={!(["running", "paused", "waiting_for_human"].includes(controlStatus))} className="rounded-md border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 disabled:opacity-40">Cancel</button>
+              </div>
+              {controlStatus === "waiting_for_human" ? <p className="mt-2 text-xs text-violet-700">Waiting on business approval; operational controls remain separate.</p> : null}
+              {controlError ? <p role="alert" className="mt-2 text-xs text-red-700">{controlError}</p> : null}
             </div>
           </div>
 

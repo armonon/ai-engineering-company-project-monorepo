@@ -24,6 +24,7 @@ from reporting import router as reporting_router
 
 from routers.agent import router as agent_router
 from routers.auth import router as auth_router
+from routers.control import router as control_router
 from routers.incidents import router as incidents_router
 from routers.incidents_manager import router as incidents_manager_router
 from routers.inventory import router as inventory_router
@@ -159,6 +160,7 @@ app.include_router(reporting_router)
 app.include_router(tasks_router)
 app.include_router(rfp_router)
 app.include_router(observability_router)
+app.include_router(control_router)
 
 
 @app.get("/", tags=["health"])

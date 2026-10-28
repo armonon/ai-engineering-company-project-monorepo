@@ -682,6 +682,13 @@ class ObservedFlowAgent(SQLModel, table=True):
     flow_id: str = SQLField(foreign_key="observed_flows.flow_id", index=True)
     agent_id: str = SQLField(foreign_key="observed_agents.agent_id", index=True)
     status: str = SQLField(default="running", index=True)
+    checkpoint_data: dict[str, Any] | None = SQLField(
+        default=None,
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=True),
+    )
+    control_version: int = SQLField(default=0)
+    paused_at: datetime | None = None
+    cancelled_at: datetime | None = None
 
 
 class ObservedTask(SQLModel, table=True):
@@ -704,6 +711,7 @@ class ObservedTask(SQLModel, table=True):
         default_factory=dict,
         sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False),
     )
+    actor_id: str | None = SQLField(default=None, index=True)
     created_at: datetime = SQLField(default_factory=utcnow, index=True)
 
 

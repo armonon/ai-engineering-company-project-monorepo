@@ -1191,3 +1191,19 @@ Three consequential edits came with it:
 - Added automatic TrackFlow intervention rules, a live agent/flow/history panel,
   and tests for JWT protection, SSE shape, pagination, trace reconstruction,
   ordered flow participation, and both intervention thresholds.
+
+## 2026-10-28 — Real-time agent pause/resume/cancel controls
+
+- Added distinct resumable `paused` and terminal `cancelled` execution states,
+  atomic per-agent/flow transition locks, and monotonic control versions.
+- Reused the RFP workflow's existing LangGraph approval thread ids in operational
+  pause checkpoints; First-line CX uses a held-open chat checkpoint.
+- Added a JWT-authenticated WebSocket protocol whose actor id is derived only from
+  the token, plus subscribe/state recovery and multi-client `control_applied`
+  broadcasts.
+- Recorded every pause, resume, and cancel in the existing task chain with actor
+  and timestamp. Cancellation also updates the flow and cancels pending/running
+  child tasks while leaving unrelated agents and flows untouched.
+- Replaced informational action labels with status-aware backoffice controls and
+  added tests for checkpoint persistence, exact resume, terminal cancel, invalid
+  transitions, two-client pub/sub, recovery, and audit identity.
