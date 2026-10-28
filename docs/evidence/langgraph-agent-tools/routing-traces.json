@@ -1,0 +1,24 @@
+[
+  {
+    "question": "What is the status of ticket 482?",
+    "run_id": "ticket-tool-evidence",
+    "answer": "Incident 482: status=in_progress; category=delivery_delay; origin=customer; branch=los_angeles; updated_at=2026-10-28T19:45:00Z.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 33}},
+      {"sequence": 2, "node": "route", "output": {"has_ticket_id": true, "needs_inventory": false, "needs_rag": false, "primary_source": "incident"}},
+      {"sequence": 3, "node": "ticket_lookup", "output": {"error": null, "found": true, "read_only": true, "status": "in_progress", "ticket_id": 482, "timeout_seconds": 4.0}},
+      {"sequence": 4, "node": "tool_answer", "output": {"used_live_context": true}}
+    ]
+  },
+  {
+    "question": "What is the high-demand delivery policy?",
+    "run_id": "rag-routing-evidence",
+    "answer": "No SLA can be promised during high-demand dates; delivery may take 40% longer.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 40}},
+      {"sequence": 2, "node": "route", "output": {"has_ticket_id": false, "needs_inventory": false, "needs_rag": true, "primary_source": "rag"}},
+      {"sequence": 3, "node": "retrieve", "output": {"context_count": 1, "sources": [{"section": "High-demand dates", "source_document": "trackflow-sla-delivery.en.md"}]}},
+      {"sequence": 4, "node": "generate", "output": {"answer": "No SLA can be promised during high-demand dates; delivery may take 40% longer."}}
+    ]
+  }
+]

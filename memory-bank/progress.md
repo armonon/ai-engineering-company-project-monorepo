@@ -1058,3 +1058,19 @@ Three consequential edits came with it:
   final answer without storing provider secrets or raw vectors.
 - Added four graph tests, three offline trace evals, four API tests, and a real
   local Ollama/Qdrant trace proving the Black Friday answer remains grounded.
+
+## 2026-10-28 — LangGraph support agent, Part 2
+
+- Added typed, single-purpose ticket and inventory lookup contracts. The API
+  injects read-only access to the existing TinyDB incident repository and
+  SQLModel inventory repository, so no operational records are simulated or
+  copied into the agent package.
+- Added automatic question routing for RAG, incident lookups, inventory
+  lookups, and combined live-data-plus-policy questions. Ordered traces now
+  identify the selected source and every tool used.
+- Enforced a numeric four-second timeout on both live tools and explicit honest
+  fallbacks for timeouts, missing resources, unavailable services, and missing
+  ticket numbers.
+- Added focused routing, timeout, inventory, trace-eval, and API integration
+  coverage. Exported tool-only and RAG-only traces live under
+  `docs/evidence/langgraph-agent-tools/`.
