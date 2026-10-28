@@ -176,4 +176,4 @@ def test_compose_declares_shared_redis_worker_and_flower() -> None:
     assert "REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}" in compose
     assert "celery -A celery_app:celery_app worker" in compose
     assert "celery -A celery_app:celery_app flower --port=5555" in compose
-    assert '"5555:5555"' in compose
+    assert '"127.0.0.1:5555:5555"' in compose

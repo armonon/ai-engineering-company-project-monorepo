@@ -1220,3 +1220,18 @@ Three consequential edits came with it:
 - Added reproducible direct and indirect prompt-injection tests grounded in the
   TrackFlow briefing, plus the complete six-function NIST roadmap and incident
   response/recovery priorities.
+
+## 2026-10-28 — OWASP vulnerability audit and remediation
+
+- Audited all OWASP Top 10 categories separately across backend, frontend, and
+  the agentic system, with source evidence and explicit residual-risk decisions.
+- Fixed the high-severity `dnspython` denial-of-service advisory by enforcing and
+  locking 2.9.0; documented the unpatched low Jest-only `deepmerge` advisory.
+- Removed public exposure of internal Compose services by binding all development
+  host ports to loopback, and made backend/MCP images run as non-root users.
+- Added an idempotent, guarded Linux hardening kit: dedicated operations user,
+  key-only non-root SSH, explicit directory ownership, default-deny UFW policy,
+  and verification commands.
+- Added centralized anti-clickjacking, MIME-sniffing, referrer, and browser
+  capability headers to both Next.js applications, plus proof for every
+  critical/high remediation.
