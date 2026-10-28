@@ -1,0 +1,86 @@
+{
+  "strategy": "TimeSeriesSplit expanding window, 5 folds, 12 validation months",
+  "forecast_horizon": "rolling-origin one-month-ahead",
+  "random_state": 42,
+  "folds": [
+    {
+      "fold": 1,
+      "train_rows": 24,
+      "validation_rows": 12,
+      "train_start": "2017-01-01",
+      "train_end": "2018-12-01",
+      "validation_start": "2019-01-01",
+      "validation_end": "2019-12-01",
+      "train_mae_eur": 10074.603621086324,
+      "train_rmse_eur": 12267.48849975912,
+      "validation_mae_eur": 63436.5712021144,
+      "validation_rmse_eur": 73356.56829557326
+    },
+    {
+      "fold": 2,
+      "train_rows": 36,
+      "validation_rows": 12,
+      "train_start": "2017-01-01",
+      "train_end": "2019-12-01",
+      "validation_start": "2020-01-01",
+      "validation_end": "2020-12-01",
+      "train_mae_eur": 13635.388928119057,
+      "train_rmse_eur": 17188.694977513172,
+      "validation_mae_eur": 37100.14880528571,
+      "validation_rmse_eur": 43498.01542636293
+    },
+    {
+      "fold": 3,
+      "train_rows": 48,
+      "validation_rows": 12,
+      "train_start": "2017-01-01",
+      "train_end": "2020-12-01",
+      "validation_start": "2021-01-01",
+      "validation_end": "2021-12-01",
+      "train_mae_eur": 14445.97150127004,
+      "train_rmse_eur": 19184.19945109631,
+      "validation_mae_eur": 32352.796887618373,
+      "validation_rmse_eur": 40903.82482640089
+    },
+    {
+      "fold": 4,
+      "train_rows": 60,
+      "validation_rows": 12,
+      "train_start": "2017-01-01",
+      "train_end": "2021-12-01",
+      "validation_start": "2022-01-01",
+      "validation_end": "2022-12-01",
+      "train_mae_eur": 14842.130363130123,
+      "train_rmse_eur": 19391.2952986398,
+      "validation_mae_eur": 38107.73540159928,
+      "validation_rmse_eur": 47887.64704627804
+    },
+    {
+      "fold": 5,
+      "train_rows": 72,
+      "validation_rows": 12,
+      "train_start": "2017-01-01",
+      "train_end": "2022-12-01",
+      "validation_start": "2023-01-01",
+      "validation_end": "2023-12-01",
+      "train_mae_eur": 15390.767027151205,
+      "train_rmse_eur": 19891.262692845215,
+      "validation_mae_eur": 52507.20287628501,
+      "validation_rmse_eur": 65836.41844581981
+    }
+  ],
+  "summary": {
+    "train_mae_eur_mean": 13677.772288151351,
+    "train_mae_eur_std": 2113.3404556632854,
+    "train_rmse_eur_mean": 17584.588183970725,
+    "train_rmse_eur_std": 3145.312964426781,
+    "validation_mae_eur_mean": 44700.891034580556,
+    "validation_mae_eur_std": 12900.393682066417,
+    "validation_rmse_eur_mean": 54296.49480808699,
+    "validation_rmse_eur_std": 14435.202931921334
+  },
+  "diagnosis": "moderate overfitting",
+  "corrective_action": "Reduce Random Forest variance by increasing min_samples_leaf from 2 and lowering max_depth from 8, selecting the smallest change with five-fold TimeSeriesSplit before rechecking the untouched 2024-2025 test set.",
+  "primary_metric": "RMSE",
+  "primary_metric_reason": "TrackFlow uses the forecast for peak-season capacity planning. A large miss can create warehouse or carrier capacity shortages, so the squared penalty in RMSE reflects the operational cost better than MAE; MAE remains the typical-error companion metric."
+}

@@ -100,6 +100,11 @@
   years are assigned to training, 2024–2025 remain held out, and every lag or
   rolling statistic is shifted before calculation. Forecast preprocessing is
   fitted on training rows only.
+- **Forecast evaluation cannot select on the final test set.** Model diagnosis
+  uses five expanding one-year validation folds inside the training era. Each
+  fold verifies chronology and causal feature provenance before fitting; the
+  2024-2025 holdout is reserved for confirmation after a corrective change is
+  selected.
 
 ## Known technical debt
 
