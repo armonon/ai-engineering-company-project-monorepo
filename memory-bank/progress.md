@@ -1175,3 +1175,19 @@ Three consequential edits came with it:
   `done` ticket transitions.
 - Ran the official ModaViva PDF through Parts 1-3 with simulated Ana Whitfield and
   Sofía Ramos approvals; it produced the final EUR proposal with continuous state.
+
+## 2026-10-28 — Real-time agent observability
+
+- Added durable Agent, Flow, Participation, Task, and SSE event models for the
+  `first_line_cx` chat agent and multi-node `rfp_pipeline`.
+- Instrumented the existing chat and RFP execution boundaries without changing
+  either agent's decisions. Every task keeps its external/prior trigger, derived
+  task ids, and previous/next links.
+- Added authenticated agent/detail, last-five-flow, last-ten-task, flow/detail,
+  task-trace, and paginated/filterable execution APIs.
+- Added persisted `agent_step` and `agent_status_changed` SSE events with replay by
+  `Last-Event-ID`, plus authenticated ReadableStream consumption and progressive
+  reconnection in the backoffice.
+- Added automatic TrackFlow intervention rules, a live agent/flow/history panel,
+  and tests for JWT protection, SSE shape, pagination, trace reconstruction,
+  ordered flow participation, and both intervention thresholds.

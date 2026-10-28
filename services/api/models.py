@@ -639,3 +639,80 @@ class FinalRfpDocument(SQLModel, table=True):
     currency: str
     content: str = SQLField(sa_type=Text)
     generated_at: datetime = SQLField(default_factory=utcnow)
+
+
+# ===========================================================================
+# Real-time agent observability — persistent agent / flow / task graph
+# ===========================================================================
+
+
+class ObservedAgent(SQLModel, table=True):
+    __tablename__ = "observed_agents"
+
+    agent_id: str = SQLField(primary_key=True)
+    name: str
+    agent_type: str
+    owner_area: str
+    flow_types: list[str] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    current_status: str = SQLField(default="idle", index=True)
+    needs_intervention: bool = SQLField(default=False, index=True)
+    updated_at: datetime = SQLField(default_factory=utcnow)
+
+
+class ObservedFlow(SQLModel, table=True):
+    __tablename__ = "observed_flows"
+
+    flow_id: str = SQLField(primary_key=True)
+    flow_type: str = SQLField(index=True)
+    status: str = SQLField(index=True)
+    triggered_by: str = SQLField(sa_type=Text)
+    started_at: datetime = SQLField(default_factory=utcnow, index=True)
+    completed_at: datetime | None = None
+
+
+class ObservedFlowAgent(SQLModel, table=True):
+    __tablename__ = "observed_flow_agents"
+    __table_args__ = (
+        UniqueConstraint("flow_id", "agent_id", name="uq_observed_flow_agent"),
+    )
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    flow_id: str = SQLField(foreign_key="observed_flows.flow_id", index=True)
+    agent_id: str = SQLField(foreign_key="observed_agents.agent_id", index=True)
+    status: str = SQLField(default="running", index=True)
+
+
+class ObservedTask(SQLModel, table=True):
+    __tablename__ = "observed_tasks"
+
+    task_id: str = SQLField(primary_key=True)
+    flow_id: str = SQLField(foreign_key="observed_flows.flow_id", index=True)
+    agent_id: str = SQLField(foreign_key="observed_agents.agent_id", index=True)
+    action_type: str = SQLField(index=True)
+    status: str = SQLField(default="completed", index=True)
+    trigger: str = SQLField(sa_type=Text)
+    derived_task_ids: list[str] = SQLField(
+        default_factory=list,
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False),
+    )
+    previous_task_id: str | None = SQLField(default=None, index=True)
+    next_task_id: str | None = SQLField(default=None, index=True)
+    department_id: str | None = SQLField(default=None, index=True)
+    payload: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False),
+    )
+    created_at: datetime = SQLField(default_factory=utcnow, index=True)
+
+
+class ObservabilityEvent(SQLModel, table=True):
+    __tablename__ = "observability_events"
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    event_name: str = SQLField(index=True)
+    data: dict[str, Any] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    created_at: datetime = SQLField(default_factory=utcnow, index=True)

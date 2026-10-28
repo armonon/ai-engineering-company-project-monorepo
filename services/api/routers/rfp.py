@@ -22,10 +22,12 @@ from rfp_intake import (
 )
 from sqlmodel import Session, select
 
+from agent_observability import change_status, record_task, start_flow
 from database import get_db, inventory_engine
 from models import (
     DepartmentSection,
     FinalRfpDocument,
+    ObservedTask,
     RfpMetadataRecord,
     RfpTicket,
     RfpTicketStatus,
@@ -55,6 +57,52 @@ def _checkpoint_path() -> Path:
 
 def _can_read(ticket: RfpTicket, caller: UserInDB) -> bool:
     return caller.role.value in {"admin", "manager"} or ticket.created_by == str(caller.id)
+
+
+def _observe_rfp_stage(
+    ticket_id: str,
+    tasks: list[tuple[str, str | None, dict[str, Any]]],
+    *,
+    status: str | None = None,
+) -> None:
+    """Best-effort instrumentation; observability cannot break the RFP flow."""
+    try:
+        with Session(inventory_engine()) as observation_session:
+            flow_id = f"rfp-{ticket_id}"
+            start_flow(
+                observation_session,
+                flow_id=flow_id,
+                flow_type="rfp_workflow",
+                triggered_by=f"rfp_ticket:{ticket_id}",
+                agent_ids=["rfp_pipeline"],
+            )
+            previous = observation_session.exec(
+                select(ObservedTask)
+                .where(ObservedTask.flow_id == flow_id)
+                .order_by(ObservedTask.created_at.desc())
+            ).first()
+            previous_id = previous.task_id if previous else None
+            for action_type, department_id, payload in tasks:
+                task = record_task(
+                    observation_session,
+                    flow_id=flow_id,
+                    agent_id="rfp_pipeline",
+                    action_type=action_type,
+                    trigger=previous_id or f"external:rfp_ticket:{ticket_id}",
+                    previous_task_id=previous_id,
+                    department_id=department_id,
+                    payload=payload,
+                )
+                previous_id = task.task_id
+            if status:
+                change_status(
+                    observation_session,
+                    flow_id=flow_id,
+                    agent_id="rfp_pipeline",
+                    status=status,
+                )
+    except Exception:
+        logger.exception("Could not persist RFP observability events for %s", ticket_id)
 
 
 def _ticket_payload(session: Session, ticket: RfpTicket) -> dict[str, Any]:
@@ -169,6 +217,15 @@ def process_ticket_background(ticket_id: str, raw_pdf_path: str) -> None:
         result = process_rfp(raw_pdf_path, ticket_id)
         with Session(inventory_engine()) as session:
             persist_intake_result(session, result)
+        observed_tasks: list[tuple[str, str | None, dict[str, Any]]] = [
+            ("query", None, {"stage": "classify_extract", "valid": result.classification.valid})
+        ]
+        observed_tasks.extend(
+            ("tool_call", section["department_id"], {"stage": "department_routing"})
+            for section in result.sections
+        )
+        observed_tasks.append(("deliver", None, {"stage": "intake_handoff"}))
+        _observe_rfp_stage(ticket_id, observed_tasks)
     except Exception:
         logger.exception("RFP intake failed for ticket %s", ticket_id)
         try:
@@ -235,6 +292,29 @@ def generate_ticket_background(ticket_id: str, handoff_payload: dict[str, Any]) 
         runtime_result = runtime.invoke(handoff_payload)
         with Session(inventory_engine()) as session:
             persist_response_result(session, runtime_result)
+        observed_tasks = []
+        for section in runtime_result.sections:
+            department_id = section["department_id"]
+            observed_tasks.extend(
+                [
+                    ("draft_start", department_id, {"stage": "response_generation"}),
+                    (
+                        "write",
+                        department_id,
+                        {"iteration": section["iteration"]},
+                    ),
+                    (
+                        "evaluate",
+                        department_id,
+                        {
+                            "overall_pass": section["evaluation_result"]["overall_pass"],
+                            "iteration": section["iteration"],
+                        },
+                    ),
+                ]
+            )
+        observed_tasks.append(("deliver", None, {"stage": "approval_handoff"}))
+        _observe_rfp_stage(ticket_id, observed_tasks)
     except Exception:
         logger.exception("RFP response generation failed for ticket %s", ticket_id)
         try:
@@ -421,6 +501,7 @@ def start_approval(
     finally:
         coordinator.close()
     _persist_approval_state(session, ticket, states)
+    _observe_rfp_stage(ticket_id, [], status="waiting_for_human")
     return {
         "ticket_id": ticket_id,
         "status": ticket.status.value,
@@ -472,6 +553,14 @@ def resume_approval(
     finally:
         coordinator.close()
     _persist_approval_state(session, ticket, states)
+    if ticket.status == RfpTicketStatus.DONE:
+        _observe_rfp_stage(
+            ticket_id,
+            [("deliver", None, {"stage": "final_document"})],
+            status="completed",
+        )
+    elif ticket.status == RfpTicketStatus.WAITING_FOR_APPROVAL:
+        _observe_rfp_stage(ticket_id, [], status="waiting_for_human")
     return {
         "ticket_id": ticket_id,
         "status": ticket.status.value,

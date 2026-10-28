@@ -9,8 +9,11 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlmodel import Session
 from trackflow_agent import AgentRuntime, CompanyToolsMCPClient, MemoryStore, build_graph
 
+from agent_observability import change_status, record_task, start_flow
+from database import inventory_engine
 from models import UserInDB
 from security import get_current_user
 
@@ -74,6 +77,41 @@ def query_agent(
     try:
         principal = f"{_caller.role.value}:{_caller.id}"
         result = runtime.invoke(payload.question, user_id=principal)
+        try:
+            with Session(inventory_engine()) as observation_session:
+                flow_id = f"chat-{result.run_id}"
+                start_flow(
+                    observation_session,
+                    flow_id=flow_id,
+                    flow_type="chat_session",
+                    triggered_by=f"client_inbound_message:{result.run_id}",
+                    agent_ids=["first_line_cx"],
+                )
+                query_task = record_task(
+                    observation_session,
+                    flow_id=flow_id,
+                    agent_id="first_line_cx",
+                    action_type="query",
+                    trigger=f"external:client_inbound_message:{result.run_id}",
+                    payload={"run_id": result.run_id},
+                )
+                record_task(
+                    observation_session,
+                    flow_id=flow_id,
+                    agent_id="first_line_cx",
+                    action_type="deliver",
+                    trigger=query_task.task_id,
+                    previous_task_id=query_task.task_id,
+                    payload={"run_id": result.run_id},
+                )
+                change_status(
+                    observation_session,
+                    flow_id=flow_id,
+                    agent_id="first_line_cx",
+                    status="completed",
+                )
+        except Exception:
+            logger.exception("Could not persist first-line CX observability events")
         return AgentAnswer(answer=result.answer, run_id=result.run_id)
     except Exception as exc:
         logger.exception("Agent graph failed", exc_info=exc)
