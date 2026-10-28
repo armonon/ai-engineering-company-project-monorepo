@@ -1,6 +1,7 @@
 -e ../packages/incident_analyzer
 -e ../packages/shared
 -e ./api
+-e ./agent
 -e ./telemetry
 -e ../data/process
 -e ../data/pipelines

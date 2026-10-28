@@ -1044,3 +1044,17 @@ Three consequential edits came with it:
   correct Black Friday non-guarantee.
 - Added Qdrant to Compose, safe environment templates, focused provider/API/UI
   tests, and the architecture and acceptance evidence under `docs/rag/`.
+
+## 2026-10-28 — LangGraph support agent, Part 1
+
+- Migrated the grounded RAG flow into an explicitly compiled LangGraph without
+  duplicating retrieval or generation. Minimal state carries only run id,
+  question, retrieved context, answer, and an error code—never full history.
+- Added conditional empty-question and no-context routes, distinct receive,
+  retrieve, and generate nodes, and a `MemorySaver` checkpoint at graph
+  transitions.
+- Added an append-only SQLite trace store plus authenticated query and trace
+  endpoints. Trace outputs retain node order, source/section metadata, and the
+  final answer without storing provider secrets or raw vectors.
+- Added four graph tests, three offline trace evals, four API tests, and a real
+  local Ollama/Qdrant trace proving the Black Friday answer remains grounded.

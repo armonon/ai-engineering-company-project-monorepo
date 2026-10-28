@@ -16,6 +16,7 @@ COPY docs/company-knowledge-base docs/company-knowledge-base
 COPY scripts/seed_incidents.py scripts/incidents-trackflow.csv scripts/
 COPY services/requirements.txt services/requirements.txt
 COPY services/api services/api
+COPY services/agent services/agent
 COPY services/telemetry services/telemetry
 COPY services/reporting services/reporting
 COPY services/job_runner services/job_runner
