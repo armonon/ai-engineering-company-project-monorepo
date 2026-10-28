@@ -2,6 +2,31 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-28 · TrackFlow sales forecasting
+
+**Branch:** `codex/sales-forecast-model`
+
+- Added the official TrackFlow 2016–2025 consolidated monthly sales CSV and its
+  company briefing without simulation or schema changes.
+- Built strictly causal lag, shifted rolling, cyclical calendar, briefing-based
+  annual growth-cycle, and trend features. The first eight source years are
+  training history; 2024–2025 are a disjoint held-out test period.
+- Added additive trend/seasonality/residual decomposition that visibly confirms
+  the November–December peaks, February trough, and long-term growth pattern.
+- Chose an explainable Random Forest seasonal-residual forecaster for the small
+  Finance-facing dataset. It predicts a correction to lag-12 revenue, preserves
+  the final EUR target, and beats the seasonal-naive baseline: €56,047 test RMSE
+  (4.31% of average revenue) versus €93,184.
+- Reported all required test metrics: MSE, PSI, normalized Gini, and D'Agostino
+  K², plus RMSE, MAE, R², baseline comparison, and variability-band coverage.
+  PSI honestly flags major growth-related drift; the consolidated-only file
+  cannot diagnose LA/ZGZ mix independently.
+- Added the required forecast variability plot, decomposition plot, saved model,
+  forecast/metric artifacts, exact rubric map, and tests for both the 8/2-year
+  boundary and causal feature construction.
+- Traceability: `DOC-1`; official TrackFlow sales-forecasting briefing and the
+  project’s no-leakage acceptance criteria.
+
 ## 2026-10-28 · Redis/Celery message queues and async tasks
 
 **Branch:** `codex/async-tasks`
