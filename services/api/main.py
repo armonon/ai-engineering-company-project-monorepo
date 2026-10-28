@@ -26,6 +26,7 @@ from routers.auth import router as auth_router
 from routers.incidents import router as incidents_router
 from routers.incidents_manager import router as incidents_manager_router
 from routers.inventory import router as inventory_router
+from routers.knowledge import router as knowledge_router
 from routers.profiles import router as profiles_router
 from routers.suppliers import router as suppliers_router
 from routers.tasks import router as tasks_router
@@ -147,6 +148,7 @@ app.include_router(suppliers_router)
 app.include_router(incidents_manager_router)
 app.include_router(incidents_router)
 app.include_router(inventory_router)
+app.include_router(knowledge_router)
 app.include_router(telemetry_router)
 app.include_router(telemetry_report_router)
 app.include_router(reporting_router)

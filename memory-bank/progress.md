@@ -1025,3 +1025,22 @@ Three consequential edits came with it:
 - Documented the per-service efficiency and mutation-first ownership model;
   acceptance coverage includes service isolation, FIFO, global numbering,
   snapshots, validation, CLI recovery, and concurrent issue/call behavior.
+
+## 2026-10-28 — RAG sales knowledge base
+
+- Added the four approved TrackFlow policy documents and an idempotent loader
+  that creates 18 semantic chunks in the exact `trackflow_knowledge` Qdrant
+  collection. Deterministic point IDs and the six-field payload contract make
+  repeat ingestion safe and auditable.
+- Added separate retrieval and generation boundaries backed by distinct
+  4Geeks LiteLLM model IDs. The generation prompt is constrained to retrieved
+  evidence and explicitly protects high-demand SLA, international-return, and
+  storage-discount approval rules.
+- Added the authenticated `POST /knowledge/query` API and protected backoffice
+  Sales knowledge view with loading, readable failure, and light/dark states.
+- Added twelve cross-document retrieval questions. The production Qdrant path
+  reached Recall@3 of 100% with a reproducible offline CI encoder, and a live
+  local run with distinct Ollama embedding/generation models returned the
+  correct Black Friday non-guarantee.
+- Added Qdrant to Compose, safe environment templates, focused provider/API/UI
+  tests, and the architecture and acceptance evidence under `docs/rag/`.

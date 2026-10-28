@@ -39,6 +39,7 @@ services:
       FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:3001}
       TELEMETRY_ENDPOINT: ${TELEMETRY_ENDPOINT:-http://backend:8000/telemetry/events}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
     ports:
       - "8000:8000"
     volumes:
@@ -47,6 +48,7 @@ services:
       - ./packages/shared:/workspace/packages/shared
       - ./data/process:/workspace/data/process
       - ./data/pipelines:/workspace/data/pipelines
+      - ./docs/company-knowledge-base:/workspace/docs/company-knowledge-base:ro
       - ./services/reporting:/workspace/services/reporting
       - api_data:/workspace/services/api/data
     healthcheck:
@@ -56,6 +58,8 @@ services:
       retries: 12
     depends_on:
       redis:
+        condition: service_healthy
+      qdrant:
         condition: service_healthy
     networks:
       - trackflow
@@ -114,6 +118,20 @@ services:
     networks:
       - trackflow
 
+  qdrant:
+    image: qdrant/qdrant:v1.15.5
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333'"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks:
+      - trackflow
+
 networks:
   trackflow:
     name: trackflow-development
@@ -121,3 +139,4 @@ networks:
 volumes:
   api_data:
   redis_data:
+  qdrant_data:
