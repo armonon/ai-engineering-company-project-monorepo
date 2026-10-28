@@ -6,13 +6,13 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-from rfp_intake import IntakeResult, RfpClassification
+from rfp_intake import IntakeResult, ResponseResult, RfpClassification
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, create_engine, select
 
 from database import get_db
 from models import DepartmentSection, RfpMetadataRecord, RfpTicket, RfpTicketStatus
-from routers.rfp import persist_intake_result
+from routers.rfp import persist_intake_result, persist_response_result
 
 
 @pytest.fixture
@@ -168,3 +168,125 @@ def test_discarded_document_never_creates_metadata_or_handoff(rfp_session: Sessi
     assert saved.status == RfpTicketStatus.DISCARDED
     assert saved.ready_for_generation is False
     assert rfp_session.exec(select(RfpMetadataRecord)).all() == []
+
+
+def _ready_ticket(session: Session, ticket_id: str = "ready-ticket") -> RfpTicket:
+    metadata = {
+        "client_name": "ModaViva",
+        "client_country": "Spain",
+        "currency": "EUR",
+        "monthly_volume": 5_000,
+    }
+    workstreams = [
+        {
+            "department_id": "warehouse",
+            "contact": "Ana Whitfield",
+            "key_aspects": ["Confirm capacity."],
+        }
+    ]
+    ticket = RfpTicket(
+        ticket_id=ticket_id,
+        status=RfpTicketStatus.INTAKE_COMPLETE,
+        raw_pdf_path="/tmp/ready.pdf",
+        created_by="1",
+        ready_for_generation=True,
+        handoff_payload={
+            "ticket_id": ticket_id,
+            "metadata": metadata,
+            "workstreams": workstreams,
+        },
+    )
+    session.add(ticket)
+    session.add(
+        DepartmentSection(
+            ticket_id=ticket_id,
+            department_id="warehouse",
+            contact="Ana Whitfield",
+            key_aspects=["Confirm capacity."],
+        )
+    )
+    session.commit()
+    return ticket
+
+
+def test_generation_endpoint_consumes_the_persisted_handoff(
+    signed_in: TestClient, rfp_session: Session
+) -> None:
+    ticket = _ready_ticket(rfp_session)
+    calls: list[tuple[str, dict]] = []
+    with patch(
+        "routers.rfp.generate_ticket_background",
+        side_effect=lambda ticket_id, handoff: calls.append((ticket_id, handoff)),
+    ):
+        response = signed_in.post(f"/rfp/tickets/{ticket.ticket_id}/generate")
+
+    assert response.status_code == 202
+    assert response.json()["status"] == "drafting"
+    assert calls == [(ticket.ticket_id, ticket.handoff_payload)]
+    rfp_session.refresh(ticket)
+    assert ticket.status == RfpTicketStatus.DRAFTING
+
+
+def test_generation_requires_an_intake_complete_ticket(
+    signed_in: TestClient, rfp_session: Session
+) -> None:
+    ticket = RfpTicket(
+        ticket_id="still-analyzing",
+        status=RfpTicketStatus.ANALYZING,
+        raw_pdf_path="/tmp/pending.pdf",
+        created_by="1",
+    )
+    rfp_session.add(ticket)
+    rfp_session.commit()
+    response = signed_in.post(f"/rfp/tickets/{ticket.ticket_id}/generate")
+    assert response.status_code == 409
+
+
+def test_response_result_persists_draft_evaluation_and_part3_handoff(
+    rfp_session: Session,
+) -> None:
+    ticket = _ready_ticket(rfp_session, "generated-ticket")
+    evaluation = {
+        "department_id": "warehouse",
+        "readability": {"pass": True, "score": 10, "details": {}},
+        "relevance": {"pass": True, "missing_aspects": []},
+        "compliance": {"pass": True, "rule_ids": [], "violations": []},
+        "overall_pass": True,
+        "feedback_for_generator": "",
+    }
+    section = {
+        "department_id": "warehouse",
+        "contact": "Ana Whitfield",
+        "key_aspects": ["Confirm capacity."],
+        "draft_content": "Approved warehouse draft.",
+        "evaluation_result": evaluation,
+        "iteration": 1,
+        "complete": True,
+        "needs_human_review": False,
+    }
+    handoff = {
+        "ticket_id": ticket.ticket_id,
+        "metadata": ticket.handoff_payload["metadata"],
+        "sections": [section],
+    }
+    persist_response_result(
+        rfp_session,
+        ResponseResult(
+            ticket_id=ticket.ticket_id,
+            status="under_evaluation",
+            sections=[section],
+            handoff_payload=handoff,
+        ),
+    )
+
+    saved_ticket = rfp_session.get(RfpTicket, ticket.ticket_id)
+    saved_section = rfp_session.exec(
+        select(DepartmentSection).where(DepartmentSection.ticket_id == ticket.ticket_id)
+    ).one()
+    assert saved_ticket is not None
+    assert saved_ticket.status == RfpTicketStatus.UNDER_EVALUATION
+    assert saved_ticket.ready_for_generation is False
+    assert saved_ticket.handoff_payload["sections"][0]["draft_content"] == section["draft_content"]
+    assert saved_section.draft_content == section["draft_content"]
+    assert saved_section.evaluation_results == evaluation
+    assert saved_section.approval_status == "ready_for_approval"

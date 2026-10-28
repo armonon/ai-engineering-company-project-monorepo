@@ -1,5 +1,10 @@
 import { authFetch, authJson, readApiError } from "@/lib/auth";
-import { fetchRfpTicket, fetchRfpTickets, uploadRfp } from "@/lib/rfp";
+import {
+  fetchRfpTicket,
+  fetchRfpTickets,
+  startRfpGeneration,
+  uploadRfp,
+} from "@/lib/rfp";
 
 jest.mock("@/lib/auth", () => ({
   authFetch: jest.fn(),
@@ -48,5 +53,20 @@ describe("RFP ticket integration", () => {
     jest.mocked(readApiError).mockResolvedValue("Upload a PDF RFP document.");
     const file = new File(["bad"], "bad.txt", { type: "text/plain" });
     await expect(uploadRfp(file)).rejects.toThrow("Upload a PDF RFP document.");
+  });
+
+  it("starts response generation through the same authenticated API", async () => {
+    mockedFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ ticket_id: "ticket-1", status: "drafting" }),
+    } as Response);
+
+    await expect(startRfpGeneration("ticket-1")).resolves.toEqual({
+      ticket_id: "ticket-1",
+      status: "drafting",
+    });
+    expect(mockedFetch).toHaveBeenCalledWith("/rfp/tickets/ticket-1/generate", {
+      method: "POST",
+    });
   });
 });

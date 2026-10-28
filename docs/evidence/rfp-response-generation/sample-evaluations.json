@@ -1,0 +1,24 @@
+{
+  "passing_section": {
+    "department_id": "warehouse",
+    "overall_pass": true,
+    "readability": { "pass": true },
+    "relevance": { "pass": true, "missing_aspects": [] },
+    "compliance": { "pass": true, "violations": [] },
+    "outcome": "ready_for_approval"
+  },
+  "failed_section": {
+    "department_id": "reverse",
+    "draft_excerpt": "Returns within 12 hours.",
+    "overall_pass": false,
+    "compliance": {
+      "pass": false,
+      "violations": [
+        "TF-RETURNS-MIN-48H: never promise returns processing under 48 hours."
+      ]
+    },
+    "iteration_count": 2,
+    "outcome": "needs_human_review",
+    "part3_handoff_retained": true
+  }
+}

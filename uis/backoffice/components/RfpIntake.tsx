@@ -5,6 +5,7 @@ import {
   fetchRfpTicket,
   fetchRfpTickets,
   RfpTicket,
+  startRfpGeneration,
   uploadRfp,
 } from "@/lib/rfp";
 
@@ -12,12 +13,27 @@ const STATUS_STYLE: Record<string, string> = {
   analyzing: "bg-amber-100 text-amber-800",
   intake_complete: "bg-emerald-100 text-emerald-800",
   discarded: "bg-slate-200 text-slate-700",
+  drafting: "bg-blue-100 text-blue-800",
+  under_evaluation: "bg-violet-100 text-violet-800",
+  needs_human_review: "bg-orange-100 text-orange-800",
+  waiting_for_approval: "bg-cyan-100 text-cyan-800",
+  done: "bg-emerald-100 text-emerald-800",
 };
+
+function isProcessing(ticket: RfpTicket) {
+  return (
+    ticket.status === "analyzing" ||
+    ticket.status === "drafting" ||
+    (ticket.status === "under_evaluation" &&
+      ticket.sections.some((section) => !section.evaluation_result))
+  );
+}
 
 export function RfpIntake() {
   const [tickets, setTickets] = useState<RfpTicket[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [busyTicket, setBusyTicket] = useState("");
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -33,11 +49,11 @@ export function RfpIntake() {
   }, [load]);
 
   useEffect(() => {
-    if (!tickets.some((ticket) => ticket.status === "analyzing")) return;
+    if (!tickets.some(isProcessing)) return;
     const timer = window.setInterval(async () => {
       const refreshed = await Promise.all(
         tickets.map((ticket) =>
-          ticket.status === "analyzing"
+          isProcessing(ticket)
             ? fetchRfpTicket(ticket.ticket_id)
             : Promise.resolve(ticket),
         ),
@@ -62,6 +78,19 @@ export function RfpIntake() {
       setError(reason instanceof Error ? reason.message : "The upload failed.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function generate(ticketId: string) {
+    setBusyTicket(ticketId);
+    setError("");
+    try {
+      await startRfpGeneration(ticketId);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Response generation failed.");
+    } finally {
+      setBusyTicket("");
     }
   }
 
@@ -116,6 +145,16 @@ export function RfpIntake() {
               <p role="alert" className="mt-3 text-sm text-red-700">{ticket.processing_error}</p>
             ) : null}
             {ticket.sales_summary ? <p className="mt-3 text-sm text-slate-700">{ticket.sales_summary}</p> : null}
+            {ticket.status === "intake_complete" ? (
+              <button
+                type="button"
+                onClick={() => void generate(ticket.ticket_id)}
+                disabled={busyTicket === ticket.ticket_id}
+                className="mt-4 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {busyTicket === ticket.ticket_id ? "Generating…" : "Generate evaluated response"}
+              </button>
+            ) : null}
             {ticket.metadata ? (
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                 <div><dt className="text-slate-500">Market</dt><dd className="font-medium">{ticket.metadata.client_country} · {ticket.metadata.currency}</dd></div>
@@ -132,6 +171,29 @@ export function RfpIntake() {
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
                       {section.key_aspects.map((aspect) => <li key={aspect}>{aspect}</li>)}
                     </ul>
+                    {section.draft_content ? (
+                      <details className="mt-4 rounded-md border border-slate-200 bg-white p-3">
+                        <summary className="cursor-pointer text-sm font-semibold text-slate-900">
+                          Proposal draft
+                        </summary>
+                        <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                          {section.draft_content}
+                        </div>
+                      </details>
+                    ) : null}
+                    {section.evaluation_result ? (
+                      <div className="mt-3 text-sm">
+                        <p className={section.evaluation_result.overall_pass ? "font-semibold text-emerald-700" : "font-semibold text-orange-700"}>
+                          {section.evaluation_result.overall_pass ? "Evaluation passed" : "Human review required"}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-600">
+                          Readability {section.evaluation_result.readability.pass ? "passed" : "failed"} · Relevance {section.evaluation_result.relevance.pass ? "passed" : "failed"} · Compliance {section.evaluation_result.compliance.pass ? "passed" : "failed"}
+                        </p>
+                        {section.evaluation_result.feedback_for_generator ? (
+                          <p className="mt-2 text-xs text-orange-800">{section.evaluation_result.feedback_for_generator}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </section>
                 ))}
               </div>

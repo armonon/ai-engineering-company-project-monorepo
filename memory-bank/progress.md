@@ -1143,3 +1143,19 @@ Three consequential edits came with it:
 - Verified the three official briefing PDFs through MarkItDown: ModaViva routes
   to warehouse/reverse in EUR, Luna Cosmetics to warehouse/last-mile in USD,
   and the RapidShip carrier pitch is discarded.
+
+## 2026-10-28 — Agentic RFP workflow Part 2: response generation
+
+- Added separate Warehouse, Last Mile, and Reverse Logistics generators that
+  consume only the persisted Part 1 handoff, never the raw PDF.
+- Added parallel structured readability, relevance, and TrackFlow compliance
+  evaluators, including exact country/currency, numeric on-time SLA, minimum
+  48-hour returns, discount-table, and carrier-confidentiality rules.
+- Added a bounded generator-evaluator loop that leaves passing sections alone,
+  returns actionable feedback to failed generators, and retains the final draft
+  plus evaluation in the Part 3 handoff when human review is required.
+- Added asynchronous generation to the existing API and an authenticated
+  backoffice action that polls progress and displays drafts and evaluation
+  outcomes.
+- Added focused success, generic-failure, briefing-compliance, persistence, API,
+  and frontend integration tests plus passing/failing evidence fixtures.
