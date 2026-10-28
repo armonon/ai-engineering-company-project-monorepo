@@ -1159,3 +1159,19 @@ Three consequential edits came with it:
   outcomes.
 - Added focused success, generic-failure, briefing-compliance, persistence, API,
   and frontend integration tests plus passing/failing evidence fixtures.
+
+## 2026-10-28 — Agentic RFP workflow Part 3: approval and completion
+
+- Added independently checkpointed LangGraph approval branches using persistent
+  SQLite state and ticket/department-namespaced thread ids. Each branch pauses
+  with `interrupt` and resumes with `Command`, without restarting the workflow.
+- Added authenticated backoffice controls for approve, reject, and request
+  changes. The fixed TrackFlow owner is recorded for each department, and one
+  pending department does not block decisions in another branch.
+- Added the exact fixed-arbiter rules for volume/capacity, under-48-hour returns,
+  and country/currency conflicts, plus a bounded human revision loop.
+- Added per-node traces, PostgreSQL approval persistence, automatic final proposal
+  synthesis only after every active owner approves, and `waiting_for_approval` →
+  `done` ticket transitions.
+- Ran the official ModaViva PDF through Parts 1-3 with simulated Ana Whitfield and
+  Sofía Ramos approvals; it produced the final EUR proposal with continuous state.

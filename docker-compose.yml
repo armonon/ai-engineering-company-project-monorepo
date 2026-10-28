@@ -45,6 +45,7 @@ services:
       COMPANY_MCP_TIMEOUT_SECONDS: ${COMPANY_MCP_TIMEOUT_SECONDS:-5}
       RFP_RAW_DIR: /workspace/data/rfp-runtime/raw
       RFP_MARKDOWN_DIR: /workspace/data/rfp-runtime/processed
+      RFP_CHECKPOINT_DB: /workspace/data/rfp-runtime/checkpoints/rfp.sqlite3
     ports:
       - "8000:8000"
     volumes:
@@ -103,6 +104,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       RFP_RAW_DIR: /workspace/data/rfp-runtime/raw
       RFP_MARKDOWN_DIR: /workspace/data/rfp-runtime/processed
+      RFP_CHECKPOINT_DB: /workspace/data/rfp-runtime/checkpoints/rfp.sqlite3
     volumes:
       - ./services/api:/workspace/services/api
       - ./packages/incident_analyzer:/workspace/packages/incident_analyzer

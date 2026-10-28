@@ -1,8 +1,10 @@
 import { authFetch, authJson, readApiError } from "@/lib/auth";
 import {
+  decideRfpApproval,
   fetchRfpTicket,
   fetchRfpTickets,
   startRfpGeneration,
+  startRfpApproval,
   uploadRfp,
 } from "@/lib/rfp";
 
@@ -68,5 +70,35 @@ describe("RFP ticket integration", () => {
     expect(mockedFetch).toHaveBeenCalledWith("/rfp/tickets/ticket-1/generate", {
       method: "POST",
     });
+  });
+
+  it("starts and resumes persistent department approvals", async () => {
+    mockedFetch.mockResolvedValue({ ok: true, json: async () => ({}) } as Response);
+
+    await startRfpApproval("ticket-1");
+    await decideRfpApproval(
+      "ticket-1",
+      "warehouse",
+      "request_changes",
+      "Clarify capacity.",
+    );
+
+    expect(mockedFetch).toHaveBeenNthCalledWith(
+      1,
+      "/rfp/tickets/ticket-1/approval/start",
+      { method: "POST" },
+    );
+    expect(mockedFetch).toHaveBeenNthCalledWith(
+      2,
+      "/rfp/tickets/ticket-1/approval/warehouse",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          decision: "request_changes",
+          reason: "Clarify capacity.",
+        }),
+      },
+    );
   });
 });

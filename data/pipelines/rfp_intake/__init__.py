@@ -1,5 +1,12 @@
 """Dedicated TrackFlow RFP intake graph."""
 
+from .approval import (
+    MAX_APPROVAL_REVISIONS,
+    ApprovalCoordinator,
+    ApprovalDecision,
+    arbitrate_conflicts,
+    synthesize_final_document,
+)
 from .pipeline import (
     DEPARTMENTS,
     IntakeResult,
@@ -29,12 +36,16 @@ from .response import (
 
 __all__ = [
     "DEPARTMENTS",
+    "MAX_APPROVAL_REVISIONS",
     "MAX_GENERATION_ITERATIONS",
+    "ApprovalCoordinator",
+    "ApprovalDecision",
     "IntakeResult",
     "ResponseResult",
     "RfpClassification",
     "RfpIntakeRuntime",
     "RfpResponseRuntime",
+    "arbitrate_conflicts",
     "build_intake_graph",
     "build_response_graph",
     "classify_rfp",
@@ -50,4 +61,5 @@ __all__ = [
     "generate_warehouse_section",
     "process_rfp",
     "run_department_worker",
+    "synthesize_final_document",
 ]

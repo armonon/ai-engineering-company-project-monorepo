@@ -624,3 +624,18 @@ class DepartmentSection(SQLModel, table=True):
     approval_status: str = SQLField(default="not_started", index=True)
     approver: str | None = None
     approved_at: datetime | None = None
+
+
+class FinalRfpDocument(SQLModel, table=True):
+    __tablename__ = "rfp_final_documents"
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    ticket_id: str = SQLField(
+        foreign_key="rfp_tickets.ticket_id", unique=True, index=True
+    )
+    sections: list[dict[str, Any]] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    currency: str
+    content: str = SQLField(sa_type=Text)
+    generated_at: datetime = SQLField(default_factory=utcnow)

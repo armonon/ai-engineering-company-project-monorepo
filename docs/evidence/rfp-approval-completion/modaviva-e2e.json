@@ -1,0 +1,27 @@
+{
+  "ticket_id": "modaviva-e2e",
+  "input_fixture": "trackflow-request-1.pdf",
+  "client": "ModaViva, S.L.",
+  "state_sequence": [
+    "analyzing",
+    "intake_complete",
+    "drafting",
+    "under_evaluation",
+    "waiting_for_approval",
+    "done"
+  ],
+  "approvals": {
+    "warehouse": {
+      "owner": "Ana Whitfield",
+      "status": "approved",
+      "thread_id": "rfp-modaviva-e2e:warehouse"
+    },
+    "reverse": {
+      "owner": "Sofía Ramos",
+      "status": "approved",
+      "thread_id": "rfp-modaviva-e2e:reverse"
+    }
+  },
+  "final_document_generated": true,
+  "currency": "EUR"
+}

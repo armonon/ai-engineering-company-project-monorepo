@@ -5,6 +5,7 @@ description = "Resilient TrackFlow weekly warehouse/client performance pipeline"
 requires-python = ">=3.11"
 dependencies = [
     "langgraph>=1.2,<2",
+    "langgraph-checkpoint-sqlite>=3,<4",
     "markitdown[pdf]>=0.1,<1",
     "prefect>=3.9,<4",
     "psycopg2-binary>=2.9.12",

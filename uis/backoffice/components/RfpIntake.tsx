@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  decideRfpApproval,
   fetchRfpTicket,
   fetchRfpTickets,
   RfpTicket,
+  startRfpApproval,
   startRfpGeneration,
   uploadRfp,
 } from "@/lib/rfp";
@@ -34,6 +36,7 @@ export function RfpIntake() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [busyTicket, setBusyTicket] = useState("");
+  const [reasons, setReasons] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -89,6 +92,37 @@ export function RfpIntake() {
       await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Response generation failed.");
+    } finally {
+      setBusyTicket("");
+    }
+  }
+
+  async function beginApproval(ticketId: string) {
+    setBusyTicket(ticketId);
+    setError("");
+    try {
+      await startRfpApproval(ticketId);
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not start approval.");
+    } finally {
+      setBusyTicket("");
+    }
+  }
+
+  async function decide(
+    ticketId: string,
+    departmentId: string,
+    decision: "approve" | "reject" | "request_changes",
+  ) {
+    const key = `${ticketId}:${departmentId}`;
+    setBusyTicket(key);
+    setError("");
+    try {
+      await decideRfpApproval(ticketId, departmentId, decision, reasons[key] ?? "");
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not record the decision.");
     } finally {
       setBusyTicket("");
     }
@@ -155,6 +189,16 @@ export function RfpIntake() {
                 {busyTicket === ticket.ticket_id ? "Generating…" : "Generate evaluated response"}
               </button>
             ) : null}
+            {(ticket.status === "under_evaluation" || ticket.status === "needs_human_review") ? (
+              <button
+                type="button"
+                onClick={() => void beginApproval(ticket.ticket_id)}
+                disabled={busyTicket === ticket.ticket_id}
+                className="mt-4 rounded-md bg-violet-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {busyTicket === ticket.ticket_id ? "Preparing approvals…" : "Start department approvals"}
+              </button>
+            ) : null}
             {ticket.metadata ? (
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                 <div><dt className="text-slate-500">Market</dt><dd className="font-medium">{ticket.metadata.client_country} · {ticket.metadata.currency}</dd></div>
@@ -194,9 +238,54 @@ export function RfpIntake() {
                         ) : null}
                       </div>
                     ) : null}
+                    {section.approval_status === "waiting_for_approval" ? (
+                      <div className="mt-4 border-t border-slate-200 pt-3">
+                        <p className="text-sm font-semibold text-slate-900">
+                          Decision for {section.contact}
+                        </p>
+                        <textarea
+                          aria-label={`Reason for ${section.department_id}`}
+                          value={reasons[`${ticket.ticket_id}:${section.department_id}`] ?? ""}
+                          onChange={(event) => setReasons((current) => ({
+                            ...current,
+                            [`${ticket.ticket_id}:${section.department_id}`]: event.target.value,
+                          }))}
+                          placeholder="Optional decision note"
+                          className="mt-2 min-h-20 w-full rounded-md border border-slate-300 p-2 text-sm"
+                        />
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {(["approve", "request_changes", "reject"] as const).map((decision) => (
+                            <button
+                              key={decision}
+                              type="button"
+                              disabled={busyTicket === `${ticket.ticket_id}:${section.department_id}`}
+                              onClick={() => void decide(ticket.ticket_id, section.department_id, decision)}
+                              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 disabled:opacity-50"
+                            >
+                              {decision.replaceAll("_", " ")}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {section.approval_status === "approved" ? (
+                      <p className="mt-3 text-sm font-semibold text-emerald-700">
+                        Approved by {section.contact}
+                      </p>
+                    ) : null}
                   </section>
                 ))}
               </div>
+            ) : null}
+            {ticket.final_document ? (
+              <details className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                <summary className="cursor-pointer font-semibold text-emerald-900">
+                  Final approved proposal · {ticket.final_document.currency}
+                </summary>
+                <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-800">
+                  {ticket.final_document.content}
+                </div>
+              </details>
             ) : null}
           </article>
         ))}

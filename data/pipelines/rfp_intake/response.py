@@ -364,6 +364,7 @@ def build_response_graph(
             {
                 "department_id": section["department_id"],
                 "contact": section["contact"],
+                "key_aspects": section["key_aspects"],
                 "draft_content": section["draft_content"],
                 "evaluation_result": section["evaluation_result"],
                 "iteration_count": section["iteration"],
