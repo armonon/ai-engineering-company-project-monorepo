@@ -26,6 +26,15 @@ RUN uv pip install --system -r requirements.txt
 
 WORKDIR /workspace/services/api
 
+# Runtime code never needs root. Creating the writable data paths before the
+# named volumes are mounted also gives those volumes the correct ownership.
+RUN addgroup --system trackflow \
+    && adduser --system --ingroup trackflow --home /home/trackflow trackflow \
+    && mkdir -p /workspace/services/api/data /workspace/data/rfp-runtime \
+    && chown -R trackflow:trackflow /workspace/services/api/data /workspace/data/rfp-runtime
+
+USER trackflow
+
 EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

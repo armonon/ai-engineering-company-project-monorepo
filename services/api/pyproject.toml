@@ -19,6 +19,9 @@ dependencies = [
     "libpass[bcrypt]>=1.9.3",
     "python-dotenv>=1.2.2",
     "pydantic[email]>=2.13.4",
+    # Explicit security floor for GHSA-3q7g-wj9x-g8f5 (excessive CPU while
+    # parsing crafted DNS names). email-validator otherwise permits 2.8.0.
+    "dnspython>=2.9.0",
     "httpx>=0.27",
     "trackflow-shared>=0.1.0",
     "sqlmodel>=0.0.39",
@@ -63,7 +66,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 # Flat layout: the milestone specifies main.py / models.py / database.py /
 # seed.py at services/api/ with routes/ beside them.
-py-modules = ["main", "models", "schemas", "database", "seed", "seed_inventory", "security", "services_users", "email_service", "password_reset", "seed_incidents_entry", "inventory_telemetry_config", "celery_app", "task_queue_storage"]
+py-modules = ["main", "models", "schemas", "database", "seed", "seed_inventory", "security", "rate_limit", "services_users", "email_service", "password_reset", "seed_incidents_entry", "inventory_telemetry_config", "celery_app", "task_queue_storage"]
 
 [tool.setuptools.packages.find]
 include = ["routes*", "routers*"]

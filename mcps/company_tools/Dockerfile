@@ -12,6 +12,13 @@ COPY mcps/company_tools/company_tools_mcp ./company_tools_mcp
 
 RUN uv sync --frozen --no-dev
 
+RUN addgroup --system trackflow \
+    && adduser --system --ingroup trackflow --home /home/trackflow trackflow \
+    && mkdir -p /app/data \
+    && chown -R trackflow:trackflow /app
+
+USER trackflow
+
 EXPOSE 8010
 
 CMD ["uv", "run", "uvicorn", "company_tools_mcp.server_app:app", "--host", "0.0.0.0", "--port", "8010"]
