@@ -6,7 +6,8 @@ from datetime import date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from celery_app import enqueue_weekly_performance_task
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from models import Role, UserInDB
 from pydantic import BaseModel, ConfigDict
 from security import get_current_user
@@ -16,7 +17,6 @@ from trackflow_pipeline.queries import (
     get_latest_run,
     get_weekly_performance,
 )
-from trackflow_pipeline.runner import submit_weekly_performance_run
 
 router = APIRouter(prefix="/reporting", tags=["reporting"])
 
@@ -48,6 +48,7 @@ class LatestPipelineRunResponse(BaseModel):
 
 
 class PipelineRunAccepted(BaseModel):
+    task_id: str | None = None
     run_id: UUID
     status: str
     window_start: datetime
@@ -99,7 +100,6 @@ def latest_pipeline_run(
 )
 def trigger_pipeline_run(
     payload: PipelineRunRequest,
-    background_tasks: BackgroundTasks,
     caller: UserInDB = Depends(get_current_user),
 ) -> dict:
     if caller.role not in {Role.ADMIN, Role.MANAGER}:
@@ -125,19 +125,19 @@ def trigger_pipeline_run(
         }
 
     run_id = str(uuid4())
-    background_tasks.add_task(
-        submit_weekly_performance_run,
+    task_id = enqueue_weekly_performance_task(
         window_start=window_start,
         window_end=window_end,
         run_id=run_id,
         trigger="manual",
     )
     return {
+        "task_id": task_id,
         "run_id": run_id,
         "status": "Accepted",
         "window_start": window_start,
         "window_end": window_end,
-        "status_url": "/reporting/pipeline-runs/latest",
+        "status_url": f"/tasks/{task_id}",
     }
 
 

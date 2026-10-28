@@ -28,6 +28,7 @@ from routers.incidents_manager import router as incidents_manager_router
 from routers.inventory import router as inventory_router
 from routers.profiles import router as profiles_router
 from routers.suppliers import router as suppliers_router
+from routers.tasks import router as tasks_router
 from routers.telemetry import router as telemetry_router
 from routers.telemetry_report import router as telemetry_report_router
 from routers.users import router as users_router
@@ -49,9 +50,11 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     FastAPI has deprecated.
     """
     from database import create_inventory_schema
+    from task_queue_storage import ensure_dead_letter_schema
 
     try:
         if create_inventory_schema():
+            ensure_dead_letter_schema()
             logger.info("Inventory and telemetry schema ready in Supabase")
         else:
             logger.warning(
@@ -147,6 +150,7 @@ app.include_router(inventory_router)
 app.include_router(telemetry_router)
 app.include_router(telemetry_report_router)
 app.include_router(reporting_router)
+app.include_router(tasks_router)
 
 
 @app.get("/", tags=["health"])

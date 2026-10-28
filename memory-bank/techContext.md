@@ -12,9 +12,10 @@
 | Backend services         | **FastAPI**                            | Central API under `services/api`, managed with `uv`.          |
 | Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers auth/local data; inventory and append-only telemetry use PostgreSQL/Supabase. |
 | Business pipeline        | **Prefect 3 + SQLAlchemy**              | Three-stage weekly warehouse/client KPI subflows with cached pure transforms and idempotent reporting upserts. |
+| Async task queue         | **Celery + Redis + Flower**              | FastAPI publishes lightweight reporting jobs; an independent worker retries and records terminal failures durably. |
 | Coursework agent         | **OpenClaw 2026.7.1+**                 | Dedicated agent uses this repository as its workspace.       |
 | CI                       | **GitHub Actions**                     | PRs and `main` run bootstrap, typecheck, JS/Python tests, builds, and production audit. |
-| Local containers         | **Docker Compose**                     | One UI container (website + backoffice) and one reloadable FastAPI container. |
+| Local containers         | **Docker Compose**                     | UI, reloadable FastAPI, Redis, independent Celery worker, and Flower task monitor. |
 
 ## Repository layout (what matters right now)
 
@@ -36,7 +37,7 @@
 ./data/pipelines/                — Prefect business pipeline, queries, and reporting schema
 ./data/process/                  — pure reusable business-event transformation
 ./tests/pipelines/               — database-free unit tests for business KPI transformation
-./docker-compose.yml             — two-service local development environment
+./docker-compose.yml             — UI/API plus Redis, Celery worker, and Flower
 ./skills/                        — OpenClaw-visible reusable coursework skills
 ```
 
@@ -62,13 +63,15 @@
    backend service can consume them.
 5. **All secrets remain out of the repo.** No `.env` committed; each
    app has an `.env.example`.
-6. **Two development containers, one company repository.** The UI image runs
+6. **One company stack, independently scaled processes.** The UI image runs
    the website and backoffice on ports 3000 and 3001 through `uis/start.sh`;
-   the backend image runs the centralized FastAPI app on port 8000. Compose
+   the backend image runs the centralized FastAPI app on port 8000; the Celery
+   worker runs separately from that same backend image. Redis is the shared
+   broker/result backend and Flower exposes task events on port 5555. Compose
    bind mounts source for hot reload and keeps dependencies/data in named
-  volumes. Browser requests use the same-origin `/trackflow-api` and
-  `/talent-api` paths; the backoffice Next.js server proxies them to the local
-  backend and the 4Geeks Talent Tracker respectively.
+   volumes. Browser requests use the same-origin `/trackflow-api` and
+   `/talent-api` paths; the backoffice Next.js server proxies them to the local
+   backend and the 4Geeks Talent Tracker respectively.
 
 ## Active technical constraints
 
