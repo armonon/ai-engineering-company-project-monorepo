@@ -22,13 +22,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from reporting import router as reporting_router
 
-from routers.auth import router as auth_router
 from routers.agent import router as agent_router
+from routers.auth import router as auth_router
 from routers.incidents import router as incidents_router
 from routers.incidents_manager import router as incidents_manager_router
 from routers.inventory import router as inventory_router
 from routers.knowledge import router as knowledge_router
 from routers.profiles import router as profiles_router
+from routers.rfp import router as rfp_router
 from routers.suppliers import router as suppliers_router
 from routers.tasks import router as tasks_router
 from routers.telemetry import router as telemetry_router
@@ -155,6 +156,7 @@ app.include_router(telemetry_router)
 app.include_router(telemetry_report_router)
 app.include_router(reporting_router)
 app.include_router(tasks_router)
+app.include_router(rfp_router)
 
 
 @app.get("/", tags=["health"])

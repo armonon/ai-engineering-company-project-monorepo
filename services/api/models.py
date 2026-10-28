@@ -15,7 +15,17 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
-from sqlalchemy import JSON, CheckConstraint, Column, DateTime, Index, Numeric, Text, text
+from sqlalchemy import (
+    JSON,
+    CheckConstraint,
+    Column,
+    DateTime,
+    Index,
+    Numeric,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 
 # ---------------------------------------------------------------------------
@@ -99,15 +109,11 @@ class SupplierBase(BaseModel):
         ),
     )
     currency: Currency = Field(..., description="USD for USA, EUR for Spain")
-    status: Status = Field(
-        default=Status.ACTIVE, description="active or suspended"
-    )
+    status: Status = Field(default=Status.ACTIVE, description="active or suspended")
     service_zone: str | None = Field(
         default=None, description="Supplier coverage zone, e.g. 'West Coast'"
     )
-    contact_email: str | None = Field(
-        default=None, description="Supplier contact email"
-    )
+    contact_email: str | None = Field(default=None, description="Supplier contact email")
     notes: str | None = Field(default=None, description="Operations team notes")
 
     @field_validator("name")
@@ -150,9 +156,7 @@ class RateUpdate(BaseModel):
     CONTEXT: "Do not accept rates equal to or less than zero."
     """
 
-    rate_per_shipment: float = Field(
-        ..., gt=0, description="New rate. Must be greater than zero."
-    )
+    rate_per_shipment: float = Field(..., gt=0, description="New rate. Must be greater than zero.")
 
 
 class StatusUpdate(BaseModel):
@@ -220,9 +224,7 @@ class UserCreate(BaseModel):
     """
 
     email: EmailStr = Field(..., description="Login identity. Must be unique.")
-    password: str = Field(
-        ..., min_length=8, description="Plain text in, hashed before storage."
-    )
+    password: str = Field(..., min_length=8, description="Plain text in, hashed before storage.")
 
     # Optional initial profile — stored on Profile, not on User.
     name: str | None = Field(default=None, description="Display name (Profile).")
@@ -521,9 +523,7 @@ class TelemetryEventRecord(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
-    timestamp: datetime = SQLField(
-        sa_column=Column(DateTime(timezone=True), nullable=False)
-    )
+    timestamp: datetime = SQLField(sa_column=Column(DateTime(timezone=True), nullable=False))
     service: str = SQLField(sa_type=Text, nullable=False)
     event_type: str = SQLField(sa_type=Text, nullable=False)
     level: str = SQLField(
@@ -541,3 +541,86 @@ class TelemetryEventRecord(SQLModel, table=True):
             server_default=text("'{}'"),
         )
     )
+
+
+# ===========================================================================
+# Agentic RFP workflow — PostgreSQL/Supabase source of truth
+# ===========================================================================
+
+
+class RfpTicketStatus(str, Enum):
+    ANALYZING = "analyzing"
+    DISCARDED = "discarded"
+    INTAKE_COMPLETE = "intake_complete"
+    DRAFTING = "drafting"
+    UNDER_EVALUATION = "under_evaluation"
+    NEEDS_HUMAN_REVIEW = "needs_human_review"
+    WAITING_FOR_APPROVAL = "waiting_for_approval"
+    DONE = "done"
+
+
+class RfpTicket(SQLModel, table=True):
+    """One continuous ticket shared by all three RFP workflow parts."""
+
+    __tablename__ = "rfp_tickets"
+
+    ticket_id: str = SQLField(primary_key=True)
+    rfp_id: str | None = SQLField(default=None, index=True)
+    status: RfpTicketStatus = SQLField(index=True)
+    raw_pdf_path: str
+    created_by: str = SQLField(index=True)
+    processing_error: str | None = SQLField(default=None, sa_type=Text)
+    sales_summary: str | None = SQLField(default=None, sa_type=Text)
+    handoff_payload: dict[str, Any] = SQLField(
+        default_factory=dict,
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False, default=dict),
+    )
+    ready_for_generation: bool = SQLField(default=False, index=True)
+    created_at: datetime = SQLField(default_factory=utcnow)
+    updated_at: datetime = SQLField(default_factory=utcnow)
+
+
+class RfpMetadataRecord(SQLModel, table=True):
+    __tablename__ = "rfp_metadata"
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    ticket_id: str = SQLField(foreign_key="rfp_tickets.ticket_id", unique=True, index=True)
+    client_name: str
+    client_country: str
+    currency: str
+    services_requested: list[str] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    monthly_volume: int | None = None
+    deadline: str | None = None
+    budget_range: str | None = None
+    departments_needed: list[str] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    readability_metrics: dict[str, Any] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    markdown_path: str
+
+
+class DepartmentSection(SQLModel, table=True):
+    __tablename__ = "rfp_department_sections"
+    __table_args__ = (
+        UniqueConstraint("ticket_id", "department_id", name="uq_rfp_section_department"),
+    )
+
+    id: int | None = SQLField(default=None, primary_key=True)
+    ticket_id: str = SQLField(foreign_key="rfp_tickets.ticket_id", index=True)
+    department_id: str = SQLField(index=True)
+    key_aspects: list[str] = SQLField(
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=False)
+    )
+    contact: str
+    draft_content: str | None = SQLField(default=None, sa_type=Text)
+    evaluation_results: dict[str, Any] | None = SQLField(
+        default=None,
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=True),
+    )
+    approval_status: str = SQLField(default="not_started", index=True)
+    approver: str | None = None
+    approved_at: datetime | None = None

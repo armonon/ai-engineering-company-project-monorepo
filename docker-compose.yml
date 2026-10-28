@@ -43,6 +43,8 @@ services:
       COMPANY_MCP_URL: http://company-tools-mcp:8010/mcp
       COMPANY_MCP_ACCESS_TOKEN: ${COMPANY_MCP_ACCESS_TOKEN:-}
       COMPANY_MCP_TIMEOUT_SECONDS: ${COMPANY_MCP_TIMEOUT_SECONDS:-5}
+      RFP_RAW_DIR: /workspace/data/rfp-runtime/raw
+      RFP_MARKDOWN_DIR: /workspace/data/rfp-runtime/processed
     ports:
       - "8000:8000"
     volumes:
@@ -54,6 +56,7 @@ services:
       - ./docs/company-knowledge-base:/workspace/docs/company-knowledge-base:ro
       - ./services/reporting:/workspace/services/reporting
       - api_data:/workspace/services/api/data
+      - rfp_data:/workspace/data/rfp-runtime
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=2)"]
       interval: 5s
@@ -98,6 +101,8 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-sqlite:////workspace/services/api/data/inventory.db}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RFP_RAW_DIR: /workspace/data/rfp-runtime/raw
+      RFP_MARKDOWN_DIR: /workspace/data/rfp-runtime/processed
     volumes:
       - ./services/api:/workspace/services/api
       - ./packages/incident_analyzer:/workspace/packages/incident_analyzer
@@ -106,6 +111,7 @@ services:
       - ./data/pipelines:/workspace/data/pipelines
       - ./services/reporting:/workspace/services/reporting
       - api_data:/workspace/services/api/data
+      - rfp_data:/workspace/data/rfp-runtime
     depends_on:
       redis:
         condition: service_healthy
@@ -166,3 +172,4 @@ volumes:
   redis_data:
   qdrant_data:
   mcp_audit_data:
+  rfp_data:

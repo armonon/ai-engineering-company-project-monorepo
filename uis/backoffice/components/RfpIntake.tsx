@@ -1,0 +1,144 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import {
+  fetchRfpTicket,
+  fetchRfpTickets,
+  RfpTicket,
+  uploadRfp,
+} from "@/lib/rfp";
+
+const STATUS_STYLE: Record<string, string> = {
+  analyzing: "bg-amber-100 text-amber-800",
+  intake_complete: "bg-emerald-100 text-emerald-800",
+  discarded: "bg-slate-200 text-slate-700",
+};
+
+export function RfpIntake() {
+  const [tickets, setTickets] = useState<RfpTicket[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      setTickets(await fetchRfpTickets());
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Could not load RFP tickets.");
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    if (!tickets.some((ticket) => ticket.status === "analyzing")) return;
+    const timer = window.setInterval(async () => {
+      const refreshed = await Promise.all(
+        tickets.map((ticket) =>
+          ticket.status === "analyzing"
+            ? fetchRfpTicket(ticket.ticket_id)
+            : Promise.resolve(ticket),
+        ),
+      );
+      setTickets(refreshed);
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [tickets]);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    try {
+      await uploadRfp(file);
+      setFile(null);
+      const input = document.querySelector<HTMLInputElement>("#rfp-document");
+      if (input) input.value = "";
+      await load();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={submit} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <label htmlFor="rfp-document" className="block text-sm font-semibold text-slate-900">
+          Client RFP (PDF)
+        </label>
+        <p className="mt-1 text-sm text-slate-600">
+          The upload returns immediately. TrackFlow converts, classifies, and routes it in the background.
+        </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input
+            id="rfp-document"
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+            className="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+          />
+          <button
+            type="submit"
+            disabled={!file || busy}
+            className="rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {busy ? "Creating ticket…" : "Upload RFP"}
+          </button>
+        </div>
+        {error ? <p role="alert" className="mt-3 text-sm text-red-700">{error}</p> : null}
+      </form>
+
+      <section className="space-y-4" aria-live="polite">
+        {tickets.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+            No RFP tickets yet.
+          </p>
+        ) : null}
+        {tickets.map((ticket) => (
+          <article key={ticket.ticket_id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-mono text-xs text-slate-500">{ticket.ticket_id}</p>
+                <h2 className="mt-1 font-semibold text-slate-950">
+                  {ticket.metadata?.client_name ?? "Document under analysis"}
+                </h2>
+              </div>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS_STYLE[ticket.status]}`}>
+                {ticket.status.replaceAll("_", " ")}
+              </span>
+            </div>
+            {ticket.processing_error ? (
+              <p role="alert" className="mt-3 text-sm text-red-700">{ticket.processing_error}</p>
+            ) : null}
+            {ticket.sales_summary ? <p className="mt-3 text-sm text-slate-700">{ticket.sales_summary}</p> : null}
+            {ticket.metadata ? (
+              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                <div><dt className="text-slate-500">Market</dt><dd className="font-medium">{ticket.metadata.client_country} · {ticket.metadata.currency}</dd></div>
+                <div><dt className="text-slate-500">Monthly volume</dt><dd className="font-medium">{ticket.metadata.monthly_volume?.toLocaleString() ?? "Open question"}</dd></div>
+                <div><dt className="text-slate-500">Estimated tokens</dt><dd className="font-medium">{ticket.metadata.readability_metrics.estimated_tokens}</dd></div>
+              </dl>
+            ) : null}
+            {ticket.sections.length ? (
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                {ticket.sections.map((section) => (
+                  <section key={section.department_id} className="rounded-lg bg-slate-50 p-4">
+                    <h3 className="font-semibold capitalize text-slate-900">{section.department_id}</h3>
+                    <p className="text-xs text-slate-500">Contact: {section.contact}</p>
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
+                      {section.key_aspects.map((aspect) => <li key={aspect}>{aspect}</li>)}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            ) : null}
+          </article>
+        ))}
+      </section>
+    </div>
+  );
+}
