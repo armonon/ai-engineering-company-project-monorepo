@@ -6,12 +6,18 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-from rfp_intake import IntakeResult, ResponseResult, RfpClassification
+from rfp_intake import IntakeResult, ResponseResult, RfpClassification, generate_response
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, create_engine, select
 
 from database import get_db
-from models import DepartmentSection, RfpMetadataRecord, RfpTicket, RfpTicketStatus
+from models import (
+    DepartmentSection,
+    FinalRfpDocument,
+    RfpMetadataRecord,
+    RfpTicket,
+    RfpTicketStatus,
+)
 from routers.rfp import persist_intake_result, persist_response_result
 
 
@@ -26,6 +32,7 @@ def rfp_session(signed_in: TestClient) -> Iterator[Session]:
         RfpTicket.__table__,
         RfpMetadataRecord.__table__,
         DepartmentSection.__table__,
+        FinalRfpDocument.__table__,
     ):
         table.create(engine)
     session = Session(engine)
@@ -290,3 +297,39 @@ def test_response_result_persists_draft_evaluation_and_part3_handoff(
     assert saved_section.draft_content == section["draft_content"]
     assert saved_section.evaluation_results == evaluation
     assert saved_section.approval_status == "ready_for_approval"
+
+
+def _approval_ready_ticket(session: Session) -> RfpTicket:
+    ticket = _ready_ticket(session, "approval-ticket")
+    result = generate_response(ticket.handoff_payload)
+    persist_response_result(session, result)
+    session.refresh(ticket)
+    return ticket
+
+
+def test_approval_branches_resume_independently_and_create_final_document(
+    signed_in: TestClient,
+    rfp_session: Session,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ticket = _approval_ready_ticket(rfp_session)
+    monkeypatch.setenv("RFP_CHECKPOINT_DB", str(tmp_path / "approval-checkpoints.sqlite3"))
+
+    started = signed_in.post(f"/rfp/tickets/{ticket.ticket_id}/approval/start")
+    assert started.status_code == 200, started.text
+    assert started.json()["status"] == "waiting_for_approval"
+    assert started.json()["departments"] == {"warehouse": "waiting_for_approval"}
+
+    approved = signed_in.post(
+        f"/rfp/tickets/{ticket.ticket_id}/approval/warehouse",
+        json={"decision": "approve", "reason": "Capacity confirmed."},
+    )
+    assert approved.status_code == 200, approved.text
+    assert approved.json()["status"] == "done"
+    assert approved.json()["approval_status"] == "approved"
+
+    document = signed_in.get(f"/rfp/tickets/{ticket.ticket_id}/final-document")
+    assert document.status_code == 200
+    assert "Approved by Ana Whitfield" in document.json()["content"]
+    assert rfp_session.exec(select(FinalRfpDocument)).one().currency == "EUR"

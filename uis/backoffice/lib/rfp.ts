@@ -48,6 +48,11 @@ export interface RfpTicket {
   ready_for_generation: boolean;
   metadata: RfpMetadata | null;
   sections: RfpSection[];
+  final_document: {
+    generated_at: string;
+    currency: string;
+    content: string;
+  } | null;
 }
 
 export async function uploadRfp(document: File): Promise<{
@@ -79,4 +84,29 @@ export async function startRfpGeneration(ticketId: string): Promise<{
   );
   if (!response.ok) throw new Error(await readApiError(response));
   return response.json();
+}
+
+export async function startRfpApproval(ticketId: string): Promise<void> {
+  const response = await authFetch(
+    `/rfp/tickets/${encodeURIComponent(ticketId)}/approval/start`,
+    { method: "POST" },
+  );
+  if (!response.ok) throw new Error(await readApiError(response));
+}
+
+export async function decideRfpApproval(
+  ticketId: string,
+  departmentId: string,
+  decision: "approve" | "reject" | "request_changes",
+  reason: string,
+): Promise<void> {
+  const response = await authFetch(
+    `/rfp/tickets/${encodeURIComponent(ticketId)}/approval/${encodeURIComponent(departmentId)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ decision, reason }),
+    },
+  );
+  if (!response.ok) throw new Error(await readApiError(response));
 }

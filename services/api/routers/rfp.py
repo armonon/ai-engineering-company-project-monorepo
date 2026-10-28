@@ -10,12 +10,22 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
-from rfp_intake import IntakeResult, ResponseResult, build_response_graph, process_rfp
+from pydantic import BaseModel, Field
+from rfp_intake import (
+    ApprovalCoordinator,
+    ApprovalDecision,
+    IntakeResult,
+    ResponseResult,
+    build_response_graph,
+    process_rfp,
+    synthesize_final_document,
+)
 from sqlmodel import Session, select
 
 from database import get_db, inventory_engine
 from models import (
     DepartmentSection,
+    FinalRfpDocument,
     RfpMetadataRecord,
     RfpTicket,
     RfpTicketStatus,
@@ -28,9 +38,19 @@ router = APIRouter(prefix="/rfp/tickets", tags=["rfp-workflow"])
 MAX_PDF_BYTES = 12 * 1024 * 1024
 
 
+class ApprovalDecisionRequest(BaseModel):
+    decision: ApprovalDecision
+    reason: str = Field(default="", max_length=2_000)
+
+
 def _raw_dir() -> Path:
     default = Path(__file__).resolve().parents[3] / "data" / "raw"
     return Path(os.getenv("RFP_RAW_DIR", default))
+
+
+def _checkpoint_path() -> Path:
+    default = Path(__file__).resolve().parents[3] / "data" / "checkpoints" / "rfp.sqlite3"
+    return Path(os.getenv("RFP_CHECKPOINT_DB", default))
 
 
 def _can_read(ticket: RfpTicket, caller: UserInDB) -> bool:
@@ -46,6 +66,9 @@ def _ticket_payload(session: Session, ticket: RfpTicket) -> dict[str, Any]:
         .where(DepartmentSection.ticket_id == ticket.ticket_id)
         .order_by(DepartmentSection.department_id)
     ).all()
+    final_document = session.exec(
+        select(FinalRfpDocument).where(FinalRfpDocument.ticket_id == ticket.ticket_id)
+    ).first()
     return {
         "ticket_id": ticket.ticket_id,
         "rfp_id": ticket.rfp_id,
@@ -81,6 +104,15 @@ def _ticket_payload(session: Session, ticket: RfpTicket) -> dict[str, Any]:
             }
             for section in sections
         ],
+        "final_document": (
+            {
+                "generated_at": final_document.generated_at,
+                "currency": final_document.currency,
+                "content": final_document.content,
+            }
+            if final_document
+            else None
+        ),
     }
 
 
@@ -217,6 +249,79 @@ def generate_ticket_background(ticket_id: str, handoff_payload: dict[str, Any]) 
             logger.exception("Could not persist RFP generation failure for %s", ticket_id)
 
 
+def _approval_coordinator() -> ApprovalCoordinator:
+    return ApprovalCoordinator(_checkpoint_path())
+
+
+def _persist_approval_state(
+    session: Session, ticket: RfpTicket, states: dict[str, dict[str, Any]]
+) -> None:
+    resolved_metadata = next(iter(states.values())).get(
+        "metadata", ticket.handoff_payload["metadata"]
+    )
+    sections = {
+        section.department_id: section
+        for section in session.exec(
+            select(DepartmentSection).where(DepartmentSection.ticket_id == ticket.ticket_id)
+        ).all()
+    }
+    for department_id, state in states.items():
+        section = sections.get(department_id)
+        if section is None:
+            raise LookupError(f"Missing department section {department_id!r}")
+        section.draft_content = state["draft_content"]
+        section.evaluation_results = state["evaluation_result"]
+        section.approval_status = state["approval_status"]
+        section.approver = state.get("approver")
+        section.approved_at = (
+            datetime.now(UTC) if state["approval_status"] == "approved" else None
+        )
+        session.add(section)
+
+    statuses = {state["approval_status"] for state in states.values()}
+    if statuses == {"approved"}:
+        metadata = resolved_metadata
+        ordered = [states[section.department_id] for section in sections.values()]
+        content = synthesize_final_document(ticket.ticket_id, metadata, ordered)
+        final_document = session.exec(
+            select(FinalRfpDocument).where(FinalRfpDocument.ticket_id == ticket.ticket_id)
+        ).first()
+        if final_document is None:
+            final_document = FinalRfpDocument(
+                ticket_id=ticket.ticket_id,
+                sections=ordered,
+                currency=metadata["currency"],
+                content=content,
+            )
+        else:
+            final_document.sections = ordered
+            final_document.currency = metadata["currency"]
+            final_document.content = content
+            final_document.generated_at = datetime.now(UTC)
+        session.add(final_document)
+        ticket.status = RfpTicketStatus.DONE
+    elif "waiting_for_approval" in statuses:
+        ticket.status = RfpTicketStatus.WAITING_FOR_APPROVAL
+    else:
+        ticket.status = RfpTicketStatus.NEEDS_HUMAN_REVIEW
+    ticket.updated_at = datetime.now(UTC)
+    ticket.handoff_payload = {
+        **ticket.handoff_payload,
+        "metadata": resolved_metadata,
+        "approval_states": {
+            department_id: {
+                "thread_id": state["thread_id"],
+                "approval_status": state["approval_status"],
+                "approver": state.get("approver"),
+                "trace": state.get("trace", []),
+            }
+            for department_id, state in states.items()
+        },
+    }
+    session.add(ticket)
+    session.commit()
+
+
 @router.post("", status_code=202)
 async def upload_rfp(
     background_tasks: BackgroundTasks,
@@ -289,6 +394,112 @@ def start_response_generation(
     session.commit()
     background_tasks.add_task(generate_ticket_background, ticket_id, handoff)
     return {"ticket_id": ticket_id, "status": RfpTicketStatus.DRAFTING.value}
+
+
+@router.post("/{ticket_id}/approval/start")
+def start_approval(
+    ticket_id: str,
+    caller: UserInDB = Depends(get_current_user),
+    session: Session = Depends(get_db),
+) -> dict[str, Any]:
+    ticket = session.get(RfpTicket, ticket_id)
+    if ticket is None or not _can_read(ticket, caller):
+        raise HTTPException(status_code=404, detail="RFP ticket not found.")
+    if ticket.status not in {
+        RfpTicketStatus.UNDER_EVALUATION,
+        RfpTicketStatus.NEEDS_HUMAN_REVIEW,
+    }:
+        raise HTTPException(
+            status_code=409,
+            detail="Approval requires the Part 2 generation handoff.",
+        )
+    if not ticket.handoff_payload.get("sections"):
+        raise HTTPException(status_code=409, detail="The Part 2 handoff is incomplete.")
+    coordinator = _approval_coordinator()
+    try:
+        states = coordinator.start(ticket.handoff_payload)
+    finally:
+        coordinator.close()
+    _persist_approval_state(session, ticket, states)
+    return {
+        "ticket_id": ticket_id,
+        "status": ticket.status.value,
+        "departments": {
+            department_id: state["approval_status"]
+            for department_id, state in states.items()
+        },
+    }
+
+
+@router.post("/{ticket_id}/approval/{department_id}")
+def resume_approval(
+    ticket_id: str,
+    department_id: str,
+    body: ApprovalDecisionRequest,
+    caller: UserInDB = Depends(get_current_user),
+    session: Session = Depends(get_db),
+) -> dict[str, Any]:
+    ticket = session.get(RfpTicket, ticket_id)
+    if ticket is None or not _can_read(ticket, caller):
+        raise HTTPException(status_code=404, detail="RFP ticket not found.")
+    section = session.exec(
+        select(DepartmentSection).where(
+            DepartmentSection.ticket_id == ticket_id,
+            DepartmentSection.department_id == department_id,
+        )
+    ).first()
+    if section is None:
+        raise HTTPException(status_code=404, detail="RFP department section not found.")
+    coordinator = _approval_coordinator()
+    try:
+        try:
+            coordinator.resume(
+                ticket_id,
+                department_id,
+                body.decision,
+                section.contact,
+                body.reason,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        departments = session.exec(
+            select(DepartmentSection).where(DepartmentSection.ticket_id == ticket_id)
+        ).all()
+        states = {
+            item.department_id: coordinator.snapshot(ticket_id, item.department_id)
+            for item in departments
+        }
+    finally:
+        coordinator.close()
+    _persist_approval_state(session, ticket, states)
+    return {
+        "ticket_id": ticket_id,
+        "status": ticket.status.value,
+        "department_id": department_id,
+        "approval_status": states[department_id]["approval_status"],
+    }
+
+
+@router.get("/{ticket_id}/final-document")
+def get_final_document(
+    ticket_id: str,
+    caller: UserInDB = Depends(get_current_user),
+    session: Session = Depends(get_db),
+) -> dict[str, Any]:
+    ticket = session.get(RfpTicket, ticket_id)
+    if ticket is None or not _can_read(ticket, caller):
+        raise HTTPException(status_code=404, detail="RFP ticket not found.")
+    document = session.exec(
+        select(FinalRfpDocument).where(FinalRfpDocument.ticket_id == ticket_id)
+    ).first()
+    if document is None:
+        raise HTTPException(status_code=404, detail="Final document is not available yet.")
+    return {
+        "ticket_id": ticket_id,
+        "currency": document.currency,
+        "generated_at": document.generated_at,
+        "content": document.content,
+    }
 
 
 @router.get("/{ticket_id}")
