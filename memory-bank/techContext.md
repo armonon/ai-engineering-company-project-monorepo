@@ -110,6 +110,10 @@
   dedicated embedding model and generation uses a different chat model. A
   missing or low-score context must never fall back to an ungrounded policy
   answer, and provider credentials remain only in ignored environment files.
+- **Agent orchestration is an explicit compiled graph.** LangGraph nodes reuse
+  the RAG retrieval/generation boundaries, checkpoint each transition, and
+  emit append-only queryable traces. The API only invokes the compiled graph;
+  it does not own routing or business logic.
 
 ## Known technical debt
 

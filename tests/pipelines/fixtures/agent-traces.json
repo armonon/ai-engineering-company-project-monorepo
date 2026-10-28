@@ -1,0 +1,31 @@
+[
+  {
+    "name": "empty question stops before retrieval",
+    "question": "",
+    "answer": "Please provide a TrackFlow policy question.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 0, "error": "empty_question"}},
+      {"sequence": 2, "node": "invalid_question", "output": {"answer": "Please provide a TrackFlow policy question."}}
+    ]
+  },
+  {
+    "name": "unknown policy takes honest no-context route",
+    "question": "Does TrackFlow insure fine art?",
+    "answer": "I don't have enough verified TrackFlow information to answer that.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 30}},
+      {"sequence": 2, "node": "retrieve", "output": {"context_count": 0, "sources": []}},
+      {"sequence": 3, "node": "no_context", "output": {"answer": "I don't have enough verified TrackFlow information to answer that."}}
+    ]
+  },
+  {
+    "name": "high-demand answer remains grounded",
+    "question": "Can we promise express delivery during Black Friday?",
+    "answer": "No SLA can be promised during Black Friday; delivery may take up to 40% longer.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 52}},
+      {"sequence": 2, "node": "retrieve", "output": {"context_count": 1, "sources": [{"source_document": "trackflow-sla-delivery.en.md", "section": "High-demand dates"}]}},
+      {"sequence": 3, "node": "generate", "output": {"answer": "No SLA can be promised during Black Friday; delivery may take up to 40% longer."}}
+    ]
+  }
+]
