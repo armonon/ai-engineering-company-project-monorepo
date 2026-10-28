@@ -1109,3 +1109,21 @@ Three consequential edits came with it:
 - Added approved/rejected evidence cycles and focused coverage for proposal,
   approval, rejection, safe editing, future recall, and answering a second
   question after a decision.
+
+## 2026-10-28 — Agent harness and deterministic guardrails
+
+- Hardened the existing TrackFlow first-line CX agent with an immutable system
+  role covering tracking, returns, country-specific SLAs, and incidents in the
+  United States and Spain.
+- Added distinct deterministic guards for jailbreaks, personal-chatbot abuse,
+  casual/general redirection, per-session order authorization, US/Spain policy
+  substitution, untrusted external instructions, malformed model output, and
+  sensitive/internal output leakage.
+- Made order access deny by default for non-admin users and configurable only
+  through an explicit per-user allowlist; unauthorized lookups stop before MCP.
+- Logged every block or redirect with its structural/content/security class and
+  added an authenticated aggregate summary endpoint. Bound detailed trace runs
+  to the invoking principal to prevent cross-customer trace disclosure.
+- Added fixed abuse fixtures covering three jailbreak variants, the required
+  unauthorized order and policy-mixing cases, RAG poisoning, all output failure
+  classes, legitimate domain use, and observable summary counts.

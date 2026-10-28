@@ -41,9 +41,11 @@ def test_no_context_routes_to_honest_answer_without_generation(tmp_path: Path):
     assert result.answer == NO_INFORMATION
     assert [event["node"] for event in result.trace] == [
         "receive",
+        "input_guard",
         "route",
         "retrieve",
         "no_context",
+        "output_guard",
     ]
     assert generation_calls == []
 
@@ -67,21 +69,23 @@ def test_retrieval_and_generation_are_separate_single_calls(tmp_path: Path):
     )
     result = graph.invoke("Black Friday?", run_id="grounded-run")
     assert result.answer == "Delivery may take 40% longer."
-    assert calls == [
-        ("retrieve", "Black Friday?"),
-        ("generate", "Black Friday?", context),
-    ]
+    assert calls[0] == ("retrieve", "Black Friday?")
+    assert calls[1][0:2] == ("generate", "Black Friday?")
+    assert calls[1][2][0]["source_document"] == "policy.md"
+    assert "UNTRUSTED_EVIDENCE" in calls[1][2][0]["text"]
     assert [event["node"] for event in result.trace] == [
         "receive",
+        "input_guard",
         "route",
         "retrieve",
         "generate",
+        "output_guard",
     ]
 
 
 def test_checkpoint_contains_final_state(tmp_path: Path):
     graph = runtime(tmp_path, [{"text": "approved context"}])
-    graph.invoke("What is approved?", run_id="checkpoint-run")
+    graph.invoke("What TrackFlow policy is approved?", run_id="checkpoint-run")
     snapshot = graph.graph.get_state({"configurable": {"thread_id": "checkpoint-run"}})
     assert snapshot.values["answer"] == "grounded answer"
     assert snapshot.values["context"] == [{"text": "approved context"}]
@@ -107,9 +111,11 @@ def test_ticket_question_uses_real_reader_not_rag(tmp_path: Path):
     assert "Incident 482: status=in_progress" in result.answer
     assert [event["node"] for event in result.trace] == [
         "receive",
+        "input_guard",
         "route",
         "ticket_lookup",
         "tool_answer",
+        "output_guard",
     ]
     assert rag_calls == []
 
@@ -158,9 +164,11 @@ def test_inventory_question_uses_separate_read_only_tool(tmp_path: Path):
     assert "31 units in warehouse ZGZ" in result.answer
     assert [event["node"] for event in result.trace] == [
         "receive",
+        "input_guard",
         "route",
         "inventory_lookup",
         "tool_answer",
+        "output_guard",
     ]
 
 
@@ -239,5 +247,5 @@ def test_agent_answers_a_new_question_after_resolving_prior_proposal(tmp_path: P
     assert [event["node"] for event in result.trace][:3] == [
         "receive",
         "memory_decision",
-        "memory_lookup",
+        "input_guard",
     ]
