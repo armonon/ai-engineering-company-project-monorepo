@@ -16,6 +16,7 @@ const NAV = [
   { href: "/reporting", label: "Weekly reporting" },
   { href: "/knowledge", label: "Sales knowledge" },
   { href: "/rfp", label: "RFP workflow" },
+  { href: "/observability", label: "Agent observability" },
   { href: "/talent", label: "Talent pipeline" },
   { href: "/suppliers", label: "Supplier directory" },
   { href: "/account/profile", label: "My profile" },

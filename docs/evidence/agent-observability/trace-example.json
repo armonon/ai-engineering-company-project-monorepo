@@ -1,0 +1,32 @@
+{
+  "flow_id": "chat-1",
+  "flow_type": "chat_session",
+  "triggered_by": "client_inbound_message:message-1",
+  "agent_id": "first_line_cx",
+  "tasks": [
+    {
+      "task_id": "chat-1-query",
+      "action_type": "query",
+      "trigger": "external:client_inbound_message:message-1",
+      "previous_task_id": null,
+      "next_task_id": "chat-1-tool",
+      "derived_task_ids": ["chat-1-tool"]
+    },
+    {
+      "task_id": "chat-1-tool",
+      "action_type": "tool_call",
+      "trigger": "chat-1-query",
+      "previous_task_id": "chat-1-query",
+      "next_task_id": "chat-1-deliver",
+      "derived_task_ids": ["chat-1-deliver"]
+    },
+    {
+      "task_id": "chat-1-deliver",
+      "action_type": "deliver",
+      "trigger": "chat-1-tool",
+      "previous_task_id": "chat-1-tool",
+      "next_task_id": null,
+      "derived_task_ids": []
+    }
+  ]
+}
