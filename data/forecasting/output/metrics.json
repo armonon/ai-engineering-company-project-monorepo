@@ -1,0 +1,40 @@
+{
+  "random_state": 42,
+  "raw_rows": 120,
+  "usable_train_rows": 84,
+  "test_rows": 24,
+  "train_period": [
+    "2017-01-01",
+    "2023-12-01"
+  ],
+  "test_period": [
+    "2024-01-01",
+    "2025-12-01"
+  ],
+  "dropped_initial_lag_rows": 12,
+  "features": [
+    "revenue_lag_1",
+    "revenue_lag_12",
+    "revenue_rolling_mean_3",
+    "revenue_rolling_std_3",
+    "revenue_rolling_mean_12",
+    "month_sin",
+    "month_cos",
+    "quarter",
+    "growth_cycle",
+    "trend_index"
+  ],
+  "model": "SeasonalResidualForecaster(RandomForestRegressor)",
+  "model_reason": "Small monthly dataset and Finance-facing explainability favor bagged trees; predicting a correction to lag-12 preserves the EUR target while allowing continued growth.",
+  "seasonal_naive_rmse_eur": 93184.41610527103,
+  "mse_eur_squared": 3141295686.152989,
+  "rmse_eur": 56047.26296754364,
+  "rmse_percent_mean_test_revenue": 4.314404245683502,
+  "mae_eur": 44676.787633240725,
+  "r2": 0.8926823645116568,
+  "psi_train_vs_test_revenue": 9.245440661540448,
+  "normalized_gini": 0.9227369735348062,
+  "k2_residual_statistic": 0.26604605206197146,
+  "k2_residual_pvalue": 0.8754449338545165,
+  "variability_band_coverage": 0.5
+}

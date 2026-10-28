@@ -13,6 +13,7 @@
 | Persistence              | **TinyDB + SQLModel/PostgreSQL**        | TinyDB covers auth/local data; inventory and append-only telemetry use PostgreSQL/Supabase. |
 | Business pipeline        | **Prefect 3 + SQLAlchemy**              | Three-stage weekly warehouse/client KPI subflows with cached pure transforms and idempotent reporting upserts. |
 | Async task queue         | **Celery + Redis + Flower**              | FastAPI publishes lightweight reporting jobs; an independent worker retries and records terminal failures durably. |
+| Sales forecasting        | **scikit-learn + statsmodels + Matplotlib** | Causal monthly features, seasonal decomposition, Random Forest residual forecast, and held-out evaluation. |
 | Coursework agent         | **OpenClaw 2026.7.1+**                 | Dedicated agent uses this repository as its workspace.       |
 | CI                       | **GitHub Actions**                     | PRs and `main` run bootstrap, typecheck, JS/Python tests, builds, and production audit. |
 | Local containers         | **Docker Compose**                     | UI, reloadable FastAPI, Redis, independent Celery worker, and Flower task monitor. |
@@ -36,6 +37,7 @@
 ./services/reporting/            — authenticated pipeline status, trigger, and KPI endpoints
 ./data/pipelines/                — Prefect business pipeline, queries, and reporting schema
 ./data/process/                  — pure reusable business-event transformation
+./data/forecasting/              — TrackFlow monthly revenue features, model, evaluation, and plots
 ./tests/pipelines/               — database-free unit tests for business KPI transformation
 ./docker-compose.yml             — UI/API plus Redis, Celery worker, and Flower
 ./skills/                        — OpenClaw-visible reusable coursework skills
@@ -94,6 +96,10 @@
   batch is loose, each item is validated against the unchanged envelope model
   and approved catalogue, and all valid rows use one PostgreSQL bulk insert.
   No update/delete path exists for historical events.
+- **Sales forecasting is chronological and causal.** The first eight source
+  years are assigned to training, 2024–2025 remain held out, and every lag or
+  rolling statistic is shifted before calculation. Forecast preprocessing is
+  fitted on training rows only.
 
 ## Known technical debt
 
