@@ -1,0 +1,29 @@
+{
+  "scenario": "approved carrier-rule memory",
+  "turns": [
+    {
+      "message": "SEUR no longer covers rural Zaragoza, so we must use the local carrier.",
+      "expected": {
+        "proposal_created": true,
+        "memory_written": false,
+        "answer_asks_for_explicit_decision": true
+      }
+    },
+    {
+      "message": "Yes, remember it",
+      "expected": {
+        "decision": "approve",
+        "memory_written": true,
+        "pending_proposals": 0
+      }
+    },
+    {
+      "message": "What is the SEUR rule for Zaragoza?",
+      "expected": {
+        "memory_lookup_matches": 1,
+        "answer_uses_approved_fact": true
+      }
+    }
+  ],
+  "automated_evidence": "tests/pipelines/test_agent_graph.py::test_memory_requires_a_separate_explicit_approval_turn"
+}

@@ -8,7 +8,7 @@ def test_agent_query_requires_auth(api):
 
 def test_agent_query_invokes_compiled_runtime(signed_in):
     result = SimpleNamespace(answer="Grounded answer", run_id="run-123")
-    mock_runtime = SimpleNamespace(invoke=lambda _question: result)
+    mock_runtime = SimpleNamespace(invoke=lambda _question, user_id: result)
     with (
         patch("routers.agent.runtime", mock_runtime),
         patch.object(mock_runtime, "invoke", return_value=result) as invoke,
@@ -16,11 +16,11 @@ def test_agent_query_invokes_compiled_runtime(signed_in):
         response = signed_in.post("/agent/query", json={"question": "What is the SLA?"})
     assert response.status_code == 200
     assert response.json() == {"answer": "Grounded answer", "run_id": "run-123"}
-    invoke.assert_called_once_with("What is the SLA?")
+    invoke.assert_called_once_with("What is the SLA?", user_id="1")
 
 
 def test_agent_failure_does_not_expose_internal_details(signed_in):
-    mock_runtime = SimpleNamespace(invoke=lambda _question: None)
+    mock_runtime = SimpleNamespace(invoke=lambda _question, user_id: None)
     with (
         patch("routers.agent.runtime", mock_runtime),
         patch.object(mock_runtime, "invoke", side_effect=RuntimeError("provider-secret")),

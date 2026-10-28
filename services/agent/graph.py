@@ -12,6 +12,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from trackflow_pipeline.rag import NO_INFORMATION, generate_answer, retrieve
 
+from .memory import MemoryStore, classify_decision, evaluate_memory_candidate
 from .tools import (
     IncidentReader,
     InventoryLookupInput,
@@ -30,6 +31,7 @@ class AgentState(TypedDict, total=False):
     """Only data required by the next node; conversation history is excluded."""
 
     run_id: str
+    user_id: str
     question: str
     context: list[dict[str, Any]]
     tool_context: list[dict[str, Any]]
@@ -39,6 +41,8 @@ class AgentState(TypedDict, total=False):
     needs_rag: bool
     answer: str
     error: str
+    memory_decision_only: bool
+    memory_decision: str
 
 
 @dataclass(frozen=True)
@@ -53,10 +57,15 @@ class AgentRuntime:
     graph: Any
     traces: TraceStore
 
-    def invoke(self, question: str, run_id: str | None = None) -> AgentRun:
+    def invoke(
+        self,
+        question: str,
+        run_id: str | None = None,
+        user_id: str = "anonymous",
+    ) -> AgentRun:
         actual_run_id = run_id or str(uuid4())
         final = self.graph.invoke(
-            {"question": question, "run_id": actual_run_id},
+            {"question": question, "run_id": actual_run_id, "user_id": user_id},
             config={"configurable": {"thread_id": actual_run_id}},
         )
         return AgentRun(
@@ -72,9 +81,11 @@ def build_graph(
     trace_store: TraceStore | None = None,
     incident_reader: IncidentReader | None = None,
     inventory_reader: InventoryReader | None = None,
+    memory_store: MemoryStore | None = None,
 ) -> AgentRuntime:
     """Define and compile the graph before any request can execute it."""
     traces = trace_store or TraceStore()
+    memories = memory_store
 
     def receive_node(state: AgentState) -> AgentState:
         question = str(state.get("question", "")).strip()
@@ -86,6 +97,66 @@ def build_graph(
             safe_output["error"] = "empty_question"
         traces.append(run_id, "receive", safe_output)
         return output
+
+    def memory_decision_node(state: AgentState) -> AgentState:
+        """Resolve exactly one prior proposal before handling this turn."""
+        if memories is None:
+            traces.append(state["run_id"], "memory_decision", {"pending": False})
+            return {"memory_decision_only": False}
+        proposal = memories.pending(state["user_id"])
+        if proposal is None:
+            traces.append(state["run_id"], "memory_decision", {"pending": False})
+            return {"memory_decision_only": False}
+
+        decision = classify_decision(state["question"])
+        saved = memories.resolve(proposal, decision, state["question"])
+        traces.append(
+            state["run_id"],
+            "memory_decision",
+            {
+                "pending": True,
+                "proposal_id": proposal.proposal_id,
+                "decision": decision.label,
+                "persisted": saved is not None,
+            },
+        )
+        if decision.label in {"approve", "edit"} and saved:
+            confirmation = "I saved that approved TrackFlow memory."
+        elif decision.label == "ambiguous":
+            confirmation = "I did not save it because the response was not an explicit approval."
+        else:
+            confirmation = "I did not save that proposed memory."
+        if decision.remaining_message:
+            return {
+                "question": decision.remaining_message,
+                "memory_decision_only": False,
+                "memory_decision": confirmation,
+            }
+        return {
+            "answer": confirmation,
+            "memory_decision_only": True,
+            "memory_decision": confirmation,
+        }
+
+    def memory_lookup_node(state: AgentState) -> AgentState:
+        records = memories.search(state["user_id"], state["question"]) if memories else []
+        context = [
+            {
+                "source_document": "trackflow-agent-memory",
+                "section": f"{record.category}:{record.scope_key}",
+                "text": record.fact,
+            }
+            for record in records
+        ]
+        traces.append(
+            state["run_id"],
+            "memory_lookup",
+            {
+                "match_count": len(records),
+                "categories": sorted({record.category for record in records}),
+            },
+        )
+        return {"tool_context": context}
 
     def route_node(state: AgentState) -> AgentState:
         question = state["question"]
@@ -122,7 +193,6 @@ def build_graph(
             "ticket_id": ticket_id,
             "needs_inventory": inventory_signal,
             "needs_rag": needs_rag,
-            "tool_context": [],
         }
         traces.append(
             state["run_id"],
@@ -201,6 +271,8 @@ def build_graph(
         combined_context = [*state.get("tool_context", []), *state.get("context", [])]
         answer = generator(state["question"], combined_context)
         traces.append(state["run_id"], "generate", {"answer": answer})
+        if state.get("memory_decision"):
+            answer = f"{state['memory_decision']} {answer}"
         return {"answer": answer}
 
     def tool_answer_node(state: AgentState) -> AgentState:
@@ -225,6 +297,8 @@ def build_graph(
             "tool_answer",
             {"answer": answer, "used_live_context": bool(context)},
         )
+        if state.get("memory_decision"):
+            answer = f"{state['memory_decision']} {answer}"
         return {"answer": answer}
 
     def invalid_question_node(state: AgentState) -> AgentState:
@@ -233,11 +307,51 @@ def build_graph(
         return {"answer": answer}
 
     def no_context_node(state: AgentState) -> AgentState:
-        traces.append(state["run_id"], "no_context", {"answer": NO_INFORMATION})
-        return {"answer": NO_INFORMATION}
+        answer = NO_INFORMATION
+        if state.get("memory_decision"):
+            answer = f"{state['memory_decision']} {answer}"
+        traces.append(state["run_id"], "no_context", {"answer": answer})
+        return {"answer": answer}
+
+    def memory_review_node(state: AgentState) -> AgentState:
+        """Evaluate after answering and request consent; never write here."""
+        answer = state.get("answer", NO_INFORMATION)
+        candidate = evaluate_memory_candidate(state["question"])
+        proposed = False
+        proposal_id = None
+        if memories and candidate and memories.pending(state["user_id"]) is None:
+            proposal = memories.propose(
+                user_id=state["user_id"],
+                run_id=state["run_id"],
+                originating_message=state["question"],
+                candidate=candidate,
+            )
+            proposal_id = proposal.proposal_id
+            proposed = True
+            answer = (
+                f"{answer}\n\nThis may help with future TrackFlow work: "
+                f"{candidate.fact}\nWould you like me to remember it? "
+                "Reply exactly with approve, reject, or edit: <corrected fact>."
+            )
+        traces.append(
+            state["run_id"],
+            "memory_review",
+            {
+                "candidate": candidate.category if candidate else None,
+                "proposed": proposed,
+                "proposal_id": proposal_id,
+                "persisted": False,
+            },
+        )
+        return {"answer": answer}
 
     def after_receive(state: AgentState) -> str:
-        return "invalid_question" if state.get("error") else "route"
+        if state.get("error"):
+            return "invalid_question"
+        return "memory_decision" if memories else "route"
+
+    def after_memory_decision(state: AgentState) -> str:
+        return END if state.get("memory_decision_only") else "memory_lookup"
 
     def after_route(state: AgentState) -> str:
         if state.get("route") == "incident":
@@ -261,6 +375,8 @@ def build_graph(
 
     workflow = StateGraph(AgentState)
     workflow.add_node("receive", receive_node)
+    workflow.add_node("memory_decision", memory_decision_node)
+    workflow.add_node("memory_lookup", memory_lookup_node)
     workflow.add_node("route", route_node)
     workflow.add_node("ticket_lookup", incident_tool_node)
     workflow.add_node("inventory_lookup", inventory_tool_node)
@@ -269,12 +385,23 @@ def build_graph(
     workflow.add_node("tool_answer", tool_answer_node)
     workflow.add_node("invalid_question", invalid_question_node)
     workflow.add_node("no_context", no_context_node)
+    workflow.add_node("memory_review", memory_review_node)
     workflow.add_edge(START, "receive")
     workflow.add_conditional_edges(
         "receive",
         after_receive,
-        {"route": "route", "invalid_question": "invalid_question"},
+        {
+            "memory_decision": "memory_decision",
+            "route": "route",
+            "invalid_question": "invalid_question",
+        },
     )
+    workflow.add_conditional_edges(
+        "memory_decision",
+        after_memory_decision,
+        {"memory_lookup": "memory_lookup", END: END},
+    )
+    workflow.add_edge("memory_lookup", "route")
     workflow.add_conditional_edges(
         "route",
         after_route,
@@ -303,10 +430,11 @@ def build_graph(
         after_retrieve,
         {"generate": "generate", "no_context": "no_context"},
     )
-    workflow.add_edge("generate", END)
-    workflow.add_edge("tool_answer", END)
+    workflow.add_edge("generate", "memory_review" if memories else END)
+    workflow.add_edge("tool_answer", "memory_review" if memories else END)
     workflow.add_edge("invalid_question", END)
-    workflow.add_edge("no_context", END)
+    workflow.add_edge("no_context", "memory_review" if memories else END)
+    workflow.add_edge("memory_review", END)
 
     # Compilation validates the state machine before requests reach it.
     compiled = workflow.compile(checkpointer=MemorySaver())
