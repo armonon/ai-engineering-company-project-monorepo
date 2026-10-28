@@ -3,18 +3,69 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlmodel import Session, col, select
 from trackflow_agent import AgentRuntime, build_graph
 
-from models import UserInDB
+from database import incidents_table, inventory_engine
+from models import SKU, UserInDB
+from routers.inventory import _stock_by_warehouse, _to_sku_read
 from security import get_current_user
 
 logger = logging.getLogger("trackflow.agent")
 router = APIRouter(prefix="/agent", tags=["agent"])
-runtime: AgentRuntime = build_graph()
+
+
+def _read_incident(incident_id: int) -> dict[str, Any] | None:
+    """Read the existing TinyDB incident repository; never mutate it."""
+    document = incidents_table().get(doc_id=incident_id)
+    if document is None:
+        return None
+    return {**document, "id": document.doc_id}
+
+
+def _read_inventory(query: str) -> list[dict[str, Any]]:
+    """Read live SQLModel inventory and compute stock from movements."""
+    useful_terms = {
+        term
+        for term in re.findall(r"[a-z0-9-]+", query.lower())
+        if len(term) >= 3
+        and term
+        not in {
+            "available",
+            "current",
+            "have",
+            "inventory",
+            "many",
+            "much",
+            "please",
+            "show",
+            "stock",
+            "units",
+            "what",
+        }
+    }
+    with Session(inventory_engine()) as session:
+        skus = session.exec(select(SKU).order_by(col(SKU.id))).all()
+        if useful_terms:
+            skus = [
+                sku
+                for sku in skus
+                if any(term in f"{sku.name} {sku.sku}".lower() for term in useful_terms)
+            ]
+        skus = skus[:10]
+        totals = _stock_by_warehouse(session, [sku.id for sku in skus if sku.id is not None])
+        return [_to_sku_read(sku, totals).model_dump(mode="json") for sku in skus]
+
+
+runtime: AgentRuntime = build_graph(
+    incident_reader=_read_incident,
+    inventory_reader=_read_inventory,
+)
 
 
 class AgentQuery(BaseModel):

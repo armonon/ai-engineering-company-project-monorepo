@@ -14,8 +14,9 @@
     "answer": "I don't have enough verified TrackFlow information to answer that.",
     "trace": [
       {"sequence": 1, "node": "receive", "output": {"question_length": 30}},
-      {"sequence": 2, "node": "retrieve", "output": {"context_count": 0, "sources": []}},
-      {"sequence": 3, "node": "no_context", "output": {"answer": "I don't have enough verified TrackFlow information to answer that."}}
+      {"sequence": 2, "node": "route", "output": {"primary_source": "rag", "needs_rag": true, "needs_inventory": false, "has_ticket_id": false}},
+      {"sequence": 3, "node": "retrieve", "output": {"context_count": 0, "sources": []}},
+      {"sequence": 4, "node": "no_context", "output": {"answer": "I don't have enough verified TrackFlow information to answer that."}}
     ]
   },
   {
@@ -24,8 +25,31 @@
     "answer": "No SLA can be promised during Black Friday; delivery may take up to 40% longer.",
     "trace": [
       {"sequence": 1, "node": "receive", "output": {"question_length": 52}},
-      {"sequence": 2, "node": "retrieve", "output": {"context_count": 1, "sources": [{"source_document": "trackflow-sla-delivery.en.md", "section": "High-demand dates"}]}},
-      {"sequence": 3, "node": "generate", "output": {"answer": "No SLA can be promised during Black Friday; delivery may take up to 40% longer."}}
+      {"sequence": 2, "node": "route", "output": {"primary_source": "rag", "needs_rag": true, "needs_inventory": false, "has_ticket_id": false}},
+      {"sequence": 3, "node": "retrieve", "output": {"context_count": 1, "sources": [{"source_document": "trackflow-sla-delivery.en.md", "section": "High-demand dates"}]}},
+      {"sequence": 4, "node": "generate", "output": {"answer": "No SLA can be promised during Black Friday; delivery may take up to 40% longer."}}
+    ]
+  },
+  {
+    "name": "ticket status routes only to live incident tool",
+    "question": "What is the status of ticket 482?",
+    "answer": "Incident 482: status=in_progress; category=delivery_delay; origin=customer; branch=los_angeles; updated_at=2026-10-02T00:00:00Z.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 33}},
+      {"sequence": 2, "node": "route", "output": {"primary_source": "incident", "needs_rag": false, "needs_inventory": false, "has_ticket_id": true}},
+      {"sequence": 3, "node": "ticket_lookup", "output": {"ticket_id": 482, "found": true, "status": "in_progress", "error": null, "timeout_seconds": 4.0, "read_only": true}},
+      {"sequence": 4, "node": "tool_answer", "output": {"used_live_context": true}}
+    ]
+  },
+  {
+    "name": "incident outage produces honest fallback",
+    "question": "What is the status of incident 482?",
+    "answer": "I couldn't confirm incident 482's status right now. Please try again shortly.",
+    "trace": [
+      {"sequence": 1, "node": "receive", "output": {"question_length": 35}},
+      {"sequence": 2, "node": "route", "output": {"primary_source": "incident", "needs_rag": false, "needs_inventory": false, "has_ticket_id": true}},
+      {"sequence": 3, "node": "ticket_lookup", "output": {"ticket_id": 482, "found": false, "status": null, "error": "timeout", "timeout_seconds": 4.0, "read_only": true}},
+      {"sequence": 4, "node": "tool_answer", "output": {"used_live_context": false}}
     ]
   }
 ]

@@ -24,6 +24,7 @@ def test_eval_no_context_is_honest_and_never_generates():
     assert case["answer"] == "I don't have enough verified TrackFlow information to answer that."
     assert [event["node"] for event in case["trace"]] == [
         "receive",
+        "route",
         "retrieve",
         "no_context",
     ]
@@ -40,3 +41,28 @@ def test_eval_high_demand_answer_is_grounded_in_trackflow_briefing():
     ]
     assert "Black Friday" in case["answer"]
     assert "40%" in case["answer"]
+
+
+def test_eval_ticket_status_uses_tool_and_not_rag():
+    case = by_name("ticket status routes only to live incident tool")
+    nodes = [event["node"] for event in case["trace"]]
+    assert nodes == ["receive", "route", "ticket_lookup", "tool_answer"]
+    assert "retrieve" not in nodes
+    tool = next(event for event in case["trace"] if event["node"] == "ticket_lookup")
+    assert tool["output"]["read_only"] is True
+    assert tool["output"]["timeout_seconds"] == 4.0
+
+
+def test_eval_policy_uses_rag_and_not_tool():
+    case = by_name("high-demand answer remains grounded")
+    nodes = [event["node"] for event in case["trace"]]
+    assert "retrieve" in nodes
+    assert "ticket_lookup" not in nodes
+    assert "inventory_lookup" not in nodes
+
+
+def test_eval_tool_outage_never_invents_status():
+    case = by_name("incident outage produces honest fallback")
+    assert "couldn't confirm" in case["answer"]
+    assert "open" not in case["answer"]
+    assert "resolved" not in case["answer"]
