@@ -2,6 +2,30 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-28 · Formal regression-model evaluation
+
+**Branch:** `codex/regression-model-evaluation`
+
+- Evaluated the approved TrackFlow seasonal-residual Random Forest exclusively
+  on the 2017-2023 usable training matrix; the final 2024-2025 test period stays
+  untouched for post-selection confirmation.
+- Added five expanding `TimeSeriesSplit` folds with 12-month validation windows,
+  explicit chronological guards, and raw-prefix reconstruction proving each lag
+  and rolling feature is unchanged when future rows are absent.
+- Generated the required learning curve and reported training/validation MAE
+  and RMSE as mean ± sample standard deviation across folds. Validation RMSE is
+  EUR 54,296 ± 14,435 versus training RMSE EUR 17,585 ± 3,145.
+- Diagnosed moderate overfitting from the persistent learning-curve gap. The
+  specific corrective experiment is to increase `min_samples_leaf` and reduce
+  `max_depth`, selecting values through the same temporal folds before touching
+  the final test set.
+- Documented RMSE as primary because large peak-season capacity misses have
+  disproportionate operational cost, while retaining MAE as typical EUR error.
+- Added an exact rubric map and tests for fold chronology and future-target
+  mutation invariance.
+- Traceability: `DOC-1`; official “Evaluating a Regression Model” rubric and the
+  TrackFlow sales briefing.
+
 ## 2026-10-28 · TrackFlow sales forecasting
 
 **Branch:** `codex/sales-forecast-model`
