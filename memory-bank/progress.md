@@ -1074,3 +1074,21 @@ Three consequential edits came with it:
 - Added focused routing, timeout, inventory, trace-eval, and API integration
   coverage. Exported tool-only and RAG-only traces live under
   `docs/evidence/langgraph-agent-tools/`.
+
+## 2026-10-28 — OAuth-protected company-tools MCP server
+
+- Added an independent Streamable HTTP FastMCP server under `mcps/` and wrapped
+  it with MCP Auth resource-server middleware rather than FastMCP's built-in
+  authentication. Protected Resource Metadata advertises the OIDC issuer,
+  resource audience, bearer method, and least-privilege scopes.
+- Published typed, self-describing incident read/create/lifecycle tools plus a
+  read-only inventory query. An explicit inventory write tool always returns
+  `INVENTORY_READ_ONLY` without calling the API.
+- Added distinct authentication, authorization, validation, not-found, and
+  availability error codes plus append-only secret-free invocation auditing.
+- Migrated the LangGraph agent from direct TinyDB/SQLModel readers to
+  `langchain-mcp-adapters` discovery and invocation over OAuth-authenticated
+  Streamable HTTP.
+- Added an end-to-end local OAuth/MCP/adapter acceptance test, discovery and
+  scope tests, exact upstream route tests, Compose wiring, container definition,
+  and external Playground instructions under `docs/evidence/mcp-company-tools/`.

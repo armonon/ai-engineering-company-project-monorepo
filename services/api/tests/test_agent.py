@@ -38,24 +38,9 @@ def test_agent_trace_is_queryable(signed_in):
     assert response.json() == {"run_id": "run-123", "events": events}
 
 
-def test_agent_ticket_tool_reads_existing_incident_manager(signed_in):
-    created = signed_in.post(
-        "/api/incidents",
-        json={
-            "title": "Parcel missing from the Zaragoza outbound bay",
-            "description": "Scanned in but absent from the loading dock.",
-            "category": "lost_parcel",
-            "origin": "branch",
-            "branch": "zaragoza_warehouse",
-        },
-    )
-    assert created.status_code == 201
-    incident = created.json()
+def test_agent_runtime_is_wired_to_company_tools_mcp():
+    from trackflow_agent import CompanyToolsMCPClient
 
-    response = signed_in.post(
-        "/agent/query",
-        json={"question": f"What is the status of ticket {incident['id']}?"},
-    )
+    from routers import agent
 
-    assert response.status_code == 200
-    assert f"Incident {incident['id']}: status=open" in response.json()["answer"]
+    assert isinstance(agent.company_tools, CompanyToolsMCPClient)

@@ -1,0 +1,30 @@
+[project]
+name = "trackflow-company-tools-mcp"
+version = "0.1.0"
+description = "OAuth-protected MCP server for TrackFlow company tools"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.28,<1",
+    "langchain-mcp-adapters>=0.2,<1",
+    "mcp[cli]>=1.12.3,<2",
+    "mcpauth==0.2.0b1",
+    "pydantic>=2.11,<3",
+    "uvicorn>=0.34,<1",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["company_tools_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<10",
+    "pytest-asyncio>=0.26,<2",
+]
