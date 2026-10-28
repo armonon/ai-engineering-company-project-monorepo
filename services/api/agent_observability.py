@@ -34,7 +34,17 @@ AGENT_REGISTRY = {
     },
 }
 
-ACTION_TYPES = {"query", "tool_call", "draft_start", "write", "evaluate", "deliver"}
+ACTION_TYPES = {
+    "query",
+    "tool_call",
+    "draft_start",
+    "write",
+    "evaluate",
+    "deliver",
+    "pause",
+    "resume",
+    "cancel",
+}
 _subscribers: set[queue.Queue[dict[str, Any]]] = set()
 _subscriber_lock = threading.Lock()
 
@@ -148,6 +158,7 @@ def record_task(
     payload: dict[str, Any] | None = None,
     task_id: str | None = None,
     previous_task_id: str | None = None,
+    actor_id: str | None = None,
 ) -> ObservedTask:
     if action_type not in ACTION_TYPES:
         raise ValueError(f"Unsupported TrackFlow action_type {action_type!r}")
@@ -165,6 +176,7 @@ def record_task(
         department_id=department_id,
         payload=payload or {},
         previous_task_id=previous_task_id,
+        actor_id=actor_id,
     )
     if previous_task_id:
         previous = session.get(ObservedTask, previous_task_id)
@@ -279,5 +291,6 @@ def serialize_task(task: ObservedTask) -> dict[str, Any]:
         "next_task_id": task.next_task_id,
         "department_id": task.department_id,
         "payload": task.payload,
+        "actor_id": task.actor_id,
         "created_at": task.created_at,
     }

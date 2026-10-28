@@ -1,0 +1,29 @@
+{
+  "execution": {
+    "agent_id": "rfp_pipeline",
+    "flow_id": "rfp-ticket-2",
+    "checkpoint": {
+      "last_task_id": "rfp-ticket-2-query",
+      "langgraph_thread_ids": [
+        "rfp-ticket-2:warehouse",
+        "rfp-ticket-2:reverse"
+      ]
+    }
+  },
+  "events": [
+    {
+      "event": "control_applied",
+      "action": "pause",
+      "actor_id": "user_3",
+      "status": "paused"
+    },
+    {
+      "event": "control_applied",
+      "action": "resume",
+      "actor_id": "user_3",
+      "status": "waiting_for_human"
+    }
+  ],
+  "cancel_is_terminal": true,
+  "pubsub_verified_with_two_clients": true
+}
