@@ -11,34 +11,29 @@ import {
   type WeeklyPerformanceTotals,
 } from "@/lib/reporting";
 
-const KPI_CARDS: {
+export const KPI_CARDS: {
   field: keyof WeeklyPerformanceTotals;
   label: string;
   description: string;
 }[] = [
   {
     field: "inbound_units_count",
-    label: "Weekly Inbound Units Count",
+    label: "Inbound Volume",
     description: "Units received across TrackFlow warehouses",
   },
   {
     field: "outbound_orders_count",
-    label: "Weekly Outbound Orders Count",
+    label: "Outbound Throughput",
     description: "Distinct outbound orders dispatched",
   },
   {
     field: "stockout_events_count",
-    label: "Weekly Stockout Events Count",
+    label: "Stockout Frequency",
     description: "Minimum-stock threshold events",
   },
   {
-    field: "discrepancy_events_count",
-    label: "Weekly Discrepancy Events Count",
-    description: "Physical-count discrepancies recorded",
-  },
-  {
     field: "discrepancy_rate",
-    label: "Weekly Discrepancy Rate",
+    label: "Discrepancy Rate",
     description: "Discrepancies divided by outbound orders",
   },
 ];
