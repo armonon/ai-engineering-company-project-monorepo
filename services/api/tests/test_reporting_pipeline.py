@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import time
 from collections.abc import Iterator
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -192,8 +193,8 @@ def test_reporting_endpoints_follow_the_briefing_contract(
     submitted: list[dict] = []
     monkeypatch.setattr(
         reporting_router,
-        "submit_weekly_performance_run",
-        lambda **kwargs: submitted.append(kwargs),
+        "enqueue_weekly_performance_task",
+        lambda **kwargs: submitted.append(kwargs) or "celery-task-123",
     )
 
     latest = reporting_api.get("/reporting/pipeline-runs/latest")
@@ -204,9 +205,14 @@ def test_reporting_endpoints_follow_the_briefing_contract(
     assert report.status_code == 200
     assert report.json() == {"week_start": None, "entries": []}
 
+    started = time.perf_counter()
     trigger = reporting_api.post("/reporting/pipeline-runs", json={"week_start": "2026-07-13"})
+    elapsed = time.perf_counter() - started
     assert trigger.status_code == 202
+    assert elapsed < 0.2
     assert trigger.json()["status"] == "Accepted"
+    assert trigger.json()["task_id"] == "celery-task-123"
+    assert trigger.json()["status_url"] == "/tasks/celery-task-123"
     assert len(submitted) == 1
 
     bad_week = reporting_api.get(

@@ -2,6 +2,31 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-28 · Redis/Celery message queues and async tasks
+
+**Branch:** `codex/async-tasks`
+
+- Offloaded the existing weekly warehouse/client reporting pipeline from the
+  FastAPI request process to an independent Celery worker. The trigger returns
+  `202 Accepted` with a task ID and authenticated `/tasks/{task_id}` status URL.
+- Added Redis as both broker and result backend, a separate worker, and Flower
+  to Docker Compose. Task messages carry identifiers and bounded window values,
+  while late acknowledgement, worker-loss rejection, time limits, event
+  monitoring, and no-eviction Redis policy make delivery behaviour explicit.
+- Added three-attempt exponential retry handling and a durable SQL dead-letter
+  record containing task ID, task name, attempt, safe error summary, and UTC
+  failure time. Structured worker logs include ID, attempt, state, duration,
+  retry delay, and error without connection strings or payload data.
+- Live Docker acceptance completed one real reporting task and one controlled
+  three-attempt failure. Flower showed one success and one failure, and the
+  final failure was present in the durable dead-letter table. Evidence lives at
+  `docs/evidence/async-tasks/`.
+- Pinned the mutually compatible FastAPI/Prefect range after a clean container
+  build exposed an upstream API incompatibility. Focused acceptance coverage
+  passes 19 tests and also enforces the sub-200 ms API handoff contract.
+- Traceability: `DOC-1`, `MONO-2`; official 4Geeks “Message Queues and Async
+  Tasks” rubric and the existing reporting-pipeline design.
+
 ## 2026-10-26 · Python Todo List CLI
 
 **Branch:** `codex/todo-list-cli-python`

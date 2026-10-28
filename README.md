@@ -83,12 +83,29 @@ docker compose up --build
 - Website: <http://localhost:3000>
 - Backoffice: <http://localhost:3001>
 - API docs: <http://localhost:8000/docs>
+- Flower task monitor: <http://localhost:5555>
 
 The UI container runs the two Next.js workspaces through `uis/start.sh`.
-The backend container runs Uvicorn with reload enabled. Source folders are
+The backend container runs Uvicorn with reload enabled. Redis brokers heavy
+reporting jobs to a separate Celery worker, and Flower displays their lifecycle.
+Source folders are
 bind-mounted for hot reload, while dependencies and local development data
 stay in named volumes. The committed `.env.example` contains only safe local
 defaults; `.env` remains ignored and must never contain committed secrets.
+
+Trigger the existing weekly reporting pipeline through
+`POST /reporting/pipeline-runs`; the API responds with `202 Accepted` and a
+Celery `task_id`. Poll `GET /tasks/{task_id}` for `pending`, `started`,
+`success`, or `failure`. The worker retries failures with exponential backoff
+and records the third failure in the database-backed dead-letter queue.
+
+To operate the worker independently without stopping the API:
+
+```bash
+docker compose stop worker     # stop only the consumer
+docker compose start worker    # resume queued work
+docker compose logs -f worker  # inspect task/retry logs
+```
 
 ---
 
