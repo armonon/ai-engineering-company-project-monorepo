@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-from trackflow_agent import TicketLookupInput, TraceStore, build_graph
+from trackflow_agent import MemoryStore, TicketLookupInput, TraceStore, build_graph
 from trackflow_agent.tools import lookup_ticket
 from trackflow_pipeline.rag import NO_INFORMATION
 
@@ -161,4 +161,83 @@ def test_inventory_question_uses_separate_read_only_tool(tmp_path: Path):
         "route",
         "inventory_lookup",
         "tool_answer",
+    ]
+
+
+def test_memory_requires_a_separate_explicit_approval_turn(tmp_path: Path):
+    memory = MemoryStore(tmp_path / "memory.db")
+    graph = build_graph(
+        retriever=lambda _question: [{"text": "Carrier policy context."}],
+        generator=lambda _question, context: " | ".join(item["text"] for item in context),
+        trace_store=TraceStore(tmp_path / "memory-traces.db"),
+        memory_store=memory,
+    )
+
+    first = graph.invoke(
+        "SEUR no longer covers rural Zaragoza, so we must use the local carrier.",
+        run_id="proposal-run",
+        user_id="7",
+    )
+    assert "Would you like me to remember it?" in first.answer
+    assert memory.list_memories("7") == []
+    assert memory.pending("7") is not None
+    assert first.trace[-1]["node"] == "memory_review"
+    assert first.trace[-1]["output"]["persisted"] is False
+
+    second = graph.invoke("Yes, remember it", run_id="approval-run", user_id="7")
+    assert second.answer == "I saved that approved TrackFlow memory."
+    assert len(memory.list_memories("7")) == 1
+    assert second.trace[-1]["output"]["decision"] == "approve"
+
+    third = graph.invoke("What is the SEUR rule for Zaragoza?", run_id="recall-run", user_id="7")
+    assert "SEUR no longer covers rural Zaragoza" in third.answer
+    lookup = next(event for event in third.trace if event["node"] == "memory_lookup")
+    assert lookup["output"]["match_count"] == 1
+
+
+def test_ambiguous_memory_response_is_logged_as_rejected(tmp_path: Path):
+    memory = MemoryStore(tmp_path / "rejected-memory.db")
+    graph = build_graph(
+        retriever=lambda _question: [],
+        generator=lambda *_args: "unused",
+        trace_store=TraceStore(tmp_path / "rejected-traces.db"),
+        memory_store=memory,
+    )
+    graph.invoke(
+        "This is the third ticket this week: delays in Zaragoza are due to flooding.",
+        run_id="proposal-run",
+        user_id="8",
+    )
+    result = graph.invoke("maybe later", run_id="reject-run", user_id="8")
+
+    assert "not an explicit approval" in result.answer
+    assert memory.list_memories("8") == []
+    assert memory.proposal_log("8")[0]["status"] == "ambiguous_rejected"
+
+
+def test_agent_answers_a_new_question_after_resolving_prior_proposal(tmp_path: Path):
+    memory = MemoryStore(tmp_path / "continuation-memory.db")
+    graph = build_graph(
+        retriever=lambda _question: [{"text": "Escalate after 24 hours."}],
+        generator=lambda _question, context: context[-1]["text"],
+        trace_store=TraceStore(tmp_path / "continuation-traces.db"),
+        memory_store=memory,
+    )
+    graph.invoke(
+        "SEUR no longer covers rural Zaragoza, so we must use the local carrier.",
+        run_id="proposal-run",
+        user_id="9",
+    )
+    result = graph.invoke(
+        "Approve and what is the escalation policy?",
+        run_id="decision-and-question-run",
+        user_id="9",
+    )
+
+    assert "I saved that approved TrackFlow memory." in result.answer
+    assert "Escalate after 24 hours." in result.answer
+    assert [event["node"] for event in result.trace][:3] == [
+        "receive",
+        "memory_decision",
+        "memory_lookup",
     ]

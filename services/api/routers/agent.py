@@ -7,7 +7,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from trackflow_agent import AgentRuntime, CompanyToolsMCPClient, build_graph
+from trackflow_agent import AgentRuntime, CompanyToolsMCPClient, MemoryStore, build_graph
 
 from models import UserInDB
 from security import get_current_user
@@ -17,9 +17,11 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 
 
 company_tools = CompanyToolsMCPClient.from_env()
+memory_store = MemoryStore()
 runtime: AgentRuntime = build_graph(
     incident_reader=company_tools.get_incident,
     inventory_reader=company_tools.query_inventory,
+    memory_store=memory_store,
 )
 
 
@@ -44,7 +46,7 @@ def query_agent(
 ) -> AgentAnswer:
     """Invoke the already-compiled graph; no orchestration belongs here."""
     try:
-        result = runtime.invoke(payload.question)
+        result = runtime.invoke(payload.question, user_id=str(_caller.id))
         return AgentAnswer(answer=result.answer, run_id=result.run_id)
     except Exception as exc:
         logger.exception("Agent graph failed", exc_info=exc)

@@ -1,0 +1,21 @@
+{
+  "scenario": "ambiguous response is rejection",
+  "turns": [
+    {
+      "message": "This is the third ticket this week: delays in Zaragoza are due to flooding.",
+      "expected": {
+        "proposal_created": true,
+        "memory_written": false
+      }
+    },
+    {
+      "message": "maybe later",
+      "expected": {
+        "decision": "ambiguous",
+        "proposal_status": "ambiguous_rejected",
+        "memory_written": false
+      }
+    }
+  ],
+  "automated_evidence": "tests/pipelines/test_agent_graph.py::test_ambiguous_memory_response_is_logged_as_rejected"
+}

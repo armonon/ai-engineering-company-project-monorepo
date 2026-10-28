@@ -1092,3 +1092,20 @@ Three consequential edits came with it:
 - Added an end-to-end local OAuth/MCP/adapter acceptance test, discovery and
   scope tests, exact upstream route tests, Compose wiring, container definition,
   and external Playground instructions under `docs/evidence/mcp-company-tools/`.
+
+## 2026-10-28 — Consent-gated agent memory and self-improvement
+
+- Added a persistent SQLite memory backend that is deliberately separate from
+  the read-only company Qdrant collection and isolated by authenticated user.
+- Added explicit memory evaluation for corrected carrier coverage, recurring
+  incidents, and B2B monthly-report preferences while refusing one-off package
+  details, sensitive addresses/routes, tracking ids, and active negotiations.
+- Added graph nodes for pending-decision resolution, approved-memory lookup,
+  and post-answer review. Review only proposes; a separate explicit approval or
+  policy-valid edit is required before any memory write.
+- Added auditable rejection of ambiguity and silence, one pending proposal per
+  user, scope-based consolidation, category TTLs, expired-memory cleanup, and a
+  100-record per-user cap.
+- Added approved/rejected evidence cycles and focused coverage for proposal,
+  approval, rejection, safe editing, future recall, and answering a second
+  question after a decision.
