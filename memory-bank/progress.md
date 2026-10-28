@@ -937,3 +937,17 @@ Three consequential edits came with it:
 - Documented heap efficiency and mutation-first concurrent ownership, with
   acceptance coverage for priority, FIFO, snapshots, validation, CLI recovery,
   and duplicate-free concurrent dequeues.
+
+## 2026-10-28 — Branch Queue tagged service manager
+
+- Added the standard-library-only `internal/branch-queue` assignment with one
+  `deque` per canonical service: deposit, withdrawal, and account management.
+- Implemented globally sequential ticket issuance, isolated FIFO service
+  calling, non-mutating peek/list operations, per-service and total statistics,
+  and a terminal menu that recovers from invalid input.
+- Protected ticket allocation and every queue mutation with one lock so
+  concurrent issuers cannot duplicate a number and concurrent agents cannot
+  call the same client twice.
+- Documented the per-service efficiency and mutation-first ownership model;
+  acceptance coverage includes service isolation, FIFO, global numbering,
+  snapshots, validation, CLI recovery, and concurrent issue/call behavior.

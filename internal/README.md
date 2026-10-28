@@ -15,5 +15,8 @@ Unlike simple scripts in `/scripts`, these are structured tools with their own d
 - [`triage-queue/`](./triage-queue/) — the standard-library hospital priority
   queue with triage ordering, FIFO stability, a resilient CLI, and concurrency
   design evidence.
+- [`branch-queue/`](./branch-queue/) — the standard-library tagged bank-service
+  queue with global ticket numbering, isolated FIFO lanes, and atomic agent
+  operations.
 
 > _Spanish version: [README.es.md](./README.es.md)._
