@@ -5,6 +5,7 @@ import {
   reportingPeriod,
   warehouseLabel,
 } from "@/lib/reporting";
+import { KPI_CARDS } from "@/components/ReportingDashboard";
 
 jest.mock("@/lib/auth", () => ({ authJson: jest.fn() }));
 
@@ -37,6 +38,15 @@ describe("TrackFlow reporting API", () => {
 });
 
 describe("reporting presentation", () => {
+  it("uses the four exact business KPI names from the TrackFlow briefing", () => {
+    expect(KPI_CARDS.map(({ label }) => label)).toEqual([
+      "Inbound Volume",
+      "Outbound Throughput",
+      "Stockout Frequency",
+      "Discrepancy Rate",
+    ]);
+  });
+
   it("shows the complete Monday-through-Sunday UTC period", () => {
     expect(reportingPeriod("2026-07-13")).toEqual({
       start: "2026-07-13",
