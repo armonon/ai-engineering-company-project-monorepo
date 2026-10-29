@@ -2,6 +2,25 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-28 · Final audit remediation and OpenClaw evidence
+
+**Branch:** `codex/final-audit-remediation`
+
+- Reconciled the completed OpenClaw connection evidence onto the current
+  cumulative monorepo without merging its stale progress-log history.
+- Re-ran the Google Docs and Calendar acceptance through the registered
+  `4geeks-coursework` agent after discovering that the original document had
+  been deleted. Both Zapier write actions completed without failure, and the
+  replacement evidence now shows the live document and linked event rather
+  than the unrelated page previously stored as document evidence.
+- Kept the root `TOOLS.md` OpenClaw local-notes template untracked and added an
+  explicit ignore rule so private machine notes cannot enter coursework commits.
+- Re-pinned the installed OpenClaw Codex plugin to its exact resolved version;
+  the security audit now reports no critical findings and no unpinned-plugin
+  warning.
+- Traceability: `DOC-1`; `AGENTS.md` separation between repository contributor
+  protocol and local OpenClaw workspace context.
+
 ## 2026-10-28 · Formal regression-model evaluation
 
 **Branch:** `codex/regression-model-evaluation`
