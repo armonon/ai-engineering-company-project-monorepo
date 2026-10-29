@@ -1,0 +1,26 @@
+TrackFlow VPS deployment evidence
+Captured (UTC): 2026-10-29T20:25:07Z
+Host: bc-vps-282
+Commit: d8a8688
+
+$ docker compose ps
+NAME                  IMAGE                   COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+trackflow-backend-1   trackflow-backend       "uvicorn main:app --…"   backend   34 minutes ago   Up 34 minutes (healthy)   127.0.0.1:8000->8000/tcp
+trackflow-flower-1    trackflow-flower        "celery -A celery_ap…"   flower    57 minutes ago   Up 57 minutes             127.0.0.1:5555->5555/tcp, 8000/tcp
+trackflow-qdrant-1    qdrant/qdrant:v1.15.5   "./entrypoint.sh"        qdrant    57 minutes ago   Up 57 minutes (healthy)   127.0.0.1:6333->6333/tcp, 6334/tcp
+trackflow-redis-1     redis:7.4-alpine        "docker-entrypoint.s…"   redis     57 minutes ago   Up 57 minutes (healthy)   127.0.0.1:6379->6379/tcp
+trackflow-ui-1        trackflow-ui            "docker-entrypoint.s…"   ui        34 minutes ago   Up 33 minutes             127.0.0.1:3000-3001->3000-3001/tcp
+trackflow-worker-1    trackflow-worker        "celery -A celery_ap…"   worker    57 minutes ago   Up 55 minutes             8000/tcp
+
+$ systemctl is-active nginx
+active
+
+$ ufw status
+Status: active
+
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere
+Nginx Full                 ALLOW       Anywhere
+OpenSSH (v6)               ALLOW       Anywhere (v6)
+Nginx Full (v6)            ALLOW       Anywhere (v6)
