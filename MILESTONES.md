@@ -79,6 +79,8 @@ into `main`. Submit the named branch/PR that matches the assignment page.
 
 ### Real-time communication and secure AI
 
+- RFP SSE notifications — `codex/sse-rfp-notifications` ([PR #82](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/82))
+- First-line CX WebSocket chat — `codex/websocket-cx-chat` ([PR #83](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/83))
 - Agent observability — `codex/agent-observability` ([PR #61](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/61))
 - Pause/resume/cancel controls — `codex/agent-control` ([PR #62](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/62))
 - Secure AI/NIST review — `codex/nist-ai-security` ([PR #63](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/63))
@@ -89,7 +91,7 @@ into `main`. Submit the named branch/PR that matches the assignment page.
 
 - Capstone handoff package — `codex/capstone-handoff` ([PR #73](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/73))
 
-The 2026-10-28 submission audit verified that every branch named in this file
+The 2026-10-29 submission audit verified that every branch named in this file
 exists on `origin` and points to the exact head commit of its linked merged PR.
 The final personal video, Q&A, media-release choice, and permanent upload remain
 presenter-owned completion gates; they are not represented as a completed code
