@@ -1276,3 +1276,18 @@ Three consequential edits came with it:
 - Added an executed visual-analysis notebook, compact training/evaluation
   artifacts, and boundary tests while keeping third-party images and the 18 MB
   generated model outside Git.
+
+## 2026-10-28 — Final course handoff preparation
+
+- Added a timed, company-specific TrackFlow capstone pitch centered on the
+  grounded RFP workflow, human approvals, live observability, and controls.
+- Added the cold-start/demo runbook, recording and permanent-link checklist,
+  truthful personal-Q&A worksheet, and ready two-sentence project description.
+- Added an eight-section assessment study guide covering pipelines, async work,
+  model evaluation/RAG, agents, workflows, real-time state, security, and
+  product delivery.
+- Reconciled the advanced project branches and merged PRs in `MILESTONES.md` so
+  every named course assignment points to its stable submission evidence.
+- Left the personal recording, Q&A content, media-release choice/signature, and
+  permanent video upload explicitly human-owned; no false completion or consent
+  is recorded in the repository.
