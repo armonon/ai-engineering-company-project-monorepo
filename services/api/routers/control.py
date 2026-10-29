@@ -6,13 +6,12 @@ import asyncio
 from collections import defaultdict
 from typing import Any
 
-import jwt
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlmodel import Session
 
 from agent_control import InvalidControlTransition, apply_control, control_state
-from database import inventory_engine, users_table
-from security import decode_token
+from database import inventory_engine
+from security import authenticate_websocket_user
 
 router = APIRouter(tags=["agent-control"])
 
@@ -48,15 +47,8 @@ hub = ControlHub()
 
 
 def _authenticate(token: str) -> str:
-    try:
-        payload = decode_token(token)
-        user_id = int(payload["sub"])
-    except (jwt.PyJWTError, KeyError, TypeError, ValueError) as exc:
-        raise ValueError("Invalid or expired backoffice token") from exc
-    user = users_table().get(doc_id=user_id)
-    if user is None or not user.get("is_active", True):
-        raise ValueError("Backoffice account is unavailable")
-    return f"user_{user_id}"
+    user = authenticate_websocket_user(token)
+    return f"user_{user.id}"
 
 
 @router.websocket("/observability/control")

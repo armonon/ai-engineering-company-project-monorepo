@@ -2,6 +2,25 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-29 · Real-time First-line CX WebSocket chat
+
+**Branch:** `codex/websocket-cx-chat`
+
+- Added a JWT-authenticated WebSocket bound to a TrackFlow `ChatSession` with
+  `agent_id = first_line_cx`, per-session ownership, structured named events,
+  and a reconnect snapshot of the complete conversation.
+- Decoupled the existing agent invocation from socket consumers through one
+  producer task and a per-session pub/sub channel, so multiple viewers do not
+  duplicate agent work.
+- Added cooperative generation abort: an interrupt cancels the original task,
+  marks the partial assistant message `interrupted`, stops all later chunks for
+  that message, and creates the correction as a new user/assistant turn.
+- Added a protected backoffice chat with live chunk rendering, progressive
+  reconnect, session rehydration, and an explicit interrupt-and-redirect flow.
+- Added backend contract/abort/recovery tests, frontend client/reducer tests,
+  and a repeatable manual verification runbook.
+- Traceability: `DOC-1`; TrackFlow Real-Time Part 2 briefing and `MONO-1`.
+
 ## 2026-10-29 · Real-time RFP ticket notifications
 
 **Branch:** `codex/sse-rfp-notifications`

@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { websocketUrl } from "@/lib/websocket";
 
 export type ControlAction = "pause" | "resume" | "cancel";
 
@@ -26,7 +26,7 @@ export class AgentControlClient {
 
   connect(): void {
     this.closed = false;
-    const url = `${API_BASE_URL.replace(/^http/, "ws")}/observability/control`;
+    const url = websocketUrl("/observability/control");
     this.socket = new WebSocket(url);
     this.socket.onopen = () => {
       const token = getToken();
