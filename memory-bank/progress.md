@@ -1291,3 +1291,14 @@ Three consequential edits came with it:
 - Left the personal recording, Q&A content, media-release choice/signature, and
   permanent video upload explicitly human-owned; no false completion or consent
   is recorded in the repository.
+
+## 2026-10-28 — Model-project dependency remediation
+
+- Audited the new GitHub Dependabot findings introduced by the three isolated
+  model-project manifests, including five critical Pillow advisories.
+- Upgraded Pillow to 13.0.0, pytest to 9.0.3, PyTorch to 2.13.0, and
+  Transformers to 5.10.1—the first versions outside every reported vulnerable
+  range for those manifests.
+- Re-ran the sentiment inference over all 500 reviews with the patched stack,
+  re-executed its notebook, reloaded the saved EfficientNet model with patched
+  Pillow, and passed all focused project tests.
