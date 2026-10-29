@@ -1,0 +1,125 @@
+{
+  "dataset_rows": 7043,
+  "training_rows": 5634,
+  "test_rows": 1409,
+  "primary_metric": "recall",
+  "baseline_metrics": {
+    "recall": 0.5588235294117647,
+    "precision": 0.6572327044025157,
+    "f1": 0.6040462427745664,
+    "accuracy": 0.8055358410220014,
+    "roc_auc": 0.8418610659019866
+  },
+  "random_best_recall": 0.837458193979933,
+  "random_best_params": {
+    "classifier__solver": "liblinear",
+    "classifier__penalty": "l1",
+    "classifier__class_weight": "balanced",
+    "classifier__C": 0.003919406774847221
+  },
+  "grid_best_recall": 0.837458193979933,
+  "grid_best_std": 0.024449052685614786,
+  "final_params": {
+    "classifier__C": 0.003919406774847221,
+    "classifier__class_weight": "balanced",
+    "classifier__penalty": "l1",
+    "classifier__solver": "liblinear"
+  },
+  "final_metrics": {
+    "recall": 0.8556149732620321,
+    "precision": 0.4426002766251729,
+    "f1": 0.5834092980856882,
+    "accuracy": 0.6756564939673527,
+    "roc_auc": 0.8161176987263944
+  },
+  "top_grid_candidates": [
+    {
+      "rank_test_score": 1,
+      "mean_test_score": 0.837458193979933,
+      "std_test_score": 0.024449052685614786,
+      "params": {
+        "classifier__C": 0.003919406774847221,
+        "classifier__class_weight": "balanced",
+        "classifier__penalty": "l1",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 2,
+      "mean_test_score": 0.7993311036789298,
+      "std_test_score": 0.02837886747236978,
+      "params": {
+        "classifier__C": 0.0019597033874236107,
+        "classifier__class_weight": "balanced",
+        "classifier__penalty": "l2",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 3,
+      "mean_test_score": 0.7953177257525084,
+      "std_test_score": 0.01630241820328285,
+      "params": {
+        "classifier__C": 0.0019597033874236107,
+        "classifier__class_weight": "balanced",
+        "classifier__penalty": "l1",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 3,
+      "mean_test_score": 0.7953177257525084,
+      "std_test_score": 0.026789276781940832,
+      "params": {
+        "classifier__C": 0.003919406774847221,
+        "classifier__class_weight": "balanced",
+        "classifier__penalty": "l2",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 5,
+      "mean_test_score": 0.793979933110368,
+      "std_test_score": 0.03983163861126264,
+      "params": {
+        "classifier__C": 0.007838813549694443,
+        "classifier__class_weight": "balanced",
+        "classifier__penalty": "l1",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 6,
+      "mean_test_score": 0.7913043478260869,
+      "std_test_score": 0.030914301025528685,
+      "params": {
+        "classifier__C": 0.007838813549694443,
+        "classifier__class_weight": "balanced",
+        "classifier__penalty": "l2",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 7,
+      "mean_test_score": 0.5090301003344482,
+      "std_test_score": 0.03360496772463,
+      "params": {
+        "classifier__C": 0.007838813549694443,
+        "classifier__class_weight": null,
+        "classifier__penalty": "l2",
+        "classifier__solver": "liblinear"
+      }
+    },
+    {
+      "rank_test_score": 8,
+      "mean_test_score": 0.4816053511705686,
+      "std_test_score": 0.03200932739533215,
+      "params": {
+        "classifier__C": 0.003919406774847221,
+        "classifier__class_weight": null,
+        "classifier__penalty": "l2",
+        "classifier__solver": "liblinear"
+      }
+    }
+  ]
+}

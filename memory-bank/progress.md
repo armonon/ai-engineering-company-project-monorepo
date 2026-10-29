@@ -1249,3 +1249,16 @@ Three consequential edits came with it:
   human-rating reviews predicted as one or two stars.
 - Added pure analysis helpers and focused tests for label parsing, sentiment
   bands, summary output, and false-negative selection.
+
+## 2026-10-28 — StreamLoop churn model tuning
+
+- Added a leakage-safe scikit-learn pipeline that keeps numeric coercion,
+  imputation, scaling, and categorical encoding inside cross-validation.
+- Established a default logistic-regression baseline before tuning, then ran a
+  broad `RandomizedSearchCV` followed by a focused `GridSearchCV` using only the
+  training split and five-fold stratified recall scoring.
+- Increased held-out churn recall from 0.559 to 0.856. The report explicitly
+  accepts the accompanying precision and accuracy reduction because missed
+  churners are StreamLoop's higher-cost error.
+- Added an executed notebook, serialized search evidence, fold-variance review,
+  final-parameter report, and focused preprocessing/pipeline tests.
