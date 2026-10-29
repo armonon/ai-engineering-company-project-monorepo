@@ -24,6 +24,7 @@ from reporting import router as reporting_router
 
 from routers.agent import router as agent_router
 from routers.auth import router as auth_router
+from routers.chat import router as chat_router
 from routers.control import router as control_router
 from routers.incidents import router as incidents_router
 from routers.incidents_manager import router as incidents_manager_router
@@ -147,6 +148,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 app.include_router(auth_router)
 app.include_router(agent_router)
+app.include_router(chat_router)
 app.include_router(users_router)
 app.include_router(profiles_router)
 app.include_router(suppliers_router)
