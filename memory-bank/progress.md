@@ -2,6 +2,22 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-29 · Real-time RFP ticket notifications
+
+**Branch:** `codex/sse-rfp-notifications`
+
+- Added a JWT-protected SSE stream for the existing RFP workflow. A named
+  `rfp_ticket_created` event is published only after intake classifies a valid
+  client RFP, using the exact TrackFlow ticket and metadata field names.
+- Added process-local fan-out, keep-alive frames, a bounded replay window, and
+  `Last-Event-ID` recovery without introducing any model or agent call.
+- Replaced manual-only discovery in the RFP dashboard with authenticated
+  `fetch` + `ReadableStream` consumption, progressive reconnection, recovery
+  refresh, ticket-id deduplication, and a distinct live-arrival card.
+- Added backend wire-format/authentication tests, frontend parser tests, and a
+  repeatable drop/reconnect verification runbook.
+- Traceability: `DOC-1`; the TrackFlow Real-Time Part 1 briefing and `MONO-1`.
+
 ## 2026-10-29 · Docker runtime and build-context repair
 
 **Branch:** `codex/docker-runtime-repair`

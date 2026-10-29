@@ -19,6 +19,7 @@ from models import (
     RfpTicketStatus,
 )
 from routers.rfp import persist_intake_result, persist_response_result
+from routers.rfp_notifications import rfp_notification_broker
 
 
 @pytest.fixture
@@ -86,6 +87,37 @@ def test_upload_rejects_non_pdf_without_creating_ticket(
     )
     assert response.status_code == 400
     assert rfp_session.exec(select(RfpTicket)).all() == []
+
+
+def test_authenticated_sse_stream_uses_named_event_and_trackflow_payload(
+    signed_in: TestClient,
+) -> None:
+    rfp_notification_broker.reset_for_tests()
+    rfp_notification_broker.publish(
+        {
+            "ticket_id": "tkt_0225",
+            "rfp_id": "rfp_0071",
+            "client_name": "Northline Apparel",
+            "client_country": "US",
+            "services_requested": ["warehouse", "lastmile"],
+            "status": "analyzing",
+            "created_at": "2026-07-24T14:32:00Z",
+        }
+    )
+
+    response = signed_in.get("/rfp/tickets/stream?max_events=1")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert response.headers["cache-control"] == "no-cache"
+    assert "event: rfp_ticket_created\n" in response.text
+    assert 'data: {"ticket_id":"tkt_0225","rfp_id":"rfp_0071"' in response.text
+    assert '"status":"analyzing"' in response.text
+
+
+def test_sse_stream_requires_the_same_backoffice_jwt(api: TestClient) -> None:
+    response = api.get("/rfp/tickets/stream?max_events=1")
+    assert response.status_code == 401
 
 
 def test_persist_valid_intake_handoff_and_sections(rfp_session: Session):
