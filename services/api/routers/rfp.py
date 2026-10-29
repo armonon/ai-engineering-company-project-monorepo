@@ -2,14 +2,28 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 import os
+import queue
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Header,
+    HTTPException,
+    Query,
+    UploadFile,
+)
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from rfp_intake import (
     ApprovalCoordinator,
@@ -33,6 +47,7 @@ from models import (
     RfpTicketStatus,
     UserInDB,
 )
+from routers.rfp_notifications import rfp_notification_broker
 from security import get_current_user
 
 logger = logging.getLogger("trackflow.rfp")
@@ -216,6 +231,23 @@ def process_ticket_background(ticket_id: str, raw_pdf_path: str) -> None:
     try:
         result = process_rfp(raw_pdf_path, ticket_id)
         with Session(inventory_engine()) as session:
+            ticket = session.get(RfpTicket, ticket_id)
+            if ticket is None:
+                raise LookupError("RFP ticket disappeared during processing")
+            if result.classification.valid:
+                metadata = result.metadata
+                created_at = ticket.created_at.astimezone(UTC).isoformat().replace("+00:00", "Z")
+                rfp_notification_broker.publish(
+                    {
+                        "ticket_id": ticket.ticket_id,
+                        "rfp_id": metadata.get("rfp_id"),
+                        "client_name": metadata["client_name"],
+                        "client_country": metadata["client_country"],
+                        "services_requested": metadata["services_requested"],
+                        "status": RfpTicketStatus.ANALYZING.value,
+                        "created_at": created_at,
+                    }
+                )
             persist_intake_result(session, result)
         observed_tasks: list[tuple[str, str | None, dict[str, Any]]] = [
             ("query", None, {"stage": "classify_extract", "valid": result.classification.valid})
@@ -446,6 +478,56 @@ def list_rfp_tickets(
     statement = select(RfpTicket).order_by(RfpTicket.created_at.desc())
     tickets = session.exec(statement).all()
     return [_ticket_payload(session, ticket) for ticket in tickets if _can_read(ticket, caller)]
+
+
+def _format_notification_sse(event: dict[str, Any]) -> str:
+    return (
+        f"id: {event['id']}\n"
+        f"event: {event['event']}\n"
+        f"data: {json.dumps(event['data'], separators=(',', ':'))}\n\n"
+    )
+
+
+@router.get("/stream")
+def stream_rfp_notifications(
+    last_event_id_header: str | None = Header(default=None, alias="Last-Event-ID"),
+    last_event_id: int | None = Query(default=None, ge=0),
+    max_events: int | None = Query(default=None, ge=1, le=100),
+    _caller: UserInDB = Depends(get_current_user),
+) -> StreamingResponse:
+    """Replay missed valid RFP arrivals, then keep the authenticated stream open."""
+    try:
+        cursor = last_event_id if last_event_id is not None else int(last_event_id_header or 0)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Last-Event-ID must be an integer.") from exc
+
+    async def events() -> AsyncIterator[str]:
+        sent = 0
+        for event in rfp_notification_broker.replay_after(cursor):
+            yield _format_notification_sse(event)
+            sent += 1
+            if max_events and sent >= max_events:
+                return
+        with rfp_notification_broker.subscribe() as subscriber:
+            while True:
+                try:
+                    event = await asyncio.to_thread(subscriber.get, True, 15)
+                    yield _format_notification_sse(event)
+                    sent += 1
+                    if max_events and sent >= max_events:
+                        return
+                except queue.Empty:
+                    yield ": keep-alive\n\n"
+
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.post("/{ticket_id}/generate", status_code=202)

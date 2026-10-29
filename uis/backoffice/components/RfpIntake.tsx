@@ -10,6 +10,10 @@ import {
   startRfpGeneration,
   uploadRfp,
 } from "@/lib/rfp";
+import {
+  consumeRfpNotificationStream,
+  RfpTicketCreatedData,
+} from "@/lib/rfp-notifications";
 
 const STATUS_STYLE: Record<string, string> = {
   analyzing: "bg-amber-100 text-amber-800",
@@ -37,6 +41,7 @@ export function RfpIntake() {
   const [busy, setBusy] = useState(false);
   const [busyTicket, setBusyTicket] = useState("");
   const [reasons, setReasons] = useState<Record<string, string>>({});
+  const [liveArrivals, setLiveArrivals] = useState<RfpTicketCreatedData[]>([]);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -49,6 +54,29 @@ export function RfpIntake() {
 
   useEffect(() => {
     void load();
+  }, [load]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void consumeRfpNotificationStream(
+      (event) => {
+        setLiveArrivals((current) => {
+          if (current.some((item) => item.ticket_id === event.data.ticket_id)) return current;
+          return [event.data, ...current].slice(0, 5);
+        });
+        void fetchRfpTicket(event.data.ticket_id).then((ticket) => {
+          setTickets((current) => {
+            const withoutDuplicate = current.filter(
+              (item) => item.ticket_id !== ticket.ticket_id,
+            );
+            return [ticket, ...withoutDuplicate];
+          });
+        });
+      },
+      () => void load(),
+      controller.signal,
+    );
+    return () => controller.abort();
   }, [load]);
 
   useEffect(() => {
@@ -130,6 +158,39 @@ export function RfpIntake() {
 
   return (
     <div className="space-y-6">
+      {liveArrivals.length ? (
+        <section
+          aria-live="assertive"
+          className="rounded-xl border border-blue-300 bg-blue-50 p-5 shadow-sm"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-blue-700">
+            Live commercial notification
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-950">
+            New RFP ticket needs processing
+          </h2>
+          <ul className="mt-3 space-y-2">
+            {liveArrivals.map((arrival) => (
+              <li key={arrival.ticket_id} className="rounded-lg bg-white p-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-slate-950">
+                    {arrival.client_name} · {arrival.client_country}
+                  </span>
+                  <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">
+                    {arrival.status}
+                  </span>
+                </div>
+                <p className="mt-1 font-mono text-xs text-slate-500">
+                  {arrival.ticket_id} · {arrival.rfp_id ?? "RFP id pending"}
+                </p>
+                <p className="mt-1 text-xs text-slate-600">
+                  {arrival.services_requested.join(", ")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <form onSubmit={submit} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <label htmlFor="rfp-document" className="block text-sm font-semibold text-slate-900">
           Client RFP (PDF)
