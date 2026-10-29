@@ -1262,3 +1262,17 @@ Three consequential edits came with it:
   churners are StreamLoop's higher-cost error.
 - Added an executed notebook, serialized search evidence, fold-variance review,
   final-parameter report, and focused preprocessing/pipeline tests.
+
+## 2026-10-28 — Dogs vs. cats image classifier
+
+- Added deterministic preparation for the official 25,000-image dataset with
+  balanced 17,500/3,750/3,750 train, validation, and held-out test partitions.
+- Added a progressive 200×200 TensorFlow input pipeline and an EfficientNet-B0
+  classifier with augmentation, a frozen pretrained backbone, checkpointing,
+  and validation-loss early stopping.
+- Trained the full dataset for three epochs and reloaded the best checkpoint.
+  Held-out accuracy reached 98.91%, with 23 cats and 18 dogs misclassified out
+  of 3,750 test images.
+- Added an executed visual-analysis notebook, compact training/evaluation
+  artifacts, and boundary tests while keeping third-party images and the 18 MB
+  generated model outside Git.

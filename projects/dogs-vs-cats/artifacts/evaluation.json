@@ -1,0 +1,48 @@
+{
+  "architecture": "EfficientNetB0",
+  "image_size": [
+    200,
+    200
+  ],
+  "epochs_completed": 3,
+  "test_loss": 0.03137130290269852,
+  "test_accuracy": 0.9890666604042053,
+  "confusion_matrix": [
+    [
+      1852,
+      23
+    ],
+    [
+      18,
+      1857
+    ]
+  ],
+  "classification_report": {
+    "cat": {
+      "precision": 0.9903743315508021,
+      "recall": 0.9877333333333334,
+      "f1-score": 0.9890520694259012,
+      "support": 1875.0
+    },
+    "dog": {
+      "precision": 0.9877659574468085,
+      "recall": 0.9904,
+      "f1-score": 0.989081225033289,
+      "support": 1875.0
+    },
+    "accuracy": 0.9890666666666666,
+    "macro avg": {
+      "precision": 0.9890701444988053,
+      "recall": 0.9890666666666666,
+      "f1-score": 0.989066647229595,
+      "support": 3750.0
+    },
+    "weighted avg": {
+      "precision": 0.9890701444988054,
+      "recall": 0.9890666666666666,
+      "f1-score": 0.9890666472295951,
+      "support": 3750.0
+    }
+  },
+  "checkpoint": "models/efficientnet_b0_best.keras (generated locally, gitignored)"
+}
