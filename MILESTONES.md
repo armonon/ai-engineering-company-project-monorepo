@@ -32,15 +32,56 @@ merged under the label "Milestone 5" in different coursework sequences. Use
 the full branch name—not the number alone—when submitting or discussing one
 of them. Do not rename either historical snapshot.
 
-The warehouse-agent brief on `main` is intentionally unnumbered. Create its
-milestone branch only after the 4Geeks project page supplies the official
-milestone number and slug; the branch audit treats any guessed number as an
-error.
+The warehouse-agent brief on `main` is intentionally unnumbered. The later
+course pages organize work by named projects rather than stable milestone
+numbers, so the advanced submission snapshots below keep their assignment
+names and PR evidence instead of inventing numeric labels.
 
-No milestone-named branches or submissions for Milestones 7 and 8 were
-found in the repository or pull-request history during the 2026-08-28
-audit. Do not relabel later feature work as those milestones until the
-corresponding 4Geeks assignment identifies the required deliverable.
+## Advanced course project branches
+
+All of these branches were built from the same cumulative monorepo and merged
+into `main`. Submit the named branch/PR that matches the assignment page.
+
+### Implementing data pipelines
+
+- Business pipeline design — `milestone-6-business-pipeline-design` ([PR #35](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/35))
+- Veridian design exercise — `codex/veridian-pipeline-design` ([PR #36](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/36))
+- Resilient pipeline — `milestone-6-resilient-pipeline` ([PR #40](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/40))
+- Pipeline subflows/reporting — `codex/milestone-6-pipeline-enhancement` ([PR #42](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/42))
+
+### Asynchronous processing and offloading
+
+- Independent background process — `codex/background-processes-cronjob` ([PR #45](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/45))
+- Triage priority queue — `codex/triage-queue` ([PR #47](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/47))
+- Tagged branch queue — `codex/branch-queue` ([PR #48](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/48))
+- Celery/Redis message queue — `codex/async-tasks` ([PR #49](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/49))
+
+### Models training and RAG
+
+- Sales forecasting — `codex/sales-forecast-model` ([PR #50](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/50))
+- Regression evaluation — `codex/regression-model-evaluation` ([PR #51](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/51))
+- RAG knowledge base — `codex/rag-knowledge-base` ([PR #52](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/52))
+- Review sentiment — `codex/models-sentiment` ([PR #65](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/65))
+- Churn tuning — `codex/models-churn` ([PR #69](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/69))
+- Image classifier — `codex/models-image-classifier` ([PR #71](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/71))
+
+### Agentic engineering and workflows
+
+- LangGraph migration — `codex/langgraph-agent-base` ([PR #53](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/53))
+- External tools/routing — `codex/langgraph-agent-tools` ([PR #54](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/54))
+- MCP company tools — `codex/mcp-company-tools` ([PR #55](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/55))
+- Agent memory — `codex/agent-memory` ([PR #56](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/56))
+- Harness/guardrails — `codex/agent-harness` ([PR #57](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/57))
+- RFP intake/routing — `codex/rfp-intake` ([PR #58](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/58))
+- RFP response generation — `codex/rfp-response-generation` ([PR #59](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/59))
+- RFP approval/completion — `codex/rfp-approval-completion` ([PR #60](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/60))
+
+### Real-time communication and secure AI
+
+- Agent observability — `codex/agent-observability` ([PR #61](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/61))
+- Pause/resume/cancel controls — `codex/agent-control` ([PR #62](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/62))
+- Secure AI/NIST review — `codex/nist-ai-security` ([PR #63](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/63))
+- OWASP audit/remediation — `codex/owasp-hardening` ([PR #64](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/64))
 
 ## Working rule
 

@@ -13,6 +13,13 @@ _Estas instrucciones tambien estan disponibles en [espanol](./README.es.md)._
 The hosted demonstration publishes the canonical `uis/website` landing page.
 Run Docker Compose for the authenticated backoffice and FastAPI demonstration.
 
+**Final handoff:** the [capstone recording package](./docs/capstone/README.md)
+contains the timed TrackFlow pitch, live-demo runbook, personal Q&A worksheet,
+and submission checklist. Review the [course study guide](./docs/COURSE-STUDY-GUIDE.md)
+for the engineering principles demonstrated across the eight course sections.
+The permanent capstone video link will be added here after the presenter records,
+signs or opts out of the media release, and verifies the shared folder.
+
 ---
 
 ## Purpose
