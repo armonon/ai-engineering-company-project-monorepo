@@ -16,6 +16,7 @@ COPY uis/talent-pipeline-tracker/package.json uis/talent-pipeline-tracker/packag
 RUN npm ci --workspace=@trackflow/website --workspace=@trackflow/backoffice --workspace=@trackflow/business-logic --include-workspace-root=true
 
 COPY packages/business-logic packages/business-logic
+COPY docs/telemetry/event-schemas.json docs/telemetry/event-schemas.json
 COPY uis/website uis/website
 COPY uis/backoffice uis/backoffice
 COPY uis/start.sh uis/start.sh

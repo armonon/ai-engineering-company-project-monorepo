@@ -2,6 +2,29 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-29 · Docker runtime and build-context repair
+
+**Branch:** `codex/docker-runtime-repair`
+
+- Recovered the frozen Docker Desktop engine by terminating only its stale
+  backend process; repository files, images, named volumes, and Supabase data
+  were preserved.
+- Extended the root Docker ignore rules to exclude environment files at every
+  directory depth while retaining committed `.env.example` documentation.
+  This prevents a private `services/api/.env` from entering backend, worker,
+  or Flower build contexts.
+- Repaired the existing `api_data` named-volume ownership for the documented
+  non-root `trackflow` runtime user without deleting its SQLite data.
+- Made the credential-dependent company-tools MCP service opt-in through the
+  `mcp` Compose profile, preserving secure fail-closed startup while keeping
+  the core platform's one-command development contract.
+- Added the approved telemetry event catalogue to the UI image so the
+  backoffice's compile-time JSON import resolves inside Docker.
+- Rebuilt the complete Compose stack and removed obsolete build cache after
+  confirming the replacement images contain no private environment files.
+- Traceability: `DOC-1`; `services/Dockerfile` non-root runtime invariant and
+  the secret-isolation constraint in `memory-bank/techContext.md`.
+
 ## 2026-10-28 · Final audit remediation and OpenClaw evidence
 
 **Branch:** `codex/final-audit-remediation`
