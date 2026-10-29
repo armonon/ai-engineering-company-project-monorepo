@@ -82,6 +82,17 @@ into `main`. Submit the named branch/PR that matches the assignment page.
 - Pause/resume/cancel controls — `codex/agent-control` ([PR #62](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/62))
 - Secure AI/NIST review — `codex/nist-ai-security` ([PR #63](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/63))
 - OWASP audit/remediation — `codex/owasp-hardening` ([PR #64](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/64))
+- Model dependency remediation — `codex/model-dependency-security` ([PR #74](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/74))
+
+### AI engineering project delivery
+
+- Capstone handoff package — `codex/capstone-handoff` ([PR #73](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/73))
+
+The 2026-10-28 submission audit verified that every branch named in this file
+exists on `origin` and points to the exact head commit of its linked merged PR.
+The final personal video, Q&A, media-release choice, and permanent upload remain
+presenter-owned completion gates; they are not represented as a completed code
+branch or LMS submission.
 
 ## Working rule
 

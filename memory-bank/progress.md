@@ -1302,3 +1302,14 @@ Three consequential edits came with it:
 - Re-ran the sentiment inference over all 500 reviews with the patched stack,
   re-executed its notebook, reloaded the saved EfficientNet model with patched
   Pillow, and passed all focused project tests.
+
+## 2026-10-28 — Submission branch reconciliation
+
+- Audited every branch named in `MILESTONES.md` against the GitHub remote and
+  its linked merged pull request.
+- Restored deleted remote submission refs at their exact, verified PR head
+  commits without changing `main` or rewriting history; all 39 mapped branches
+  now exist on `origin`.
+- Added the capstone handoff and model-dependency remediation branches/PRs to
+  the advanced course map while retaining the personal video as an explicit
+  human completion gate.
