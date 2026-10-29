@@ -1,8 +1,17 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+const allowedDevOrigins = [
+  "127.0.0.1",
+  "localhost",
+  ...(process.env.NEXT_ALLOWED_DEV_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins,
   turbopack: {
     root: path.resolve(__dirname, "../.."),
   },

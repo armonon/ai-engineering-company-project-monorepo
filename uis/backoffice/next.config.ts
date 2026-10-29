@@ -1,6 +1,15 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+const allowedDevOrigins = [
+  "127.0.0.1",
+  "localhost",
+  ...(process.env.NEXT_ALLOWED_DEV_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
+
 const apiOrigin = (
   process.env.TRACKFLOW_API_INTERNAL_URL ?? "http://127.0.0.1:8000"
 ).replace(/\/+$/, "");
@@ -11,7 +20,7 @@ const talentApiOrigin = (
 ).replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins,
   turbopack: {
     root: path.resolve(__dirname, "../.."),
   },
