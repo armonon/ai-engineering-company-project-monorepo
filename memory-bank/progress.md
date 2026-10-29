@@ -1235,3 +1235,17 @@ Three consequential edits came with it:
 - Added centralized anti-clickjacking, MIME-sniffing, referrer, and browser
   capability headers to both Next.js applications, plus proof for every
   critical/high remediation.
+
+## 2026-10-28 — WeLoveReviews sentiment analysis
+
+- Added the official 500-review dataset and a reproducible inference entrypoint
+  using the pinned multilingual 1–5-star classifier revision. The model is
+  loaded once, reused in batches, and its weights remain outside Git.
+- Added an executed notebook covering data quality, the required sentiment
+  mapping, comparison with the 4.5/5 human average, false-negative analysis,
+  and a deterministic 20-review manual audit.
+- Preserved all model disagreements in the processed output. The analysis found
+  412 positive, 41 neutral, and 47 negative predictions, including 16 high
+  human-rating reviews predicted as one or two stars.
+- Added pure analysis helpers and focused tests for label parsing, sentiment
+  bands, summary output, and false-negative selection.
