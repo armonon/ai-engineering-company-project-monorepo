@@ -124,8 +124,10 @@
   real acceptance transcript. Its private `.env`, OpenAI state, and session
   log remain outside Git; only the public contract and visible transcript are
   versioned.
-- Milestones 7 and 8 and the warehouse agent's official milestone number
-  remain unmapped until the 4Geeks project pages provide their identifiers.
+- The warehouse agent's official milestone number remains intentionally
+  unmapped because its brief is named rather than numbered. Advanced RAG,
+  agent memory, and harness work is mapped by assignment name and merged PR in
+  `MILESTONES.md`; no inferred milestone number is used.
 
 ## Runbook
 
