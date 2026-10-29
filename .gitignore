@@ -36,6 +36,7 @@ data/checkpoints/
 
 # OpenClaw local memory and private workspace context
 /USER.md
+/TOOLS.md
 /MEMORY.md
 /BOOTSTRAP.md
 /memory/
