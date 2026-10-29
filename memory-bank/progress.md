@@ -1355,3 +1355,24 @@ Three consequential edits came with it:
 - Added the capstone handoff and model-dependency remediation branches/PRs to
   the advanced course map while retaining the personal video as an explicit
   human completion gate.
+
+## 2026-10-29 — Course-wide model gap remediation
+
+- Re-audited the public 4Geeks project catalogue against the cumulative
+  TrackFlow branch map and identified the Google Play Naive Bayes classifier as
+  a genuine missing technical deliverable rather than treating LMS progress as
+  proof of repository completion.
+- Added the official 891-review dataset, deterministic train/validation/test
+  partitions, all three required Naive Bayes variants, Random Forest and
+  logistic-regression alternatives, leakage-safe tuning, saved full pipelines,
+  per-review predictions, comparison evidence, and an executed notebook.
+- Selected the final pipeline only from validation evidence, evaluated the
+  held-out test set once, and preserved the tuned MultinomialNB separately as
+  the strongest required Naive Bayes implementation.
+- Added focused tests for dataset validation, deterministic disjoint splits,
+  in-pipeline vectorisation, and every required Naive Bayes implementation.
+- Verified seven focused model tests, all workspace typechecks and builds, and
+  the complete 450-test FastAPI suite on the finished branch.
+- Corrected the stale technical-debt note: advanced RAG, agent memory, and
+  harness work is mapped by assignment name and PR; only the named warehouse
+  brief intentionally remains without an invented milestone number.
