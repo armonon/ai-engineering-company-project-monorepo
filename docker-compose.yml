@@ -72,6 +72,11 @@ services:
       - trackflow
 
   company-tools-mcp:
+    # This resource server requires an external OAuth issuer and a backend
+    # token. Keep it opt-in so the core platform retains the one-command
+    # development contract without weakening the MCP server's fail-closed
+    # security. Start it with: docker compose --profile mcp up
+    profiles: ["mcp"]
     build:
       context: .
       dockerfile: mcps/company_tools/Dockerfile

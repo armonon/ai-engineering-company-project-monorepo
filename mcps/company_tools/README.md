@@ -51,10 +51,10 @@ the three scopes above, and provide two separate tokens:
 - `COMPANY_API_TOKEN`: backend-to-backend token used by the MCP server;
 - `COMPANY_MCP_ACCESS_TOKEN`: OAuth token used by the LangGraph MCP client.
 
-Then run the full platform:
+Then enable the secure MCP profile alongside the core platform:
 
 ```bash
-docker compose up --build
+docker compose --profile mcp up --build
 ```
 
 The MCP endpoint is `http://localhost:8010/mcp`. No secret is present in the
