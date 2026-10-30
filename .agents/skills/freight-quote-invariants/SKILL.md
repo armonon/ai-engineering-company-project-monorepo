@@ -40,11 +40,12 @@ repository at HEAD. It reads:
 
 The script currently asserts these — extend it, don't work around it.
 
-1. **Currency by country.** `country: "MX"` → `currency: "MXN"`;
-   `country: "ES"` → `currency: "EUR"`. Never `"USD"`, never `"$"`.
+1. **Currency by country.** `country: "US"` → `currency: "USD"`;
+   `country: "ES"` → `currency: "EUR"`. An ES quote is never `"USD"`
+   or `"$"`.
 2. **Priority service tier eligibility.** `serviceTier: "priority"`
-   accepted only when `country === "MX"` **and** both `originZone`
-   and `destinationZone` are `"metro"`. Any other combination throws
+   accepted only when both `originZone` and `destinationZone` are
+   `"metro"`, in either served country. Any other combination throws
    with a message that names the failing precondition.
 3. **Weight and distance floors.** `weightKg > 0` and
    `distanceKm > 0`. Zero or negative → thrown error, not a silent

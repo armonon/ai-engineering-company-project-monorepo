@@ -4,6 +4,14 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-30 · Milestone 4 resubmission: official TrackFlow briefing
+
+- Added the official briefing as root `BRIEFING.md`; realigned CONTEXT,
+  freight quote (US/USD with the official Milestone 2 UPS sample rates;
+  priority metro→metro in either country), invariant skill, backoffice quote
+  calculator, website copy, and memory bank from Mexico/MXN to the United
+  States/USD. Upgraded Next.js to 16.4.3 (security advisories; audit clean).
+
 ## 2026-08-02 · Milestone 4 — AI-driven engineering infrastructure
 
 **Branch:** `milestone-4`

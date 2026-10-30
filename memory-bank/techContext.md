@@ -51,11 +51,11 @@
 
 ## Active technical constraints
 
-- **Currency and units** are frozen at the CONTEXT.md values (EUR /
-  MXN, km, kg). Rendering helpers must respect the tenant country;
+- **Currency and units** are frozen at the CONTEXT.md values (USD /
+  EUR, km, kg). Rendering helpers must respect the tenant country;
   no hard-coded "$" symbols.
 - **Priority service tier** is only valid when both origin and
-  destination zones are `metro` and country is `MX`. Enforced in
+  destination zones are `metro`, in either served country. Enforced in
   `packages/business-logic/src/freight-quote.ts` and re-enforced in
   the backoffice quote form.
 - **Package builds must not depend on Next.js runtime.** Packages are

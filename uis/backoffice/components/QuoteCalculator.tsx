@@ -10,12 +10,12 @@ import {
   type Zone,
 } from "@trackflow/business-logic";
 
-const COUNTRIES: Country[] = ["MX", "ES"];
+const COUNTRIES: Country[] = ["US", "ES"];
 const ZONES: Zone[] = ["metro", "regional", "remote"];
 const TIERS: ServiceTier[] = ["standard", "express", "priority"];
 
 const CURRENCY_LOCALE: Record<Country, string> = {
-  MX: "es-MX",
+  US: "en-US",
   ES: "es-ES",
 };
 
@@ -28,7 +28,7 @@ function formatMoney(value: number, currency: string, country: Country) {
 }
 
 const DEFAULTS: QuoteInput = {
-  country: "MX",
+  country: "US",
   originZone: "metro",
   destinationZone: "metro",
   serviceTier: "standard",
@@ -72,7 +72,7 @@ export function QuoteCalculator() {
             >
               {COUNTRIES.map((c) => (
                 <option key={c} value={c}>
-                  {c === "MX" ? "Mexico (MXN)" : "Spain (EUR)"}
+                  {c === "US" ? "United States (USD)" : "Spain (EUR)"}
                 </option>
               ))}
             </select>
