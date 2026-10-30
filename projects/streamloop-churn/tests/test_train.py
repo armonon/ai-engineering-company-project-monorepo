@@ -17,7 +17,7 @@ def test_numeric_coercion_turns_blanks_into_missing_values():
 
 
 def test_preprocessing_and_classifier_live_in_one_pipeline():
-    columns = NUMERIC_COLUMNS + ["Contract", "PaymentMethod"]
+    columns = [*NUMERIC_COLUMNS, "Contract", "PaymentMethod"]
     model = build_pipeline(columns)
     assert isinstance(model, Pipeline)
     assert isinstance(model.named_steps["preprocess"], ColumnTransformer)

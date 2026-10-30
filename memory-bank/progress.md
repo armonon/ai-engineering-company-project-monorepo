@@ -2,6 +2,28 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Final quality sweep
+
+**Branch:** `codex/final-sweep`
+
+- Full CI-equivalent suite on `main` passed before changes: freight-quote
+  invariants (10), business-logic 7, fundamentals 24, backoffice 118,
+  public-website 12, API 455, pipelines 91, all builds, `npm audit` 0.
+- Lint to zero: the two backoffice `set-state-in-effect` errors
+  (`AgentObservability`, `RfpIntake`) now defer the initial load with
+  `queueMicrotask`, the pattern `ReportingDashboard` already uses; repo-wide
+  `ruff` is clean outside executed notebooks (import order, unused imports,
+  `collections.abc.Iterator`, long lines). Affected ML project tests pass
+  (K-means 4, Naive Bayes 7, churn 2, dogs-vs-cats 7).
+- Docs: fixed 7 broken relative links (RAG briefing now points at
+  `docs/company-knowledge-base/`; restored `uis/README.es.md`; added the
+  official Spanish Milestone 1 briefing the English one links to) and
+  corrected the Milestone 1 resubmission head in `MILESTONES.md` (`d75f44c`).
+- Secret scan: `detect-secrets` over tracked files found only false
+  positives (form messages, a table name, a public model revision hash, test
+  fixtures); a full-history scan for real key formats found none.
+- Traceability: `DOC-1`.
+
 ## 2026-10-30 · Codespaces dev container repaired
 
 **Branch:** `codex/devcontainer-fix` (developer-approved change to `.devcontainer/`)

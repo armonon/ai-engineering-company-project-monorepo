@@ -10,7 +10,11 @@ from pathlib import Path
 
 DATA_URL = "https://storage.googleapis.com/datascience-materials/dogs-vs-cats.zip"
 EXPECTED_PER_CLASS = 12_500
-BOUNDARIES = {"train": range(0, 8_750), "validation": range(8_750, 10_625), "test": range(10_625, 12_500)}
+BOUNDARIES = {
+    "train": range(0, 8_750),
+    "validation": range(8_750, 10_625),
+    "test": range(10_625, 12_500),
+}
 
 
 def partition_for_index(index: int) -> str:

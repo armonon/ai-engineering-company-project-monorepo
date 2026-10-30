@@ -26,7 +26,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 matplotlib.use("Agg")
-from matplotlib import pyplot as plt  # noqa: E402
+from matplotlib import pyplot as plt
 
 FEATURES = ["Latitude", "Longitude", "MedInc"]
 N_CLUSTERS = 6

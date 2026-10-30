@@ -14,8 +14,7 @@ import pandas as pd
 
 matplotlib.use("Agg")
 
-from matplotlib import pyplot as plt  # noqa: E402
-from sklearn.base import BaseEstimator
+from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression

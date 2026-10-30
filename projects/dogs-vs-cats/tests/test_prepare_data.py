@@ -10,7 +10,14 @@ from prepare_data import partition_for_index
 
 @pytest.mark.parametrize(
     ("index", "expected"),
-    [(0, "train"), (8_749, "train"), (8_750, "validation"), (10_624, "validation"), (10_625, "test"), (12_499, "test")],
+    [
+        (0, "train"),
+        (8_749, "train"),
+        (8_750, "validation"),
+        (10_624, "validation"),
+        (10_625, "test"),
+        (12_499, "test"),
+    ],
 )
 def test_partition_boundaries(index, expected):
     assert partition_for_index(index) == expected

@@ -16,14 +16,14 @@ Your knowledge base must be built from the source documents in section 2.
 
 ## 2. Knowledge Base Source Documents
 
-Use the following source documents as the base for your knowledge base. Copy them from [`00-general-contexts/trackflow/`](../00-general-contexts/trackflow/) into `docs/company-knowledge-base/` in your monorepo. Each has been split into its own file so you can load it directly into your chunking pipeline.
+Use the following source documents as the base for your knowledge base. Copy them from [`00-general-contexts/trackflow/`](../company-knowledge-base/) into `docs/company-knowledge-base/` in your monorepo. Each has been split into its own file so you can load it directly into your chunking pipeline.
 
 | File                                                                                                    | Content          |
 | ------------------------------------------------------------------------------------------------------- | ---------------- |
-| [`trackflow-sla-delivery.en.md`](../00-general-contexts/trackflow/trackflow-sla-delivery.en.md)         | Delivery SLA     |
-| [`trackflow-returns-policy.en.md`](../00-general-contexts/trackflow/trackflow-returns-policy.en.md)     | Returns Policy   |
-| [`trackflow-carrier-coverage.en.md`](../00-general-contexts/trackflow/trackflow-carrier-coverage.en.md) | Carrier Coverage |
-| [`trackflow-storage-pricing.en.md`](../00-general-contexts/trackflow/trackflow-storage-pricing.en.md)   | Storage Pricing  |
+| [`trackflow-sla-delivery.en.md`](../company-knowledge-base/trackflow-sla-delivery.en.md)         | Delivery SLA     |
+| [`trackflow-returns-policy.en.md`](../company-knowledge-base/trackflow-returns-policy.en.md)     | Returns Policy   |
+| [`trackflow-carrier-coverage.en.md`](../company-knowledge-base/trackflow-carrier-coverage.en.md) | Carrier Coverage |
+| [`trackflow-storage-pricing.en.md`](../company-knowledge-base/trackflow-storage-pricing.en.md)   | Storage Pricing  |
 
 ---
 

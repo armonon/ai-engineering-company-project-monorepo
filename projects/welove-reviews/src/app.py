@@ -6,9 +6,8 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
-
 from analysis import predicted_stars, sentiment_band
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 
 MODEL_NAME = "nlptown/bert-base-multilingual-uncased-sentiment"
 MODEL_REVISION = "8f6f4e3a8f70be4b65d3a4a8762b6d781cda240d"
