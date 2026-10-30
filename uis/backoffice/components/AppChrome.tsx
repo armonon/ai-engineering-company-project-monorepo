@@ -3,26 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PUBLIC_ROUTES } from "@/lib/auth";
-import { activeNavigationHref } from "@/lib/navigation";
+import { activeNavigationHref, BACKOFFICE_NAV as NAV } from "@/lib/navigation";
 import { useAuth } from "@/components/AuthProvider";
-
-const NAV = [
-  { href: "/", label: "Freight quote" },
-  { href: "/incident-manager", label: "Incident manager" },
-  { href: "/incidents", label: "Incident analysis" },
-  { href: "/backoffice/inventory/products", label: "Inventory" },
-  { href: "/backoffice/inventory/orders", label: "Stock movements" },
-  { href: "/backoffice/inventory/audit", label: "Inventory audit" },
-  { href: "/reporting", label: "Weekly reporting" },
-  { href: "/knowledge", label: "Sales knowledge" },
-  { href: "/rfp", label: "RFP workflow" },
-  { href: "/support", label: "CX agent chat" },
-  { href: "/observability", label: "Agent observability" },
-  { href: "/talent", label: "Talent pipeline" },
-  { href: "/suppliers", label: "Supplier directory" },
-  { href: "/account/profile", label: "My profile" },
-  { href: "/account/change-password", label: "Change password" },
-];
 
 /**
  * Sidebar + header. Rendered only for authenticated views — the

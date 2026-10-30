@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PipelineRunPanel } from "@/components/PipelineRunPanel";
 import { toUserMessage } from "@/lib/errors";
 import {
   aggregateWeeklyPerformance,
@@ -51,6 +52,16 @@ function displayKpi(
 }
 
 export function ReportingDashboard() {
+  const [reloadKey, setReloadKey] = useState(0);
+  return (
+    <div className="space-y-5">
+      <PipelineRunPanel onFinished={() => setReloadKey((key) => key + 1)} />
+      <WeeklyReport key={reloadKey} />
+    </div>
+  );
+}
+
+function WeeklyReport() {
   const [report, setReport] = useState<WeeklyPerformanceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

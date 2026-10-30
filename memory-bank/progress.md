@@ -2,6 +2,30 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Backoffice fully navigable for the capstone
+
+**Branch:** `codex/backoffice-navigation`
+
+- The 4Geeks "You have finished your course, now what" lesson makes a fully
+  connected backoffice a graduation gate: every module reachable by clicking,
+  with no hand-typed URLs. An audit of every `page.tsx` against the sidebar
+  and in-app links found every page reachable, but two backend modules had no
+  UI at all.
+- Added `/telemetry`, a sidebar-linked Application telemetry page over the
+  existing authenticated `GET /telemetry/report`, with population-weighted
+  period totals (events, error-level share, sign-in failure rate, slowest
+  endpoint) and the per-endpoint latency table.
+- Added a manager/admin "Run weekly pipeline now" control on `/reporting`
+  that queues the existing Celery business pipeline
+  (`POST /reporting/pipeline-runs`), follows `GET /tasks/{task_id}` until a
+  terminal state, and reloads the report on success. The role gate mirrors the
+  API's existing 403 rule.
+- Moved the sidebar list to `lib/navigation.ts` and added a reachability test
+  that fails when a page has neither a sidebar entry nor an in-app link.
+- Known, pre-existing: `eslint .` reports two `set-state-in-effect` errors in
+  `AgentObservability.tsx` and `RfpIntake.tsx`; lint is not part of CI.
+- Traceability: `DOC-1`, `MONO-2`; 4Geeks capstone after-course checklist.
+
 ## 2026-10-30 · Capstone audit: reproducible demo and pipeline tests in CI
 
 - Audited the capstone handoff package (PR #73) against the recording

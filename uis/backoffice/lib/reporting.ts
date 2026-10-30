@@ -1,4 +1,4 @@
-import { authJson } from "@/lib/auth";
+import { authJson, type Role } from "@/lib/auth";
 
 export interface WeeklyPerformanceEntry {
   warehouse: string;
@@ -92,4 +92,44 @@ export function aggregateWeeklyPerformance(
     ? totals.discrepancy_events_count / totals.outbound_orders_count
     : 0;
   return totals;
+}
+
+export interface PipelineRunAccepted {
+  task_id: string | null;
+  run_id: string;
+  status: string;
+  window_start: string;
+  window_end: string;
+  status_url: string;
+}
+
+export type TaskStatus = "pending" | "started" | "success" | "failure";
+
+export interface TaskStatusResponse {
+  task_id: string;
+  status: TaskStatus;
+  error: string | null;
+}
+
+/** Mirrors the API rule: only administrators and managers may trigger a run. */
+export function canTriggerPipelineRun(role: Role | undefined): boolean {
+  return role === "admin" || role === "manager";
+}
+
+export function triggerPipelineRun(
+  weekStart?: string,
+): Promise<PipelineRunAccepted> {
+  return authJson<PipelineRunAccepted>("/reporting/pipeline-runs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(weekStart ? { week_start: weekStart } : {}),
+  });
+}
+
+export function fetchTaskStatus(taskId: string): Promise<TaskStatusResponse> {
+  return authJson<TaskStatusResponse>(`/tasks/${encodeURIComponent(taskId)}`);
+}
+
+export function isFinishedTask(status: TaskStatus): boolean {
+  return status === "success" || status === "failure";
 }

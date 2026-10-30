@@ -57,10 +57,22 @@ for the complete event-to-component map and privacy contract.
 - Freight quote calculator
 - Incident manager and incident analysis
 - Inventory products, receipts, dispatches, losses, and movement history
-- Weekly Warehouse & Client Performance reporting under `/reporting`
+- Weekly Warehouse & Client Performance reporting under `/reporting`, with a
+  manager/admin "Run weekly pipeline now" control that queues the Celery task
+  and follows it through `GET /tasks/{task_id}`
+- Application telemetry under `/telemetry` (`GET /telemetry/report`)
+- Sales knowledge (RAG) under `/knowledge`
+- RFP workflow with live SSE ticket notifications under `/rfp`
+- First-line CX WebSocket chat under `/support`
+- Agent observability and pause/resume/cancel controls under `/observability`
 - Talent Pipeline Tracker under `/talent`
 - Supplier directory
 - Profile, password recovery, and session management
+
+Every module has a sidebar entry in `lib/navigation.ts`.
+`__tests__/backoffice-reachability.test.ts` fails if a page is added without
+a sidebar entry or an in-app link, so the whole backoffice stays reachable by
+clicking from the home screen.
 
 The Talent Pipeline routes preserve the Milestone 3 workflows: candidate
 search/filtering, registration, detail/edit views, status and stage updates,
