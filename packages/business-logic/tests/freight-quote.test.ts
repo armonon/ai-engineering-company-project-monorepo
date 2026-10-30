@@ -8,21 +8,21 @@ import {
 } from "../src/index.js";
 
 test("currency by country matches CONTEXT.md", () => {
-  assert.equal(currencyForCountry("MX"), "MXN");
+  assert.equal(currencyForCountry("US"), "USD");
   assert.equal(currencyForCountry("ES"), "EUR");
 });
 
-test("priority eligibility only for MX metro→metro", () => {
+test("priority eligibility only for metro→metro, in either country", () => {
   assert.equal(
-    isPriorityEligible({ country: "MX", originZone: "metro", destinationZone: "metro" }),
+    isPriorityEligible({ originZone: "metro", destinationZone: "metro" }),
     true,
   );
   assert.equal(
-    isPriorityEligible({ country: "MX", originZone: "metro", destinationZone: "regional" }),
+    isPriorityEligible({ originZone: "metro", destinationZone: "regional" }),
     false,
   );
   assert.equal(
-    isPriorityEligible({ country: "ES", originZone: "metro", destinationZone: "metro" }),
+    isPriorityEligible({ originZone: "remote", destinationZone: "metro" }),
     false,
   );
 });
@@ -31,9 +31,9 @@ test("priority tier outside eligibility throws", () => {
   assert.throws(
     () =>
       quoteShipment({
-        country: "ES",
+        country: "US",
         originZone: "metro",
-        destinationZone: "metro",
+        destinationZone: "regional",
         serviceTier: "priority",
         distanceKm: 10,
         weightKg: 2,
@@ -42,10 +42,44 @@ test("priority tier outside eligibility throws", () => {
   );
 });
 
+test("priority tier is quoted for metro→metro in Spain and the US", () => {
+  for (const country of ["US", "ES"] as const) {
+    const quote = quoteShipment({
+      country,
+      originZone: "metro",
+      destinationZone: "metro",
+      serviceTier: "priority",
+      distanceKm: 10,
+      weightKg: 2,
+    });
+    assert.equal(quote.serviceTier, "priority");
+  }
+});
+
+test("US quote uses the Milestone 2 UPS list rates in USD", () => {
+  // (5 + 0.05 × 120 + 1.2 × 3) × metro uplift 1 × standard 1 = 14.60 USD
+  const quote = quoteShipment({
+    country: "US",
+    originZone: "metro",
+    destinationZone: "metro",
+    serviceTier: "standard",
+    distanceKm: 120,
+    weightKg: 3,
+  });
+  assert.equal(quote.currency, "USD");
+  assert.equal(quote.totalPrice, 14.6);
+  assert.deepEqual(quote.breakdown, {
+    base: 5,
+    distance: 6,
+    weight: 3.6,
+    tierMultiplier: 1,
+  });
+});
+
 test("weight and distance must be > 0", () => {
   assert.throws(() =>
     quoteShipment({
-      country: "MX",
+      country: "US",
       originZone: "metro",
       destinationZone: "metro",
       serviceTier: "standard",
@@ -55,7 +89,7 @@ test("weight and distance must be > 0", () => {
   );
   assert.throws(() =>
     quoteShipment({
-      country: "MX",
+      country: "US",
       originZone: "metro",
       destinationZone: "metro",
       serviceTier: "standard",

@@ -22,11 +22,11 @@ export const metadata: Metadata = {
     template: "%s · TrackFlow",
   },
   description:
-    "TrackFlow gives mid-market retailers in Mexico and Spain a single tool for warehouse operations, driver dispatch, and shipment tracking.",
+    "TrackFlow gives mid-market retailers in the United States and Spain a single tool for warehouse operations, driver dispatch, and shipment tracking.",
   openGraph: {
     title: "TrackFlow · Last-mile delivery and warehousing SaaS",
     description:
-      "Warehouse, dispatch, and shipment tracking for mid-market retailers in Mexico and Spain.",
+      "Warehouse, dispatch, and shipment tracking for mid-market retailers in the United States and Spain.",
     type: "website",
     locale: "en_US",
     images: [
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TrackFlow · Last-mile delivery and warehousing SaaS",
     description:
-      "Warehouse, dispatch, and shipment tracking for retailers in Mexico and Spain.",
+      "Warehouse, dispatch, and shipment tracking for retailers in the United States and Spain.",
     images: ["/og.png"],
   },
   robots: { index: true, follow: true },
@@ -93,7 +93,7 @@ export default function RootLayout({
         <footer className="border-t border-slate-200 bg-slate-50">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <span>© {new Date().getFullYear()} TrackFlow. All rights reserved.</span>
-            <span>Operating in Mexico and Spain.</span>
+            <span>Operating in the United States and Spain.</span>
           </div>
         </footer>
       </body>

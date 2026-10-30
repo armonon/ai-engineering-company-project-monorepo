@@ -7,7 +7,7 @@ export const sampleProducts: Product[] = [
     category: "Fashion",
     weightKg: 0.8,
     dimensions: { lengthCm: 35, widthCm: 22, heightCm: 12 },
-    warehouse: "Monterrey",
+    warehouse: "Los Angeles",
     stockQuantity: 45,
     minStockThreshold: 20,
     unitCostUSD: 35,
@@ -33,7 +33,7 @@ export const sampleProducts: Product[] = [
     category: "Cosmetics",
     weightKg: 0.3,
     dimensions: { lengthCm: 12, widthCm: 8, heightCm: 15 },
-    warehouse: "Monterrey",
+    warehouse: "Los Angeles",
     stockQuantity: 120,
     minStockThreshold: 30,
     unitCostUSD: 85,
@@ -44,9 +44,9 @@ export const sampleProducts: Product[] = [
 
 export const sampleCarriers: Carrier[] = [
   {
-    id: "CAR-ESTAFETA",
-    name: "Estafeta",
-    operatesIn: ["Mexico"],
+    id: "CAR-UPS",
+    name: "UPS",
+    operatesIn: ["United States"],
     baseRateUSD: 5,
     ratePerKgUSD: 1.2,
     ratePerKmUSD: 0.05,
@@ -72,7 +72,7 @@ export const sampleCarriers: Carrier[] = [
   {
     id: "CAR-DHL",
     name: "DHL Express",
-    operatesIn: ["Mexico", "Spain"],
+    operatesIn: ["United States", "Spain"],
     baseRateUSD: 12,
     ratePerKgUSD: 2,
     ratePerKmUSD: 0.1,

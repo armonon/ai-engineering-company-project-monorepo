@@ -1,6 +1,6 @@
 # TrackFlow context history
 
-TrackFlow is the single company used throughout this monorepo. These official 4Geeks context documents preserve the cumulative foundation from the prework through the current milestone:
+TrackFlow is the single company used throughout this monorepo. The root [`BRIEFING.md`](../../BRIEFING.md) is the official 4Geeks company briefing. These official 4Geeks context documents, refreshed verbatim from `4GeeksAcademy/ai-engineering-syllabus` on 2026-10-30 (United States and Spain; Los Angeles and Zaragoza), preserve the cumulative foundation from the prework through the current milestone:
 
 1. [`00-trackflow-company-briefing.md`](./00-trackflow-company-briefing.md) — company, departments, stakeholders, technology gaps, and milestone roadmap.
 2. [`01-web-fundamentals.md`](./01-web-fundamentals.md) — public website requirements carried forward from Milestone 1.

@@ -2,9 +2,10 @@
 
 ## What TrackFlow is
 
-TrackFlow is a last-mile delivery and warehousing SaaS operating in
-Mexico and Spain, sold to mid-market retailers and regional logistics
-operators. See [`CONTEXT.md`](../CONTEXT.md) for the canonical domain
+TrackFlow is a last-mile delivery and warehouse management company
+operating in the United States (Los Angeles) and Spain (Zaragoza), serving
+mid-market e-commerce brands. The official company briefing is
+[`BRIEFING.md`](../BRIEFING.md); see [`CONTEXT.md`](../CONTEXT.md) for the canonical domain
 vocabulary and constraints — that file is authoritative; this one
 gives the goal-level "why".
 

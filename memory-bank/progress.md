@@ -2,6 +2,38 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Realign TrackFlow to the official 4Geeks briefing
+
+**Branch:** `codex/briefing-realignment`
+
+- The official TrackFlow briefing in `4GeeksAcademy/ai-engineering-syllabus`
+  describes a United States + Spain company (Los Angeles and Zaragoza
+  warehouses, CEO Thomas Harry, carriers including UPS, a People team). This
+  repo had been built on an older Mexico + Spain framing (Monterrey, Daniel
+  Espinoza, Estafeta, MXN) that no official version contains. The capstone
+  README requires entities and fields to match the company BRIEFING.md.
+- Added the official briefing verbatim as root `BRIEFING.md` (Milestone 0
+  deliverable) and refreshed `docs/company-context/00–02` verbatim from the
+  official Milestone 0/1/2 briefings. The incidents CSV already matched the
+  official file byte-for-byte and is unchanged.
+- `CONTEXT.md` (developer-approved edit): markets are US/ES with `LA`/`ZGZ`
+  warehouses, currencies USD/EUR, and `BRIEFING.md` wins on company facts.
+- `freight-quote.ts` (developer-approved edit): `Country` is `US | ES`,
+  `Currency` is `USD | EUR`. US list rates are the official Milestone 2 UPS
+  sample-carrier rates (5.00 USD base, 0.05 USD/km, 1.20 USD/kg) instead of
+  invented figures; ES rates are unchanged. The priority tier is metro→metro
+  in either country, because the official sample data offers same-day in
+  Spain (SEUR). Invariant script, skill doc, and tests updated together,
+  including a hand-checked US quote (14.60 USD).
+- Programming-fundamentals sample data and types now use the official names
+  (`Los Angeles`, `United States`, `UPS`); every expected number is unchanged
+  because the official rates are identical.
+- Website copy, backoffice quote calculator, architecture proposal, scoped
+  inventory context, and memory bank updated to the same facts.
+- `company-choice.md` is intentionally not generated: Milestone 0 requires
+  the student's own reasoning.
+- Traceability: `DOC-1`, `MONO-1`; `BRIEFING.md`; 4Geeks capstone README.
+
 ## 2026-10-30 · Backoffice fully navigable for the capstone
 
 **Branch:** `codex/backoffice-navigation`
