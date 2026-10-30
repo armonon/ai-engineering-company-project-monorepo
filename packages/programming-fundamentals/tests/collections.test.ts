@@ -12,7 +12,7 @@ import {
 describe("collection utilities", () => {
   it("filters products by warehouse and category", () => {
     assert.deepEqual(
-      filterProductsByWarehouse(sampleProducts, "Monterrey").map(
+      filterProductsByWarehouse(sampleProducts, "Los Angeles").map(
         ({ sku }) => sku,
       ),
       ["SHOE-BLK-42", "PERFUME-COCO-50"],

@@ -10,7 +10,7 @@ import { quoteShipment, currencyForCountry } from "@trackflow/business-logic";
 ```
 
 - `quoteShipment(input)` → `QuoteResult`. Throws on invalid input.
-- `currencyForCountry(country)` → `"MXN" | "EUR"`.
+- `currencyForCountry(country)` → `"USD" | "EUR"`.
 - `isPriorityEligible(input)` → `boolean`.
 
 Types: `Country`, `Zone`, `ServiceTier`, `Currency`, `QuoteInput`,

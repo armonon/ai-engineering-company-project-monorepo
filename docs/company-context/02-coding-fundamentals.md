@@ -1,15 +1,15 @@
-# CONTEXT — TrackFlow
+# BRIEFING — TrackFlow
 
-**Milestone 2: Programming Fundamentals**
-**Company:** TrackFlow — Last-Mile Delivery & Warehouse Management
-**Your Role:** Junior AI Engineer, TrackFlow Tech Team
+**Milestone 2: Programming Fundamentals**  
+**Company:** TrackFlow — Last-Mile Delivery & Warehouse Management  
+**Your Role:** Junior AI Engineer, TrackFlow Tech Team  
 **Project Owner:** Ana Whitfield, Head of Warehouse Operations
 
 ---
 
 ## About TrackFlow
 
-TrackFlow is a last-mile delivery and warehouse management company operating in Mexico (Monterrey) and Spain (Zaragoza). The company manages warehouses for e-commerce brands and handles the final delivery to end customers. You're part of TrackFlow Tech, the internal unit leading the company's digital transformation.
+TrackFlow is a last-mile delivery and warehouse management company operating in the United States (Los Angeles) and Spain (Zaragoza). The company manages warehouses for e-commerce brands and handles the final delivery to end customers. You're part of TrackFlow Tech, the internal unit leading the company's digital transformation.
 
 ---
 
@@ -69,7 +69,7 @@ type ProductCategory =
   | "Cosmetics"
   | "Home"
   | "Other";
-type WarehouseLocation = "Monterrey" | "Zaragoza";
+type WarehouseLocation = "Los Angeles" | "Zaragoza";
 type ProductStatus = "Active" | "Low stock" | "Out of stock" | "Discontinued";
 ```
 
@@ -111,7 +111,7 @@ interface Destination {
   distanceKm: number; // Distance from origin warehouse
 }
 
-type Country = "Mexico" | "Spain";
+type Country = "United States" | "Spain";
 type ShipmentPriority = "Standard" | "Express" | "Same-day";
 type ShipmentStatus =
   | "Pending"
@@ -137,8 +137,8 @@ Represents a delivery carrier that TrackFlow works with.
 
 ```typescript
 interface Carrier {
-  id: string; // Carrier ID (e.g., "CAR-ESTAFETA")
-  name: string; // Carrier name (e.g., "Estafeta")
+  id: string; // Carrier ID (e.g., "CAR-UPS")
+  name: string; // Carrier name (e.g., "UPS")
   operatesIn: Country[]; // Countries where they operate
   baseRateUSD: number; // Base delivery cost (USD)
   ratePerKgUSD: number; // Additional cost per kg (USD)
@@ -355,7 +355,7 @@ const sampleProducts: Product[] = [
     category: "Fashion",
     weightKg: 0.8,
     dimensions: { lengthCm: 35, widthCm: 22, heightCm: 12 },
-    warehouse: "Monterrey",
+    warehouse: "Los Angeles",
     stockQuantity: 45,
     minStockThreshold: 20,
     unitCostUSD: 35.0,
@@ -381,7 +381,7 @@ const sampleProducts: Product[] = [
     category: "Cosmetics",
     weightKg: 0.3,
     dimensions: { lengthCm: 12, widthCm: 8, heightCm: 15 },
-    warehouse: "Monterrey",
+    warehouse: "Los Angeles",
     stockQuantity: 120,
     minStockThreshold: 30,
     unitCostUSD: 85.0,
@@ -396,9 +396,9 @@ const sampleProducts: Product[] = [
 ```typescript
 const sampleCarriers: Carrier[] = [
   {
-    id: "CAR-ESTAFETA",
-    name: "Estafeta",
-    operatesIn: ["Mexico"],
+    id: "CAR-UPS",
+    name: "UPS",
+    operatesIn: ["United States"],
     baseRateUSD: 5.0,
     ratePerKgUSD: 1.2,
     ratePerKmUSD: 0.05,
@@ -424,7 +424,7 @@ const sampleCarriers: Carrier[] = [
   {
     id: "CAR-DHL",
     name: "DHL Express",
-    operatesIn: ["Mexico", "Spain"],
+    operatesIn: ["United States", "Spain"],
     baseRateUSD: 12.0,
     ratePerKgUSD: 2.0,
     ratePerKmUSD: 0.1,
@@ -478,7 +478,7 @@ Your implementation will be evaluated on:
 
 ## What Ana Expects
 
-> "Listen, we process 2,000+ shipments per week across both warehouses. I can't have your code breaking when there's a null value or an edge case. Write it like it's going into production tomorrow — because it is. Make it solid, make it testable, and make it maintainable."
+> "Listen, we process 2,000+ shipments per week across both warehouses. I can't have your code breaking when there's a null value or an edge case. Write it like it's going into production tomorrow — because it is. Make it solid, make it testable, and make it maintainable."  
 > — Ana Whitfield, Head of Warehouse Operations
 
 ---
@@ -489,4 +489,4 @@ If you're unsure about any requirement, ask your mentor. In a real work environm
 
 ---
 
-_This is a real TrackFlow project. What you build here will become part of the production warehouse and carrier management system used in Monterrey and Zaragoza._
+_This is a real TrackFlow project. What you build here will become part of the production warehouse and carrier management system used in Los Angeles and Zaragoza._

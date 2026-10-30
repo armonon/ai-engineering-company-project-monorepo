@@ -11,7 +11,7 @@ export type ProductCategory =
   | "Home"
   | "Other";
 
-export type WarehouseLocation = "Monterrey" | "Zaragoza";
+export type WarehouseLocation = "Los Angeles" | "Zaragoza";
 
 export type ProductStatus =
   | "Active"
@@ -33,7 +33,7 @@ export interface Product {
   status: ProductStatus;
 }
 
-export type Country = "Mexico" | "Spain";
+export type Country = "United States" | "Spain";
 
 export interface Destination {
   city: string;
