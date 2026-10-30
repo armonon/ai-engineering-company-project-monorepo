@@ -2,9 +2,10 @@
 
 This folder contains **all projects with a user interface** for the cross-functional AI Engineering company project — for example: a public website, admin dashboard frontend, ecommerce UI, customer portals, Streamlit/Gradio app or other frontend-only tools.
 
-The three projects stored here are:
+The projects stored here are:
 
-- **`website`** — the company's public-facing web presence.
+- **`public-website`** — the Milestone 1 public website (static HTML + Tailwind + `validation.js`) built verbatim from the official briefing.
+- **`website`** — the Next.js product site for the freight-quote platform.
 - **`backoffice`** — the internal admin application. This is the ideal place to develop multiple solutions within a single project: authentication, people management, operations management, internal communication, and other back-office capabilities.
 - **`talent-pipeline-tracker`** — the recruiting workflow delivered as a stable coursework milestone and maintained within the same workspace graph.
 

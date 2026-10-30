@@ -2,6 +2,27 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Official Milestone 1 public website
+
+**Branch:** `codex/milestone-1-public-website`
+
+- The existing `uis/website` Next.js page did not follow the official TrackFlow
+  Milestone 1 briefing (required headline, section order, contact data,
+  12-field form, exact error messages, success message, low-volume warning,
+  Schema.org) or the Milestone 1 README's file contract (`index.html`,
+  `application.html`, `validation.js`, Tailwind, `npx` run command).
+- Added `uis/public-website/` built verbatim from the briefing: semantic
+  landing page with the required Organization markup, a fieldset-grouped
+  form with real-time and submit validation, a 500-character counter, the
+  non-blocking low-volume warning, success message, and clear-form reset.
+- Tailwind v4 is compiled to a static `tailwind.css` (no hand-written CSS) so
+  the pages stay fast; Lighthouse (mobile) scored 92/100/100/100 and
+  99/100/100/100. Twelve Node tests cover every rule, message, field, and
+  required content string. Browser check: empty submit shows 10 errors and
+  focuses the first; a valid submit shows the success message; no console
+  errors.
+- Traceability: `DOC-1`, `MONO-2`; `docs/company-context/01-web-fundamentals.md`.
+
 ## 2026-10-30 · Realign TrackFlow to the official 4Geeks briefing
 
 **Branch:** `codex/briefing-realignment`
