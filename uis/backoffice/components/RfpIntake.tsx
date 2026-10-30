@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ProposalDocument } from "@/components/ProposalDocument";
 import {
   decideRfpApproval,
   fetchRfpTicket,
@@ -343,8 +344,8 @@ export function RfpIntake() {
                 <summary className="cursor-pointer font-semibold text-emerald-900">
                   Final approved proposal · {ticket.final_document.currency}
                 </summary>
-                <div className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-800">
-                  {ticket.final_document.content}
+                <div className="mt-3">
+                  <ProposalDocument markdown={ticket.final_document.content} />
                 </div>
               </details>
             ) : null}

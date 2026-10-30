@@ -2,6 +2,34 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Live demo practice run and notebook fixes
+
+**Branch:** `codex/demo-polish`
+
+- Practice run of the capstone path with the API (uvicorn, local SQLite) and
+  backoffice (Next.js dev): register → upload ModaViva PDF → live SSE ticket
+  notification → intake routed to Warehouse (Ana Whitfield) and Reverse
+  Logistics (Sofía Ramos) in EUR → drafts pass evaluation → two independent
+  approvals (ticket stays `waiting_for_approval` after the first) → `done`
+  with the final proposal → observability shows the completed flow and its
+  12 chained tasks. All 16 sidebar pages load without errors.
+- The final proposal rendered as raw Markdown (`#`, `**`, `|` tables). Added
+  `lib/proposal-markdown.ts` (headings, bold, bullets, tables, wrapped
+  paragraphs, label lines; text only, never injected HTML) and
+  `components/ProposalDocument.tsx`, with 4 tests.
+- Removed the non-clickable "Dispatch (soon)" sidebar placeholder: the
+  capstone checklist asks for no dead-end modules.
+- The demo PDF now has one complete sentence per line, so quoted RFP
+  requirements are whole sentences; fixture test and e2e run still pass.
+- Notebooks in `dogs-vs-cats`, `streamloop-churn`, and `welove-reviews` used
+  `Path.cwd()` as the project root, which fails when Jupyter starts in `src/`.
+  They now resolve the root from either location; the sentiment and churn
+  notebooks execute end to end. Saved outputs were left untouched.
+- Not runnable on this machine: the CX chat and sales-knowledge answers need
+  the LiteLLM gateway and Qdrant from `.env`/Docker; the UI shows a clear
+  "temporarily unavailable" message instead of failing.
+- Traceability: `DOC-1`; capstone after-course checklist.
+
 ## 2026-10-30 · Final quality sweep
 
 **Branch:** `codex/final-sweep`
