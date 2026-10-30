@@ -60,9 +60,6 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="flex flex-col gap-1 p-3 text-sm">
           {navigationLinks()}
-          <span className="rounded-md px-3 py-2 text-slate-400">
-            Dispatch <em className="text-xs">(soon)</em>
-          </span>
         </nav>
       </aside>
 

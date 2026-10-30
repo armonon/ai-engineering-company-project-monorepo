@@ -24,9 +24,10 @@ LINES = [
     "RFP Reference No.: MV-LOG-2026-03",
     "Proposal Due Date: August 28, 2026",
     "",
-    "ModaViva is a Spanish ecommerce brand requesting almacenamiento of 15,000 SKUs",
-    "near Zaragoza and gestión de devoluciones. We maintain our own carrier and no",
-    "last mile service is required.",
+    "ModaViva is a Spanish ecommerce brand.",
+    "We request almacenamiento of 15,000 SKUs near Zaragoza.",
+    "We also request gestión de devoluciones for customer returns.",
+    "We maintain our own carrier and no last mile service is required.",
 ]
 
 
