@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Request information — TrackFlow</title>
+    <meta
+      name="description"
+      content="Tell TrackFlow about your e-commerce logistics needs. Our commercial team contacts you within 24-48 hours."
+    />
+    <link rel="canonical" href="https://trackflow.com/application.html" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="tailwind.css" />
+    <script src="validation.js" defer></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow"
+      >Skip to content</a
+    >
+
+    <header class="border-b border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <a href="index.html" class="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900">
+          <img src="favicon.svg" alt="TrackFlow logo" width="32" height="32" class="h-8 w-8" />
+          TrackFlow
+        </a>
+        <nav aria-label="Main navigation">
+          <ul class="flex flex-wrap gap-1 text-sm font-medium text-slate-700 sm:gap-2">
+            <li><a href="index.html#home" class="rounded-md px-3 py-2 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-700">Home</a></li>
+            <li><a href="index.html#services" class="rounded-md px-3 py-2 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-700">Services</a></li>
+            <li><a href="index.html#coverage" class="rounded-md px-3 py-2 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-700">Coverage</a></li>
+            <li><a href="index.html#contact" class="rounded-md px-3 py-2 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-700">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="mx-auto max-w-3xl px-4 py-10 sm:px-6 md:py-14">
+      <h1 class="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Request information</h1>
+      <p class="mt-3 text-slate-700">
+        This form is for e-commerce companies looking to outsource their logistics. To track a package or make a return,
+        please contact the brand you bought from.
+      </p>
+      <p class="mt-2 text-sm text-slate-700">Fields marked <span aria-hidden="true">*</span><span class="sr-only">with an asterisk</span> are required.</p>
+
+      <form id="information-request" class="mt-8 space-y-8" novalidate>
+        <fieldset class="space-y-5 rounded-lg border border-slate-200 bg-white p-5 sm:p-6">
+          <legend class="px-1 text-lg font-semibold">Company and contact</legend>
+
+          <div>
+            <label for="companyName" class="block text-sm font-medium">Company name *</label>
+            <input id="companyName" name="companyName" type="text" required minlength="2" autocomplete="organization"
+              aria-describedby="companyName-error"
+              class="mt-1 w-full rounded-md border border-slate-400 px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700" />
+            <p id="companyName-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+          </div>
+
+          <div>
+            <label for="contactPerson" class="block text-sm font-medium">Contact person *</label>
+            <input id="contactPerson" name="contactPerson" type="text" required autocomplete="name"
+              aria-describedby="contactPerson-hint contactPerson-error"
+              class="mt-1 w-full rounded-md border border-slate-400 px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700" />
+            <p id="contactPerson-hint" class="mt-1 text-xs text-slate-600">First and last name.</p>
+            <p id="contactPerson-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="corporateEmail" class="block text-sm font-medium">Corporate email *</label>
+              <input id="corporateEmail" name="corporateEmail" type="email" required autocomplete="email"
+                aria-describedby="corporateEmail-error"
+                class="mt-1 w-full rounded-md border border-slate-400 px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700" />
+              <p id="corporateEmail-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+            </div>
+            <div>
+              <label for="phone" class="block text-sm font-medium">Phone *</label>
+              <input id="phone" name="phone" type="tel" required autocomplete="tel" placeholder="+1 213 555 0147"
+                aria-describedby="phone-error"
+                class="mt-1 w-full rounded-md border border-slate-400 px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700" />
+              <p id="phone-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div>
+            <label for="companyWebsite" class="block text-sm font-medium">Company website</label>
+            <input id="companyWebsite" name="companyWebsite" type="url" autocomplete="url" placeholder="https://"
+              aria-describedby="companyWebsite-error"
+              class="mt-1 w-full rounded-md border border-slate-400 px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700" />
+            <p id="companyWebsite-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+          </div>
+        </fieldset>
+
+        <fieldset class="space-y-5 rounded-lg border border-slate-200 bg-white p-5 sm:p-6">
+          <legend class="px-1 text-lg font-semibold">Your operation</legend>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="mainOperatingCountry" class="block text-sm font-medium">Main operating country *</label>
+              <select id="mainOperatingCountry" name="mainOperatingCountry" required aria-describedby="mainOperatingCountry-error"
+                class="mt-1 w-full rounded-md border border-slate-400 bg-white px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700">
+                <option value="">Select…</option>
+                <option>United States</option>
+                <option>Spain</option>
+                <option>Both</option>
+                <option>Other</option>
+              </select>
+              <p id="mainOperatingCountry-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+            </div>
+            <div>
+              <label for="productType" class="block text-sm font-medium">Product type *</label>
+              <select id="productType" name="productType" required aria-describedby="productType-error"
+                class="mt-1 w-full rounded-md border border-slate-400 bg-white px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700">
+                <option value="">Select…</option>
+                <option>Fashion</option>
+                <option>Electronics</option>
+                <option>Cosmetics</option>
+                <option>Food</option>
+                <option>Other</option>
+              </select>
+              <p id="productType-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <div>
+            <label for="monthlyShippingVolume" class="block text-sm font-medium">Estimated monthly shipping volume *</label>
+            <select id="monthlyShippingVolume" name="monthlyShippingVolume" required
+              aria-describedby="monthlyShippingVolume-error volume-warning"
+              class="mt-1 w-full rounded-md border border-slate-400 bg-white px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700">
+              <option value="">Select…</option>
+              <option value="0-100">0-100</option>
+              <option value="101-500">101-500</option>
+              <option value="501-2000">501-2000</option>
+              <option value="2000+">2000+</option>
+              <option value="Not sure">Not sure</option>
+            </select>
+            <p id="monthlyShippingVolume-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+            <p id="volume-warning" role="status" hidden
+              class="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"></p>
+          </div>
+
+          <fieldset aria-describedby="servicesOfInterest-error">
+            <legend class="text-sm font-medium">Services of interest *</legend>
+            <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:gap-6">
+              <label class="inline-flex items-center gap-2"><input type="checkbox" name="servicesOfInterest" value="Warehousing" class="h-4 w-4 accent-blue-800" /> Warehousing</label>
+              <label class="inline-flex items-center gap-2"><input type="checkbox" name="servicesOfInterest" value="Last mile" class="h-4 w-4 accent-blue-800" /> Last mile</label>
+              <label class="inline-flex items-center gap-2"><input type="checkbox" name="servicesOfInterest" value="Reverse logistics" class="h-4 w-4 accent-blue-800" /> Reverse logistics</label>
+            </div>
+            <p id="servicesOfInterest-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+          </fieldset>
+
+          <fieldset aria-describedby="currentThreePL-error">
+            <legend class="text-sm font-medium">Do you currently work with another 3PL? *</legend>
+            <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:gap-6">
+              <label class="inline-flex items-center gap-2"><input type="radio" name="currentThreePL" value="Yes" required class="h-4 w-4 accent-blue-800" /> Yes</label>
+              <label class="inline-flex items-center gap-2"><input type="radio" name="currentThreePL" value="No" class="h-4 w-4 accent-blue-800" /> No</label>
+              <label class="inline-flex items-center gap-2"><input type="radio" name="currentThreePL" value="Evaluating options" class="h-4 w-4 accent-blue-800" /> Evaluating options</label>
+            </div>
+            <p id="currentThreePL-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+          </fieldset>
+
+          <div>
+            <label for="comments" class="block text-sm font-medium">Comments or specific needs</label>
+            <textarea id="comments" name="comments" rows="4" aria-describedby="comments-counter comments-error"
+              class="mt-1 w-full rounded-md border border-slate-400 px-3 py-2 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-700"></textarea>
+            <p id="comments-counter" class="mt-1 text-xs text-slate-600">500 characters remaining</p>
+            <p id="comments-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+          </div>
+        </fieldset>
+
+        <div>
+          <label class="inline-flex items-start gap-2">
+            <input type="checkbox" id="privacyPolicy" name="privacyPolicy" value="accepted" required
+              aria-describedby="privacyPolicy-error" class="mt-1 h-4 w-4 accent-blue-800" />
+            <span>I accept the privacy policy *</span>
+          </label>
+          <p id="privacyPolicy-error" class="mt-1 text-sm font-medium text-red-700" aria-live="polite"></p>
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <button type="submit"
+            class="rounded-md bg-blue-800 px-6 py-3 font-semibold text-white hover:bg-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">
+            Request information
+          </button>
+          <button type="reset"
+            class="rounded-md border border-slate-400 bg-white px-6 py-3 font-semibold text-slate-800 hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800">
+            Clear form
+          </button>
+        </div>
+      </form>
+
+      <section id="form-success" hidden tabindex="-1" role="status" aria-live="polite"
+        class="mt-8 rounded-lg border border-emerald-300 bg-emerald-50 p-6 text-emerald-950">
+        <h2 class="text-xl font-semibold">Thank you for your interest in TrackFlow!</h2>
+        <p class="mt-3">
+          We have received your request. Our commercial team will review your information and contact you within the
+          next 24-48 hours to schedule a call and learn about your logistics needs in detail.
+        </p>
+        <p class="mt-3">
+          If you have any urgent inquiry, write to us directly at
+          <a href="mailto:comercial@trackflow.com" class="font-semibold underline underline-offset-4">comercial@trackflow.com</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="border-t border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-slate-700 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p>© 2025 TrackFlow. All rights reserved.</p>
+        <a href="https://linkedin.com/company/trackflow" rel="noopener" class="font-medium underline underline-offset-4 hover:text-slate-950" aria-label="TrackFlow on LinkedIn">LinkedIn</a>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -4,6 +4,19 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-30 · Milestone 1 resubmission: official TrackFlow briefing
+
+- Added the official briefing as root `BRIEFING.md` and
+  `docs/company-context/00–01` (verbatim from 4GeeksAcademy/ai-engineering-syllabus).
+- Added `uis/public-website/` — the Milestone 1 deliverable built from the
+  official briefing: `index.html`, `application.html`, `validation.js`,
+  compiled Tailwind, Schema.org, all 12 form fields with the exact messages.
+  Run: `npx --yes http-server@14.1.1 uis/public-website -p 3000 -a 0.0.0.0 -c-1`.
+  Lighthouse (mobile) 92/100/100/100 and 99/100/100/100; 12 Node tests.
+- Realigned the snapshot from Mexico/MXN to United States/USD (CONTEXT,
+  freight quote with official UPS sample rates, website copy, memory bank) and
+  upgraded the Next.js site to 16.4.3 (security advisories; audit clean).
+
 ## 2026-08-02 · Milestone 4 — AI-driven engineering infrastructure
 
 **Branch:** `milestone-4`

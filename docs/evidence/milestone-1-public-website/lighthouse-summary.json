@@ -1,0 +1,19 @@
+{
+  "tool": "Lighthouse 12.6.1 (mobile emulation, headless Chrome)",
+  "date": "2026-10-30",
+  "served_by": "npx http-server@14.1.1 uis/public-website",
+  "pages": {
+    "index.html": {
+      "performance": 92,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    },
+    "application.html": {
+      "performance": 99,
+      "accessibility": 100,
+      "best-practices": 100,
+      "seo": 100
+    }
+  }
+}
