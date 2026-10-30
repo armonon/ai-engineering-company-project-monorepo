@@ -2,6 +2,29 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Codespaces dev container repaired
+
+**Branch:** `codex/devcontainer-fix` (developer-approved change to `.devcontainer/`)
+
+- `universal:2` plus the `sshd` feature forced a multi-GB image rebuild that
+  overflowed the only machine type allowed for this repo (`basicLinux32gb`,
+  34 GB): every Codespace fell back to an Alpine recovery container with no
+  Node, so the documented `npx` commands could not run. `post-create.sh` also
+  ran `uv sync` at the root, which has no `pyproject.toml`.
+- Switched to the official 4Geeks template base (`base:ubuntu-24.04` with
+  Python 3.12, Node 22, docker-outside-of-docker, GitHub CLI, sshd) and made
+  `post-create.sh` mirror CI: `npm ci`, `npm run bootstrap`,
+  `uv sync --project services/api --locked`.
+- Verified in a real Codespace: Ubuntu 24.04, Node 22, Python 3.12, uv;
+  post-create exits 0 in about two minutes; the README's
+  `npx --yes http-server@14.1.1 uis/public-website -p 3000 -a 0.0.0.0 -c-1`
+  serves the site on a public forwarded port (HTTP 200 from outside GitHub).
+- Added the Milestone 1 Lighthouse report screenshot
+  (`docs/evidence/milestone-1-public-website/lighthouse-index.png`, 100/100/100/100).
+  Lighthouse through the public Codespaces URL audits GitHub's port-warning
+  interstitial instead of the site, so the direct run is the valid evidence.
+- Traceability: `DOC-1`; AGENTS.md §3 (explicit developer confirmation).
+
 ## 2026-10-30 · Talent pipeline aligned to the Milestone 3 briefing
 
 **Branch:** `codex/talent-briefing-alignment`

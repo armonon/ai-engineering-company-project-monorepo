@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
+# Codespaces / dev container setup. Mirrors .github/workflows/ci.yml so a
+# fresh Codespace can run every documented command (npm, uv, npx).
 set -euo pipefail
 
-# Enable Corepack and make pnpm available for JS/TS workspaces.
-corepack enable || true
-corepack prepare pnpm@latest --activate || true
+python -m pip install --upgrade --quiet pip uv
 
-python -m pip install --upgrade pip uv
+# JavaScript workspaces (website, backoffice, public-website, packages).
+npm ci --no-audit --no-fund
+npm run bootstrap
 
-uv sync
+# FastAPI service and the Python pipeline packages it depends on.
+uv sync --project services/api --locked
 
-echo "Devcontainer setup complete."
+echo "Devcontainer setup complete. Public website: npx --yes http-server@14.1.1 uis/public-website -p 3000 -a 0.0.0.0 -c-1"
