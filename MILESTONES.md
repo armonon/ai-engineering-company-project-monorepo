@@ -58,6 +58,7 @@ into `main`. Submit the named branch/PR that matches the assignment page.
 
 ### Models training and RAG
 
+- California Housing K-means — `codex/models-kmeans-housing` ([PR #85](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/85))
 - Google Play review classifier — `codex/models-naive-bayes-course-audit` ([PR #81](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/81))
 - Sales forecasting — `codex/sales-forecast-model` ([PR #50](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/50))
 - Regression evaluation — `codex/regression-model-evaluation` ([PR #51](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/51))

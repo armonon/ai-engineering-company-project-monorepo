@@ -15,7 +15,8 @@ python -m venv .venv
 .venv/bin/pytest -q
 ```
 
-The 581 MB archive, extracted images, and generated model are intentionally
-ignored by Git, as the tutorial recommends. The executed notebook and compact
-evaluation artifacts preserve reproducible evidence without committing model
-weights or third-party image data.
+The 581 MB archive and extracted third-party images remain ignored by Git. The
+18 MB best Keras checkpoint is committed under `models/` because the assignment
+explicitly requires the trained model in the corresponding folder. The
+executed notebook and compact evaluation artifacts preserve the full training
+and held-out-test evidence.

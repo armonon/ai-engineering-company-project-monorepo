@@ -2,5 +2,6 @@
 data/
 models/*.keras
 models/*.h5
+!models/efficientnet_b0_best.keras
 __pycache__/
 *.pyc
