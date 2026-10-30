@@ -2,6 +2,29 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · California Housing K-means classification
+
+**Branch:** `codex/models-kmeans-housing`
+
+- Added the official 20,640-row California Housing dataset and selected only
+  `Latitude`, `Longitude`, and `MedInc`, matching the assignment contract.
+- Created one deterministic, disjoint 80/20 train/test boundary before fitting
+  a six-cluster K-means pipeline with training-only standardisation.
+- Stored train and held-out predictions as categorical cluster columns and
+  generated a geographic overlay showing both populations.
+- Trained a separate Random Forest classifier to reproduce the unsupervised
+  labels on unseen rows; the untouched 4,128-row test set reached 99.35%
+  accuracy and 99.11% macro-F1 with a complete confusion matrix.
+- Saved and load-tested both compressed fitted pipelines, processed labelled
+  datasets, original-unit cluster centres, metrics, and figures. Four focused
+  tests cover dataset/schema integrity, deterministic disjoint splitting,
+  exact six-cluster construction, artifacts, and held-out performance.
+- Closed the adjacent image-classifier evidence gap by versioning its existing
+  18 MB best Keras checkpoint while continuing to exclude the 581 MB source
+  archive and extracted third-party images. This makes the rubric's saved-model
+  deliverable directly inspectable from the cumulative repository.
+- Traceability: `DOC-1`; official 4Geeks “K-means Project Tutorial” rubric.
+
 ## 2026-10-29 · Real-time First-line CX WebSocket chat
 
 **Branch:** `codex/websocket-cx-chat`
