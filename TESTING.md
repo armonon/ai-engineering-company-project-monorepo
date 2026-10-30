@@ -49,8 +49,9 @@ From the repo root:
 npm run test
 ```
 
-The root command runs every npm-workspace test and then the complete FastAPI
-pytest suite. It uses `uv` when available and falls back to
+The root command runs every npm-workspace test, then the complete FastAPI
+pytest suite, then the root `tests/pipelines` suite (RFP, RAG, agents,
+forecasting) from the repository root against the same environment. It uses `uv` when available and falls back to
 `services/api/.venv` for an already-synchronised local environment.
 
 ---

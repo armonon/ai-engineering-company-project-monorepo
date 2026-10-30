@@ -2,6 +2,26 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Capstone audit: reproducible demo and pipeline tests in CI
+
+- Audited the capstone handoff package (PR #73) against the recording
+  checklist. The demo runbook referenced a "prepared" ModaViva RFP and demo
+  account that were not reproducible from the repository.
+- Added `scripts/build_capstone_demo_rfp.py`, which deterministically writes
+  `data/raw/rfp/modaviva-capstone-demo.pdf` from the same ModaViva facts the
+  intake tests assert, and `tests/pipelines/test_capstone_demo_fixture.py`,
+  which proves the versioned PDF matches the builder and passes real intake
+  as ModaViva, S.L. (Spain, EUR) routed to `warehouse` and `reverse`.
+- Found that the 89 root `tests/pipelines` tests were never executed by
+  `npm run test` or CI (pytest `testpaths` only covers `services/api/tests`).
+  `scripts/run-api-tests.mjs` now runs them from the repository root after
+  the API suite, against the same locked environment.
+- Committed `jsx: react-jsx` in the talent tracker tsconfig, matching the
+  other UIs; `next build` rewrote it on every build and dirtied the tree.
+- Human-only gates are unchanged: recording, truthful Q&A, media release,
+  permanent folder link, and LMS submission.
+- Traceability: `DOC-1`; `docs/capstone/RECORDING_CHECKLIST.md`.
+
 ## 2026-10-30 · California Housing K-means classification
 
 **Branch:** `codex/models-kmeans-housing`
