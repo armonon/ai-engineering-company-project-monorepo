@@ -35,7 +35,7 @@ directly constrain the architecture:
    its formula (freight quote, service-tier eligibility, currency)
    as the one authoritative implementation. **The backend must
    consume it, never reimplement it.**
-5. **Two countries, MX and ES**, two currencies (MXN / EUR),
+5. **Two countries, US and ES**, two currencies (USD / EUR),
    distinct timezones. Everything user-visible has to render in
    the tenant's country and timezone; everything internal is UTC.
 6. **Volume shape:** hundreds to low thousands of shipments per
@@ -407,7 +407,7 @@ function (the same seam we'd hit if it were a separate service).
 
 **What goes wrong:** a handler formats currency directly in a
 response by hard-coding `"$"`. A Spanish tenant sees a dollar
-sign. A dispatcher in Mexico sees a UTC timestamp on their
+sign. A dispatcher in Los Angeles sees a UTC timestamp on their
 shift roster.
 **Guardrail:** currency formatting only happens in the UI layer
 (the API returns raw numbers + currency code); timestamps are

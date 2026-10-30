@@ -44,13 +44,13 @@ function check(label, fn) {
 }
 
 // (1) Currency by country (CONTEXT.md § Constraints — Units)
-check("currency = MXN for country=MX", () => {
-  assert.equal(currencyForCountry("MX"), "MXN");
+check("currency = USD for country=US", () => {
+  assert.equal(currencyForCountry("US"), "USD");
 });
 check("currency = EUR for country=ES", () => {
   assert.equal(currencyForCountry("ES"), "EUR");
 });
-check("no USD / no $ leaks into any quote", () => {
+check("an ES quote is never priced in USD or $", () => {
   const q = quoteShipment({
     country: "ES",
     originZone: "metro",
@@ -64,32 +64,31 @@ check("no USD / no $ leaks into any quote", () => {
 });
 
 // (2) Priority tier eligibility (CONTEXT.md § Constraints — Priority tier)
-check("priority tier eligible when MX + metro→metro", () => {
+check("priority tier eligible when metro→metro", () => {
   assert.equal(
-    isPriorityEligible({
-      country: "MX",
-      originZone: "metro",
-      destinationZone: "metro",
-    }),
+    isPriorityEligible({ originZone: "metro", destinationZone: "metro" }),
     true,
   );
 });
-check("priority tier rejected when country=ES", () => {
-  assert.throws(() =>
-    quoteShipment({
-      country: "ES",
-      originZone: "metro",
-      destinationZone: "metro",
-      serviceTier: "priority",
-      distanceKm: 10,
-      weightKg: 2,
-    }),
-  );
+check("priority tier quoted metro→metro in both countries", () => {
+  for (const country of ["US", "ES"]) {
+    assert.equal(
+      quoteShipment({
+        country,
+        originZone: "metro",
+        destinationZone: "metro",
+        serviceTier: "priority",
+        distanceKm: 10,
+        weightKg: 2,
+      }).serviceTier,
+      "priority",
+    );
+  }
 });
 check("priority tier rejected when either zone is not metro", () => {
   assert.throws(() =>
     quoteShipment({
-      country: "MX",
+      country: "US",
       originZone: "metro",
       destinationZone: "regional",
       serviceTier: "priority",
@@ -103,7 +102,7 @@ check("priority tier rejected when either zone is not metro", () => {
 check("weightKg <= 0 throws", () => {
   assert.throws(() =>
     quoteShipment({
-      country: "MX",
+      country: "US",
       originZone: "metro",
       destinationZone: "metro",
       serviceTier: "standard",
@@ -115,7 +114,7 @@ check("weightKg <= 0 throws", () => {
 check("distanceKm <= 0 throws", () => {
   assert.throws(() =>
     quoteShipment({
-      country: "MX",
+      country: "US",
       originZone: "metro",
       destinationZone: "metro",
       serviceTier: "standard",
@@ -128,7 +127,7 @@ check("distanceKm <= 0 throws", () => {
 // (4) Deterministic pricing
 check("two consecutive calls return identical results", () => {
   const input = {
-    country: "MX",
+    country: "US",
     originZone: "metro",
     destinationZone: "regional",
     serviceTier: "express",

@@ -12,7 +12,7 @@ export default function HomePage() {
           </p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
             One workspace for every shipment your team moves in
-            Mexico and Spain.
+            the United States and Spain.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-slate-600">
             TrackFlow gives mid-market retailers a single tool for
@@ -65,15 +65,15 @@ export default function HomePage() {
       <Section
         id="countries"
         eyebrow="Where we operate"
-        title="Deployed in Mexico and Spain — priced in local currency."
+        title="Deployed in the United States and Spain — priced in local currency."
         className="border-t border-slate-100 bg-slate-50"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <h3 className="text-lg font-semibold">Mexico</h3>
+            <h3 className="text-lg font-semibold">United States</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Metropolitan same-day delivery available on the priority
-              tier. Prices in MXN.
+              Served from our Los Angeles warehouse. Metropolitan same-day
+              delivery available on the priority tier. Prices in USD.
             </p>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-5">
@@ -103,7 +103,7 @@ export default function HomePage() {
             {
               name: "Priority",
               time: "Same day",
-              detail: "Mexico only, metro→metro. Reserved for retailers with a priority SLA.",
+              detail: "Both countries, metro→metro only. Reserved for retailers with a priority SLA.",
             },
           ].map((tier) => (
             <div
@@ -173,7 +173,7 @@ export default function HomePage() {
                 Country
               </span>
               <select className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400">
-                <option>Mexico</option>
+                <option>United States</option>
                 <option>Spain</option>
               </select>
             </label>

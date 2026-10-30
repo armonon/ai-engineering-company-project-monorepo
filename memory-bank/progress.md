@@ -4,6 +4,20 @@ Rolling log of substantive changes. Newest first.
 
 ---
 
+## 2026-10-30 · Milestone 2 resubmission: official TrackFlow briefing
+
+- Added the official briefing as root `BRIEFING.md` and refreshed
+  `docs/company-context/00–02` verbatim from 4GeeksAcademy/ai-engineering-syllabus.
+- `@trackflow/programming-fundamentals` now uses the official Milestone 2
+  names (`Los Angeles`, `United States`, `UPS`); every expected number is
+  unchanged because the official rates are identical. Demo:
+  `Best carrier: UPS ($30.89, score 76.4)`.
+- Realigned CONTEXT, freight quote (US/USD with the official UPS sample
+  rates), backoffice quote calculator, website copy, architecture notes, and
+  memory bank from Mexico/MXN to United States/USD.
+- Upgraded all Next.js apps to 16.4.3 (security advisories; audit clean) and
+  pointed the talent tracker's Turbopack root at the monorepo, as on `main`.
+
 ## 2026-08-14 · Fold Milestone 2 into `packages/programming-fundamentals`
 
 **Branch:** `milestone-2-fold-in`

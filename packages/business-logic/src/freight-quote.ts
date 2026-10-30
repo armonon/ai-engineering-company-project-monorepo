@@ -5,10 +5,10 @@
  * must import this module; never re-implement the formula.
  */
 
-export type Country = "MX" | "ES";
+export type Country = "US" | "ES";
 export type Zone = "metro" | "regional" | "remote";
 export type ServiceTier = "standard" | "express" | "priority";
-export type Currency = "MXN" | "EUR";
+export type Currency = "USD" | "EUR";
 
 export interface QuoteInput {
   country: Country;
@@ -33,19 +33,20 @@ export interface QuoteResult {
   breakdown: QuoteBreakdown;
 }
 
-// Prices are in the destination currency (see CONTEXT.md units).
+// Prices are in the destination currency (see CONTEXT.md units). US list
+// rates mirror the UPS sample carrier in the official Milestone 2 briefing.
 const BASE_FEE: Record<Country, number> = {
-  MX: 60, // MXN
+  US: 5, // USD
   ES: 4, // EUR
 };
 
 const PRICE_PER_KM: Record<Country, number> = {
-  MX: 3.2, // MXN
+  US: 0.05, // USD
   ES: 0.28, // EUR
 };
 
 const PRICE_PER_KG: Record<Country, number> = {
-  MX: 8, // MXN
+  US: 1.2, // USD
   ES: 0.6, // EUR
 };
 
@@ -67,19 +68,14 @@ const ZONE_UPLIFT: Record<Zone, number> = {
  * freight-quote-invariants skill.
  */
 export function currencyForCountry(country: Country): Currency {
-  return country === "MX" ? "MXN" : "EUR";
+  return country === "US" ? "USD" : "EUR";
 }
 
 export function isPriorityEligible(input: {
-  country: Country;
   originZone: Zone;
   destinationZone: Zone;
 }): boolean {
-  return (
-    input.country === "MX" &&
-    input.originZone === "metro" &&
-    input.destinationZone === "metro"
-  );
+  return input.originZone === "metro" && input.destinationZone === "metro";
 }
 
 function round2(value: number): number {
@@ -101,7 +97,7 @@ export function quoteShipment(input: QuoteInput): QuoteResult {
   }
   if (input.serviceTier === "priority" && !isPriorityEligible(input)) {
     throw new Error(
-      "priority service tier requires country=MX and both zones=metro (CONTEXT.md § Constraints)",
+      "priority service tier requires both zones=metro (CONTEXT.md § Constraints)",
     );
   }
 

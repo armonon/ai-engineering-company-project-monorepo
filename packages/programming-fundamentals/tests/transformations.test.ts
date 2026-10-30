@@ -56,16 +56,16 @@ describe("carrier scoring and cost calculations", () => {
       sampleShipment,
       laptop,
     );
-    // Per the context contract, any score >= 50 is suitable; Estafeta scores
+    // Per the context contract, any score >= 50 is suitable; UPS scores
     // 76.4 and has the lowest calculated cost for this example.
-    assert.equal(selection?.carrier.name, "Estafeta");
+    assert.equal(selection?.carrier.name, "UPS");
     assert.equal(selection?.cost, 30.89);
   });
 
   it("returns null when every carrier scores below 50", () => {
     const unsuitable: Carrier[] = sampleCarriers.map((carrier) => ({
       ...carrier,
-      operatesIn: ["Mexico"],
+      operatesIn: ["United States"],
       maxWeightKg: 1,
       handlesFragile: false,
       acceptsPriority: ["Standard"],

@@ -1,8 +1,8 @@
-# CONTEXT.md — TrackFlow
+# BRIEFING.md — TrackFlow
 
 ## Milestone 1: Your Company's Public Website
 
-_Estas instrucciones están [disponibles en español](./CONTEXT-trackflow.es.md)._
+_Estas instrucciones están [disponibles en español](./trackflow-BRIEFING.es.md)._
 
 > This document describes your company and the specific situation you're building this milestone for. Read it completely before writing any code. Everything you build must reflect this context.
 
@@ -10,7 +10,7 @@ _Estas instrucciones están [disponibles en español](./CONTEXT-trackflow.es.md)
 
 ## Your company
 
-**TrackFlow** is a last-mile delivery and warehouse management company founded in 2009 in Monterrey, Mexico. It operates in two markets—Mexico and Spain (Zaragoza)—and offers three services: warehouse management for e-commerce brands, last-mile delivery (the final leg from warehouse to end customer), and reverse logistics (returns and product reconditioning). It has approximately 130 employees and generates around 9 million euros in annual revenue. Its clients are mid-sized fashion, electronics, and cosmetics brands that sell online.
+**TrackFlow** is a last-mile delivery and warehouse management company founded in 2009 in Los Angeles, United States. It operates in two markets—United States (Los Angeles) and Spain (Zaragoza)—and offers three services: warehouse management for e-commerce brands, last-mile delivery (the final leg from warehouse to end customer), and reverse logistics (returns and product reconditioning). It has approximately 130 employees and generates around 9 million euros in annual revenue. Its clients are mid-sized fashion, electronics, and cosmetics brands that sell online.
 
 ---
 
@@ -26,9 +26,15 @@ You work in the **TrackFlow Tech** unit, reporting directly to CTO Andrés Kim. 
 
 > Hi,
 >
-> We need a new website that presents TrackFlow as what we are: a serious logistics operator with presence in Mexico and Spain. It must explain our three main services: warehouse management, last mile, and reverse logistics. I also need a page with a form so interested companies can request information. We currently get very vague inquiries by email and waste a lot of time qualifying whether they're real clients or not. I want to capture: company data, type of product they handle, estimated monthly shipping volume, countries where they operate, and which services interest them. The site must be responsive, accessible, and SEO optimized. Use Tailwind and make sure the form has complete validation.
+> We need a new website that presents TrackFlow as what we are: a serious logistics operator with presence in the United States and Spain. It must explain our three main services: warehouse management, last mile, and reverse logistics. I also need a page with a form so interested companies can request information. We currently get very vague inquiries by email and waste a lot of time qualifying whether they're real clients or not. I want to capture: company data, type of product they handle, estimated monthly shipping volume, countries where they operate, and which services interest them. The site must be responsive, accessible, and SEO optimized. Use Tailwind and make sure the form has complete validation.
 
 ---
+
+## Language scope
+
+- Multilingual support is **optional but highly recommended** given TrackFlow's operations in the United States and Spain.
+- You must choose one **base language** for the full website and form experience.
+- If you implement a second language, treat it as an enhancement (do not reduce quality/completeness in the base language).
 
 ## Landing page content
 
@@ -42,7 +48,7 @@ Your landing page must include the following sections, in this order:
 ### Hero
 
 - **Headline:** "Logistics that scales with your e-commerce"
-- **Subheadline:** "Warehouse management, last-mile deliveries, and reverse logistics in Mexico and Spain. Over 15 years helping fashion, electronics, and cosmetics brands grow without worrying about operations."
+- **Subheadline:** "Warehouse management, last-mile deliveries, and reverse logistics in the United States and Spain. Over 15 years helping fashion, electronics, and cosmetics brands grow without worrying about operations."
 - **Call to action:** Button "Request information" linking to the form
 
 ### Services (3 columns)
@@ -50,7 +56,7 @@ Your landing page must include the following sections, in this order:
 1. **Warehouse Management**
    - Storage, picking and packing
    - Real-time inventory
-   - We operate warehouses in Monterrey and Zaragoza
+   - We operate warehouses in Los Angeles and Zaragoza
 
 2. **Last-Mile Deliveries**
    - Certified carrier network in both countries
@@ -64,10 +70,10 @@ Your landing page must include the following sections, in this order:
 
 ### Coverage (2 columns)
 
-- **Mexico**
-  - Warehouse in Monterrey
+- **United States**
+  - Warehouse in Los Angeles
   - National coverage
-  - Carriers: Estafeta, FedEx, DHL
+  - Carriers: UPS, FedEx, DHL
 
 - **Spain**
   - Warehouse in Zaragoza
@@ -76,7 +82,7 @@ Your landing page must include the following sections, in this order:
 
 ### Why TrackFlow (4 benefits)
 
-- **Binational operation:** The only operator with own infrastructure in Mexico and Spain
+- **Binational operation:** The only operator with own infrastructure in the United States and Spain
 - **+130 professionals** dedicated to your logistics
 - **Own technology** for total visibility of your inventory
 - **E-commerce specialization** in fashion, electronics, and cosmetics
@@ -84,7 +90,7 @@ Your landing page must include the following sections, in this order:
 ### Contact
 
 - Email: <comercial@trackflow.com>
-- Monterrey: +52 81 1234 5678
+- Los Angeles: +1 213 555 0147
 - Zaragoza: +34 976 123 456
 
 ### Footer
@@ -105,7 +111,7 @@ Your form must capture the following information:
 | **Corporate email**                         | email    | Valid email format                                     | Yes      |
 | **Phone**                                   | tel      | Format: +[country code] [number]                       | Yes      |
 | **Company website**                         | url      | Valid URL format                                       | No       |
-| **Main operating country**                  | select   | Mexico / Spain / Both / Other                          | Yes      |
+| **Main operating country**                  | select   | United States / Spain / Both / Other                   | Yes      |
 | **Product type**                            | select   | Fashion / Electronics / Cosmetics / Food / Other       | Yes      |
 | **Estimated monthly shipping volume**       | select   | 0-100 / 101-500 / 501-2000 / 2000+ / Not sure          | Yes      |
 | **Services of interest**                    | checkbox | Warehousing / Last mile / Reverse logistics (multiple) | Yes      |
@@ -135,7 +141,7 @@ When a field doesn't meet validation, display these specific messages:
 - **Company name:** "Company name must have at least 2 characters"
 - **Contact person:** "Enter first and last name of contact"
 - **Email:** "Enter a valid corporate email (example: <name@company.com>)"
-- **Phone:** "Phone must include country code (example: +52 81 1234 5678)"
+- **Phone:** "Phone must include country code (example: +1 213 555 0147)"
 - **Website:** "If you include website, it must be a valid URL"
 - **Country:** "Select main operating country"
 - **Product type:** "Select the type of product you handle"
@@ -180,9 +186,9 @@ Implement the following Schema.org markup on your landing page:
   "address": [
     {
       "@type": "PostalAddress",
-      "addressCountry": "MX",
-      "addressLocality": "Monterrey",
-      "addressRegion": "Nuevo León"
+      "addressCountry": "US",
+      "addressLocality": "Los Angeles",
+      "addressRegion": "California"
     },
     {
       "@type": "PostalAddress",
@@ -193,7 +199,7 @@ Implement the following Schema.org markup on your landing page:
   ],
   "contactPoint": {
     "@type": "ContactPoint",
-    "telephone": "+52-81-1234-5678",
+    "telephone": "+1-213-555-0147",
     "contactType": "sales",
     "availableLanguage": ["Spanish", "English"]
   },
@@ -201,7 +207,7 @@ Implement the following Schema.org markup on your landing page:
   "areaServed": [
     {
       "@type": "Country",
-      "name": "Mexico"
+      "name": "United States"
     },
     {
       "@type": "Country",
