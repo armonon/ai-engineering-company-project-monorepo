@@ -27,6 +27,20 @@ export default function TalentPipelinePage() {
         </Link>
       </div>
 
+      <section
+        aria-label="Active search"
+        className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700"
+      >
+        <p>
+          <span className="font-semibold text-slate-900">Active search:</span>{" "}
+          Executive Assistant · Zaragoza headquarters
+        </p>
+        <p className="mt-1 text-slate-600">
+          Profile: executive support experience, calendar and travel
+          management, professional English, proficiency with office tools.
+        </p>
+      </section>
+
       <Suspense fallback={<div className="h-16 rounded-md bg-white" />}>
         <CandidateFilters />
       </Suspense>

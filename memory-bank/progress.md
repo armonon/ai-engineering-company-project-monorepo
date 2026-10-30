@@ -2,6 +2,22 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Talent pipeline aligned to the Milestone 3 briefing
+
+**Branch:** `codex/talent-briefing-alignment`
+
+- The official TrackFlow Milestone 3 briefing labels the `pending` stage
+  "Pending review"; both the backoffice `/talent` page and the standalone
+  tracker showed "Pending". Fixed in `uis/backoffice/lib/talent.ts` and
+  `uis/talent-pipeline-tracker/types/index.ts`, with a test pinning all nine
+  status and stage labels to the briefing table.
+- Both candidate lists now show the briefing's active search (Executive
+  Assistant · Zaragoza headquarters, with the required profile).
+- `uis/talent-pipeline-tracker/CONTEXT.md` replaced with the official
+  Milestone 3 briefing (it previously described an invented ~180-person
+  freight SaaS).
+- Traceability: `DOC-1`; `docs/company-context` and the official briefing.
+
 ## 2026-10-30 · Official Milestone 1 public website
 
 **Branch:** `codex/milestone-1-public-website`

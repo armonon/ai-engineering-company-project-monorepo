@@ -2,7 +2,7 @@ import {
   buildCandidateQuery,
   resolveTalentApiUrl,
 } from "@/lib/talent-api";
-import { safeExternalUrl } from "@/lib/talent";
+import { safeExternalUrl, STAGE_LABELS, STATUS_LABELS } from "@/lib/talent";
 
 describe("talent pipeline integration", () => {
   it("uses the same-origin talent proxy when no override is provided", () => {
@@ -41,5 +41,26 @@ describe("talent pipeline integration", () => {
     );
     expect(safeExternalUrl("javascript:alert(1)")).toBeNull();
     expect(safeExternalUrl("not a URL")).toBeNull();
+  });
+});
+
+describe("talent labels (TrackFlow Milestone 3 briefing)", () => {
+  it("shows the briefing's human-readable status labels", () => {
+    expect(STATUS_LABELS).toEqual({
+      received: "Received",
+      in_progress: "In progress",
+      selected: "Selected",
+      discarded: "Discarded",
+    });
+  });
+
+  it("shows the briefing's human-readable stage labels", () => {
+    expect(STAGE_LABELS).toEqual({
+      pending: "Pending review",
+      review: "Under review",
+      personal_interview: "Personal interview",
+      technical_interview: "Technical interview",
+      offer_presented: "Offer presented",
+    });
   });
 });
