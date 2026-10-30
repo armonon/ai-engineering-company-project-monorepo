@@ -1,7 +1,11 @@
 import { authJson } from "@/lib/auth";
 import {
   aggregateWeeklyPerformance,
+  canTriggerPipelineRun,
+  fetchTaskStatus,
   fetchWeeklyPerformance,
+  isFinishedTask,
+  triggerPipelineRun,
   reportingPeriod,
   warehouseLabel,
 } from "@/lib/reporting";
@@ -88,5 +92,41 @@ describe("reporting presentation", () => {
       discrepancy_events_count: 2,
       discrepancy_rate: 0.5,
     });
+  });
+});
+
+describe("weekly pipeline offloading", () => {
+  it("queues the run on the authenticated async endpoint", async () => {
+    mockedAuthJson.mockResolvedValue({ task_id: "t-1" });
+
+    await triggerPipelineRun();
+
+    expect(mockedAuthJson).toHaveBeenCalledWith("/reporting/pipeline-runs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+  });
+
+  it("follows the Celery task through the task status endpoint", async () => {
+    mockedAuthJson.mockResolvedValue({ task_id: "a/b", status: "started", error: null });
+
+    await fetchTaskStatus("a/b");
+
+    expect(mockedAuthJson).toHaveBeenCalledWith("/tasks/a%2Fb");
+  });
+
+  it("offers the trigger only to the roles the API authorizes", () => {
+    expect(canTriggerPipelineRun("admin")).toBe(true);
+    expect(canTriggerPipelineRun("manager")).toBe(true);
+    expect(canTriggerPipelineRun("user")).toBe(false);
+    expect(canTriggerPipelineRun(undefined)).toBe(false);
+  });
+
+  it("stops polling only on a terminal task state", () => {
+    expect(isFinishedTask("pending")).toBe(false);
+    expect(isFinishedTask("started")).toBe(false);
+    expect(isFinishedTask("success")).toBe(true);
+    expect(isFinishedTask("failure")).toBe(true);
   });
 });
