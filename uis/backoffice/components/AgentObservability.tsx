@@ -76,7 +76,7 @@ export function AgentObservability() {
   }, [agentFilter, flowFilter, page, selectedAgent]);
 
   useEffect(() => {
-    void load();
+    queueMicrotask(() => void load());
   }, [load]);
 
   useEffect(() => {

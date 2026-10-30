@@ -8,7 +8,7 @@ stable submission snapshot from the same repository.
 
 | Milestone | Canonical branch | Deliverable | Provenance |
 | --- | --- | --- | --- |
-| 1 — Web fundamentals | `milestone-1-web-fundamentals` | Official TrackFlow public website: `uis/public-website/` (`index.html`, `application.html`, `validation.js`) | Original `c1212fe`; resubmission head `0f2940a` (official briefing, 2026-10-30) |
+| 1 — Web fundamentals | `milestone-1-web-fundamentals` | Official TrackFlow public website: `uis/public-website/` (`index.html`, `application.html`, `validation.js`) | Original `c1212fe`; resubmission head `d75f44c` (official briefing and Codespaces fix, 2026-10-30) |
 | 2 — Programming fundamentals | `milestone-2-fold-in` | `@trackflow/programming-fundamentals` package and tests | Original PR #5 head `136b144`; resubmission head `425bd07` (official briefing, 2026-10-30) |
 | 3 — Talent pipeline | `milestone-3-talent-pipeline` | Talent Pipeline Tracker under `uis/` | Original PR #4 head `f769ede`; resubmission head `169942d` (official briefing, 2026-10-30) |
 | 4 — AI-assisted engineering | `milestone-4` | Context, memory bank, agent rules, skills, website and backoffice | Original PR #1 head `d4af128`; resubmission head `dece0e9` (official briefing, 2026-10-30) |

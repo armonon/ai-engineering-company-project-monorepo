@@ -69,7 +69,10 @@ def build_pipeline(columns: list[str]) -> Pipeline:
         ]
     )
     preprocessing = ColumnTransformer(
-        [("numeric", numeric_steps, NUMERIC_COLUMNS), ("categorical", categorical_steps, categorical)]
+        [
+            ("numeric", numeric_steps, NUMERIC_COLUMNS),
+            ("categorical", categorical_steps, categorical),
+        ]
     )
     return Pipeline(
         [
@@ -171,6 +174,11 @@ def _json_default(value: Any) -> Any:
     raise TypeError(f"cannot serialize {type(value)}")
 
 
+def _metrics_row(label: str, metrics: dict[str, float]) -> str:
+    keys = ("recall", "precision", "f1", "accuracy", "roc_auc")
+    return "| " + " | ".join([label, *(f"{metrics[key]:.3f}" for key in keys)]) + " |"
+
+
 def write_report(results: dict[str, Any], report_path: Path) -> None:
     baseline = results["baseline_metrics"]
     final = results["final_metrics"]
@@ -199,8 +207,8 @@ in isolation.
 
 | Model | Recall | Precision | F1 | Accuracy | ROC AUC |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Default baseline | {baseline['recall']:.3f} | {baseline['precision']:.3f} | {baseline['f1']:.3f} | {baseline['accuracy']:.3f} | {baseline['roc_auc']:.3f} |
-| Tuned final | {final['recall']:.3f} | {final['precision']:.3f} | {final['f1']:.3f} | {final['accuracy']:.3f} | {final['roc_auc']:.3f} |
+{_metrics_row("Default baseline", baseline)}
+{_metrics_row("Tuned final", final)}
 
 ## Search and stability decision
 

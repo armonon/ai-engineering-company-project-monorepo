@@ -9,7 +9,6 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-
 TODOS_FILE = Path("todos.csv")
 todos: list[str] = []
 
