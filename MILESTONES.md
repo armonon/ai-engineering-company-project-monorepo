@@ -8,10 +8,10 @@ stable submission snapshot from the same repository.
 
 | Milestone | Canonical branch | Deliverable | Provenance |
 | --- | --- | --- | --- |
-| 1 — Web fundamentals | `milestone-1-web-fundamentals` | TrackFlow public Next.js website | Reconstructed at the original website commit `c1212fe` |
-| 2 — Programming fundamentals | `milestone-2-fold-in` | `@trackflow/programming-fundamentals` package and tests | Original merged PR #5 head `136b144` |
-| 3 — Talent pipeline | `milestone-3-talent-pipeline` | Talent Pipeline Tracker under `uis/` | Original merged PR #4 head `f769ede` |
-| 4 — AI-assisted engineering | `milestone-4` | Context, memory bank, agent rules, skills, website and backoffice | Original merged PR #1 head `d4af128` |
+| 1 — Web fundamentals | `milestone-1-web-fundamentals` | Official TrackFlow public website: `uis/public-website/` (`index.html`, `application.html`, `validation.js`) | Original `c1212fe`; resubmission head `0f2940a` (official briefing, 2026-10-30) |
+| 2 — Programming fundamentals | `milestone-2-fold-in` | `@trackflow/programming-fundamentals` package and tests | Original PR #5 head `136b144`; resubmission head `425bd07` (official briefing, 2026-10-30) |
+| 3 — Talent pipeline | `milestone-3-talent-pipeline` | Talent Pipeline Tracker under `uis/` | Original PR #4 head `f769ede`; resubmission head `169942d` (official briefing, 2026-10-30) |
+| 4 — AI-assisted engineering | `milestone-4` | Context, memory bank, agent rules, skills, website and backoffice | Original PR #1 head `d4af128`; resubmission head `dece0e9` (official briefing, 2026-10-30) |
 | 5 — Backend architecture | `milestone-5-strengthening` | Architecture proposal completed against the rubric | Original merged PR #6 head `d0d7a38`; initial draft remains on `milestone-5` |
 | 5 — Inventory ORM | `milestone-5-inventory-orm` | SQLModel inventory API with PostgreSQL/Supabase support | Original merged PR #17 head `28caa9d` |
 | 5 — Inventory backoffice | `milestone-5-inventory-backoffice` | Protected product, inbound, outbound, and movement views under `uis/backoffice` | Built as the stable assignment branch from accepted `main` |
@@ -91,6 +91,11 @@ into `main`. Submit the named branch/PR that matches the assignment page.
 ### AI engineering project delivery
 
 - Capstone handoff package — `codex/capstone-handoff` ([PR #73](https://github.com/armonon/ai-engineering-company-project-monorepo/pull/73))
+
+On 2026-10-30 the Milestone 1–4 branches received one additional commit each
+so the whole track uses the official TrackFlow briefing (United States +
+Spain) consistently, as 4Geeks instructor feedback required. The original
+heads remain in history and are listed in the Provenance column.
 
 The 2026-10-29 submission audit verified that every branch named in this file
 exists on `origin` and points to the exact head commit of its linked merged PR.
