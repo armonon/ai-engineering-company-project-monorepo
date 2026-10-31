@@ -2,6 +2,20 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Demo video touch-ups
+
+**Branch:** `codex/demo-video-touchups`
+
+- Found while reviewing the recorded capstone walkthrough frame by frame:
+  approval cards stretched to the taller neighbour (large empty area once a
+  department approved), decision buttons rendered lowercase, and the final
+  proposal showed a raw ISO timestamp.
+- Department cards now take their natural height (`items-start`), decision
+  buttons read "Approve / Request changes / Reject", and the synthesized
+  proposal prints "Generated: 31 Oct 2026, 01:03 UTC". Internal trace
+  timestamps stay ISO 8601.
+- Traceability: `DOC-1`.
+
 ## 2026-10-30 · Capstone demo visual polish
 
 **Branch:** `codex/demo-visual-polish`

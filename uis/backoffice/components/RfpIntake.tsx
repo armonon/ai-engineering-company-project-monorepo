@@ -322,7 +322,7 @@ export function RfpIntake() {
               ) : null}
 
               {ticket.sections.length ? (
-                <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                <div className="mt-6 grid items-start gap-4 lg:grid-cols-2">
                   {ticket.sections.map((section, sectionIndex) => {
                     const decisionKey = `${ticket.ticket_id}:${section.department_id}`;
                     const evaluation = section.evaluation_result;
@@ -431,7 +431,7 @@ export function RfpIntake() {
                                         : "border border-amber-200 bg-white text-amber-800 hover:bg-amber-50"
                                   }`}
                                 >
-                                  {decision.replaceAll("_", " ")}
+                                  {humanize(decision)}
                                 </button>
                               ))}
                             </div>
