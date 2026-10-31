@@ -1,14 +1,23 @@
 import { AgentObservability } from "@/components/AgentObservability";
+import { PageHero } from "@/components/ui/Showcase";
 
 export default function ObservabilityPage() {
   return (
-    <main className="mx-auto max-w-7xl p-6 lg:p-10">
-      <p className="text-sm font-semibold uppercase tracking-widest text-blue-700">Operations</p>
-      <h1 className="mt-2 text-3xl font-bold text-slate-950">Agent observability</h1>
-      <p className="mt-2 max-w-3xl text-slate-600">
-        Reconstruct live and historical work across the First-line CX agent and Commercial proposal pipeline.
-      </p>
-      <div className="mt-8"><AgentObservability /></div>
-    </main>
+    <div className="mx-auto max-w-7xl space-y-8">
+      <PageHero
+        eyebrow="Operations"
+        title="Agent observability"
+        description="See what every TrackFlow agent is doing, reconstruct each run step by step, and pause, resume, or cancel live work."
+      >
+        <div className="flex flex-wrap gap-2 text-xs font-semibold">
+          {["Live traces", "Human controls", "Full audit trail"].map((tag) => (
+            <span key={tag} className="rounded-full bg-white/10 px-3 py-1.5 text-blue-100 ring-1 ring-inset ring-white/20 backdrop-blur">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </PageHero>
+      <AgentObservability />
+    </div>
   );
 }
