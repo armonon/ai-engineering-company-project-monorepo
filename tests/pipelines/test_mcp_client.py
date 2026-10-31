@@ -61,6 +61,16 @@ def test_inventory_lookup_returns_products_from_mcp(monkeypatch):
     assert tool.calls == [{"query": "TEC-CHG-065 stock"}]
 
 
+def test_content_block_results_from_current_adapter_are_parsed(monkeypatch):
+    blocks = [{"type": "text", "text": '{"id": 72, "status": "open"}', "id": "lc_1"}]
+    tool = FakeTool("get_incident", blocks)
+    FakeMultiServerClient.tools = [tool]
+    monkeypatch.setattr("trackflow_agent.mcp_client.MultiServerMCPClient", FakeMultiServerClient)
+    client = CompanyToolsMCPClient("https://mcp.example.test/mcp", "token")
+
+    assert client.get_incident(72) == {"id": 72, "status": "open"}
+
+
 def test_missing_access_token_fails_before_discovery():
     client = CompanyToolsMCPClient("https://mcp.example.test/mcp", "")
     with pytest.raises(RuntimeError, match="access token is not configured"):

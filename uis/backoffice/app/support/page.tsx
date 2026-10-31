@@ -1,18 +1,22 @@
 import { SupportChat } from "@/components/SupportChat";
+import { PageHero } from "@/components/ui/Showcase";
 
 export default function SupportPage() {
   return (
-    <div className="space-y-5">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
-          Live customer support
-        </p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-950">Streaming support chat</h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">
-          Responses arrive token by token. Send a correction while the agent is responding to
-          abort that turn, preserve the partial answer, and redirect the next turn.
-        </p>
-      </header>
+    <div className="mx-auto max-w-7xl space-y-8">
+      <PageHero
+        eyebrow="Live customer support"
+        title="First-line CX agent"
+        description="Customers ask where their parcel is and get a live answer from TrackFlow's systems, streamed word by word. Send a correction mid-answer to interrupt it and redirect the next turn."
+      >
+        <div className="flex flex-wrap gap-2 text-xs font-semibold">
+          {["Live ticket lookups", "Guardrails", "Interrupt anytime"].map((tag) => (
+            <span key={tag} className="rounded-full bg-white/10 px-3 py-1.5 text-blue-100 ring-1 ring-inset ring-white/20 backdrop-blur">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </PageHero>
       <SupportChat />
     </div>
   );

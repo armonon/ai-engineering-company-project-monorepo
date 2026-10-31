@@ -46,6 +46,13 @@ class CompanyToolsMCPClient:
         if selected is None:
             raise RuntimeError(f"MCP tool '{tool_name}' was not discovered")
         result = await selected.ainvoke(arguments)
+        if isinstance(result, list):
+            # langchain-mcp-adapters 0.3+ returns MCP content blocks, not a string.
+            result = "".join(
+                str(block.get("text", ""))
+                for block in result
+                if isinstance(block, dict) and block.get("type") == "text"
+            )
         if isinstance(result, dict):
             return result
         if isinstance(result, str):
