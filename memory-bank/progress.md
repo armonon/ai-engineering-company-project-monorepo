@@ -2,6 +2,34 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-30 · Capstone demo visual polish
+
+**Branch:** `codex/demo-visual-polish`
+
+- Redesigned the two on-camera screens (RFP workflow, Agent observability)
+  and the app chrome without changing data flow, API calls, streaming, or
+  approval logic. Evidence screenshots: `docs/evidence/capstone-ui/`.
+- Shared pieces in `components/ui/Showcase.tsx`: tone-mapped status pills
+  with a live pulse for in-flight states, gradient initials avatars, stat
+  tiles, a gradient page hero, and an animated five-stage RFP tracker
+  (Intake → Drafts → Evaluation → Approvals → Done).
+- RFP: slide-in live notification (shimmer bar, LIVE badge, status follows
+  the ticket), drop-zone upload, stat tiles, department cards with owner
+  avatars, highlighted open questions, ✓/✕ evaluation chips, color-coded
+  decisions, pop-in Approved badge, and a green final-proposal banner.
+- Observability: KPI tiles; agent cards with live status; flows and logs as
+  a vertical step timeline with readable labels ("Request analyzed",
+  "Company data looked up", "Draft written", "Delivered"), relative times,
+  and raw IDs moved into "Trace details"; segmented pause/resume/cancel.
+  Removed a nested `<main>` from the page wrapper.
+- Global: body now uses the loaded Geist font (was hard-coded Arial);
+  motion tokens (fade-up, slide-in, pop, shimmer, glow) are disabled under
+  `prefers-reduced-motion`.
+- Presentation rules live in `lib/presentation.ts` with 9 tests (stage
+  mapping, tones, department names, acronyms, trigger labels, initials,
+  relative time). Verified live at 1440 px and 375 px (no overflow).
+- Traceability: `DOC-1`; capstone recording guidance.
+
 ## 2026-10-30 · Live demo practice run and notebook fixes
 
 **Branch:** `codex/demo-polish`
