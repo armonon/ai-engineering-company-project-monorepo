@@ -2,6 +2,26 @@
 
 Rolling log of substantive changes. Newest first.
 
+## 2026-10-31 · CX chat: live lookups fixed, demo-ready UI
+
+**Branch:** `codex/cx-chat-demo`
+
+- Found during an end-to-end run of the First-line CX agent against a live
+  company-tools MCP server: `langchain-mcp-adapters` 0.3 returns MCP content
+  blocks (a list), which `CompanyToolsMCPClient` rejected as "unsupported".
+  Every ticket and stock lookup therefore answered "I couldn't confirm…".
+  The client now joins text blocks before parsing (regression test added).
+- Incident answers read as sentences ("Incident 72 is open. Category: lost
+  parcel. Handled by the Zaragoza office. Last updated 15 Jan 2024.")
+  instead of `status=open; category=…`.
+- MCP `query_inventory` ignores question filler ("how", "in", "stock") and
+  returns only the best-matching products; previously "in" matched "Chino"
+  and a one-product question listed three.
+- Support chat restyled to match the other on-camera screens (`PageHero`,
+  chat bubbles, typing indicator, suggestion chips, capabilities panel). No
+  change to the WebSocket protocol or interrupt behaviour.
+- Traceability: `DOC-1`.
+
 ## 2026-10-30 · Demo video touch-ups
 
 **Branch:** `codex/demo-video-touchups`

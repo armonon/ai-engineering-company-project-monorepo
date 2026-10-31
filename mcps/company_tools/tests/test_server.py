@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 import uvicorn
 from company_tools_mcp.config import Settings
-from company_tools_mcp.server import ALL_SCOPES, create_server
+from company_tools_mcp.server import ALL_SCOPES, create_server, match_products
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from mcp.server.fastmcp.exceptions import ToolError
 from mcpauth.config import (
@@ -299,3 +299,16 @@ async def test_oauth_http_discovery_and_invocation_through_langchain_adapter(tmp
     finally:
         server.should_exit = True
         thread.join(timeout=5)
+
+
+def test_inventory_query_keeps_only_the_best_match_and_ignores_filler_words():
+    products = [
+        {"name": "Wireless Earbuds Pro", "sku": "TEC-EAR-001"},
+        {"name": "Slim Fit Chino - Navy 32/32", "sku": "CLT-CHN-N-32"},
+        {"name": "Hydrating Face Serum 30ml", "sku": "CSM-SRM-030"},
+    ]
+
+    asked = match_products(products, "How many Wireless Earbuds Pro are in stock?")
+    assert [p["sku"] for p in asked] == ["TEC-EAR-001"]
+    assert len(match_products(products, "What is in stock?")) == 3
+    assert match_products(products, "Do you have any umbrellas?") == []

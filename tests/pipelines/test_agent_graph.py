@@ -108,7 +108,10 @@ def test_ticket_question_uses_real_reader_not_rag(tmp_path: Path):
         trace_store=TraceStore(tmp_path / "ticket.db"),
     )
     result = graph.invoke("What is the status of ticket 482?", run_id="ticket-run")
-    assert "Incident 482: status=in_progress" in result.answer
+    assert (
+        "Incident 482 is in progress. Category: delivery delay. "
+        "Handled by the Los Angeles office. Last updated 02 Oct 2026."
+    ) in result.answer
     assert [event["node"] for event in result.trace] == [
         "receive",
         "input_guard",
