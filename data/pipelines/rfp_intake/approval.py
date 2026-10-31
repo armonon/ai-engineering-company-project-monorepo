@@ -379,7 +379,7 @@ def synthesize_final_document(
         f"**Ticket:** {ticket_id}",
         f"**Client:** {metadata['client_name']}",
         f"**Market and currency:** {metadata['client_country']} / {metadata['currency']}",
-        f"**Generated:** {_now()}",
+        f"**Generated:** {datetime.now(UTC).strftime('%d %b %Y, %H:%M UTC')}",
         "",
     ]
     for section in sections:
