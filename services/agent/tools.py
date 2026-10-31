@@ -12,6 +12,7 @@ from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 TOOL_TIMEOUT_SECONDS = 4.0
@@ -39,15 +40,36 @@ class TicketLookupOutput:
     error: str | None = None
 
     def as_context(self) -> dict[str, Any]:
+        branch = _BRANCH_NAMES.get(self.branch or "", _readable(self.branch))
         return {
             "source_document": "live-incident-manager",
             "section": f"incident-{self.ticket_id}",
             "text": (
-                f"Incident {self.ticket_id}: status={self.status}; "
-                f"category={self.category}; origin={self.origin}; "
-                f"branch={self.branch}; updated_at={self.updated_at}."
+                f"Incident {self.ticket_id} is {_readable(self.status)}. "
+                f"Category: {_readable(self.category)}. "
+                f"Handled by the {branch}. "
+                f"Last updated {_readable_date(self.updated_at)}."
             ),
         }
+
+
+_BRANCH_NAMES = {
+    "la_office": "Los Angeles office",
+    "los_angeles": "Los Angeles office",
+    "zaragoza_office": "Zaragoza office",
+    "zaragoza": "Zaragoza office",
+}
+
+
+def _readable(value: str | None) -> str:
+    return (value or "unknown").replace("_", " ")
+
+
+def _readable_date(value: str | None) -> str:
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).strftime("%d %b %Y")
+    except ValueError:
+        return str(value or "unknown")
 
 
 @dataclass(frozen=True)

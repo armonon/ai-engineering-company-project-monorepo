@@ -39,6 +39,29 @@ ALL_SCOPES = [INCIDENT_READ, INCIDENT_WRITE, INVENTORY_READ]
 
 T = TypeVar("T")
 
+# Question filler that would otherwise match product text ("in" matches "Chino").
+_QUERY_STOPWORDS = frozenset(
+    "a an and any are as at do does for have how in is it left many much of on "
+    "or our right stock the there units we what which you your available".split()
+)
+
+
+def match_products(products: list[dict], query: str) -> list[dict]:
+    """Return the products matching the most query terms; all products if no terms."""
+    terms = [
+        term
+        for term in (word.strip("?.,!:;'\"") for word in query.lower().split())
+        if len(term) >= 2 and term not in _QUERY_STOPWORDS
+    ]
+    if not terms:
+        return list(products)
+    scored = [
+        (sum(term in f"{p.get('name', '')} {p.get('sku', '')}".lower() for term in terms), p)
+        for p in products
+    ]
+    best = max((score for score, _ in scored), default=0)
+    return [p for score, p in scored if best and score == best]
+
 
 @dataclass(frozen=True)
 class ServerBundle:
@@ -251,17 +274,7 @@ def create_server(
         warehouse: Literal["LA", "ZGZ"] | None = None,
     ) -> InventoryQueryResult:
         def action() -> InventoryQueryResult:
-            products = upstream.list_inventory(warehouse)
-            terms = [term for term in query.lower().split() if len(term) >= 2]
-            matches = [
-                product
-                for product in products
-                if not terms
-                or any(
-                    term in f"{product.get('name', '')} {product.get('sku', '')}".lower()
-                    for term in terms
-                )
-            ]
+            matches = match_products(upstream.list_inventory(warehouse), query)
             return InventoryQueryResult(
                 products=[InventoryProduct.model_validate(item) for item in matches],
                 count=len(matches),
