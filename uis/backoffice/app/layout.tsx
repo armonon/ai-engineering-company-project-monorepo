@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s · TrackFlow Backoffice",
   },
   description:
-    "Internal admin app for TrackFlow account managers — freight quoting, tenant configuration, dispatch tools.",
+    "Internal admin app for TrackFlow account managers — inventory operations, carrier selection, and freight quoting.",
   robots: { index: false, follow: false },
 };
 
@@ -44,6 +44,12 @@ export default function RootLayout({
                 href="/"
                 className="rounded-md bg-white/10 px-3 py-2 text-white"
               >
+                Inventory operations
+              </Link>
+              <Link
+                href="/freight-quote"
+                className="rounded-md px-3 py-2 text-slate-200 hover:bg-white/10 hover:text-white"
+              >
                 Freight quote
               </Link>
               <span className="rounded-md px-3 py-2 text-slate-400">
@@ -60,7 +66,7 @@ export default function RootLayout({
           <div className="flex min-h-screen flex-1 flex-col">
             <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:px-6">
               <h1 className="text-sm font-semibold text-slate-900">
-                Freight quote
+                TrackFlow operations
               </h1>
               <span className="text-xs text-slate-500">
                 Signed in as <strong>account-manager@trackflow</strong>

@@ -28,12 +28,31 @@ front-ends that consume them.
 | Memory bank | [`memory-bank/`](./memory-bank) | `projectbrief.md`, `techContext.md`, and `progress.md` — the durable record an agent reads to recover context between sessions. |
 | Conventions rule | [`.agents/rules/monorepo-conventions.md`](./.agents/rules/monorepo-conventions.md) | Where code belongs in this monorepo and why. |
 | Executable skill | [`.agents/skills/freight-quote-invariants/`](./.agents/skills/freight-quote-invariants) | A skill with a **runnable verifier** (`scripts/verify.mjs`) that asserts the freight-quote business rules. It is not prose — it fails the build when an invariant breaks. |
-| Business logic | [`packages/business-logic/`](./packages/business-logic) | `@trackflow/business-logic` — the freight-quote calculation, typed and unit-tested. |
-| Public website | [`uis/website/`](./uis/website) | TrackFlow's public corporate site (Next.js 16, App Router). |
-| Backoffice | [`uis/backoffice/`](./uis/backoffice) | The internal operations app, with a live freight-quote calculator wired to `@trackflow/business-logic`. |
+| Milestone 2 module | [`packages/programming-fundamentals/`](./packages/programming-fundamentals) | `@trackflow/programming-fundamentals` — the real Milestone 2 output: `Product`, `Shipment`, `Carrier` and `InventoryMovement` types with collection filters, searches, transformations, and validations. |
+| Business logic | [`packages/business-logic/`](./packages/business-logic) | `@trackflow/business-logic` — the freight-quote calculation the Milestone 4 skill verifies. |
+| Public website | [`uis/website/`](./uis/website) | TrackFlow's public corporate site (Next.js 16, App Router) — the full migration of the Milestone 1 static site, plus the information-request form. |
+| Backoffice | [`uis/backoffice/`](./uis/backoffice) | The internal operations app. Its home screen renders `@trackflow/programming-fundamentals` output; `/freight-quote` runs the skill-verified quote calculation. |
 
 `services/` contains only its folder README at this milestone — the FastAPI
 backend arrives in Milestone 5. That is deliberate, not an omission.
+
+### What the apps consume
+
+Neither app re-implements a domain rule; both import the package that owns
+it, which is what rule **MONO-1** requires:
+
+- **Backoffice home (`/`)** — stock ordering, low-stock detection, the
+  warehouse split, inventory value, product validation, and carrier
+  selection are all computed at render time by
+  `@trackflow/programming-fundamentals`.
+- **Backoffice `/freight-quote`** — `quoteShipment()` from
+  `@trackflow/business-logic`, the package `npm run verify:freight-quote`
+  checks.
+- **Website** — every section of the Milestone 1 static site (`home`,
+  `services`, `coverage`, `why`, `contact`) with its anchor and content,
+  the Schema.org `Organization` data, the skip link, and the
+  information-request form at `/application` with the briefing's exact
+  validation messages and option values.
 
 ---
 
@@ -74,7 +93,7 @@ Every command below is expected to pass on a clean clone of this branch:
 npm ci                      # install from the committed lockfile
 npm run bootstrap           # compile the workspace package
 npm run typecheck           # tsc --noEmit across all three workspaces
-npm test                    # business-logic unit tests (7 tests)
+npm test                    # 48 tests across all workspaces
 npm run build               # production build of both Next.js apps
 npm run verify:freight-quote    # the skill's own invariant verifier
 ```
@@ -95,6 +114,12 @@ executable half of the freight-quote skill, and it asserts the invariants
 It prints `freight-quote-invariants: OK (10 assertions)` while the
 implementation still honours that contract, and exits non-zero naming the
 broken invariant when it does not.
+
+`npm test` covers all three suites: 7 freight-quote tests, 24
+programming-fundamentals tests, and 17 website tests — 10 of which re-assert
+the Milestone 1 form rules after the migration, while 6 fail if the Next.js
+site ever drops a Milestone 1 section, its anchor, its content, or its
+structured data.
 
 ---
 

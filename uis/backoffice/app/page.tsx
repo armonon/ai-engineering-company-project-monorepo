@@ -1,19 +1,26 @@
-import { QuoteCalculator } from "@/components/QuoteCalculator";
+import { InventoryOperations } from "@/components/InventoryOperations";
+
+export const metadata = { title: "Inventory operations" };
 
 export default function BackofficeHome() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-          Live freight quote
+          Inventory operations
         </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Run a quote for a prospective TrackFlow shipment. Numbers are
-          computed by the Milestone 2 business-logic package
-          (<code className="rounded bg-slate-100 px-1">@trackflow/business-logic</code>).
+        <p className="mt-1 max-w-3xl text-sm text-slate-600">
+          Stock levels, warehouse split, product validation, and carrier
+          selection — every figure computed at render time by the Milestone 2
+          module{" "}
+          <code className="rounded bg-slate-100 px-1">
+            @trackflow/programming-fundamentals
+          </code>
+          . The backoffice imports it; it does not re-implement or copy the
+          rules (rule <strong>MONO-1</strong>).
         </p>
       </div>
-      <QuoteCalculator />
+      <InventoryOperations />
     </div>
   );
 }

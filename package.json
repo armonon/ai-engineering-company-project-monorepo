@@ -2,7 +2,7 @@
   "name": "@trackflow/monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "TrackFlow monorepo — website, backoffice, business logic, and future AI agents.",
+  "description": "TrackFlow monorepo \u2014 website, backoffice, business logic, and future AI agents.",
   "engines": {
     "node": ">=20"
   },
@@ -11,9 +11,9 @@
     "uis/*"
   ],
   "scripts": {
-    "bootstrap": "npm run build --workspace @trackflow/business-logic",
+    "bootstrap": "npm run build --workspace @trackflow/business-logic && npm run build --workspace @trackflow/programming-fundamentals",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspace @trackflow/business-logic",
+    "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "dev:website": "npm run dev --workspace @trackflow/website",
     "dev:backoffice": "npm run dev --workspace @trackflow/backoffice",

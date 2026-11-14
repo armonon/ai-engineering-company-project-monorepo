@@ -14,7 +14,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "next": "16.4.3",
-    "@trackflow/business-logic": "*"
+    "@trackflow/business-logic": "*",
+    "@trackflow/programming-fundamentals": "*"
   },
   "devDependencies": {
     "typescript": "^5",
