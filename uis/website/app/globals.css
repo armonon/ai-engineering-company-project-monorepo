@@ -12,15 +12,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/*
+ * This is a light-only brand surface: every section, card, and control is
+ * styled with explicit light Tailwind colours. The create-next-app
+ * boilerplate also shipped a prefers-color-scheme block that flipped these
+ * variables to near-black, and because plain rules beat Tailwind's layered
+ * utilities in v4, it won over `bg-white` on <body> — section headings and
+ * body copy rendered dark-on-black for anyone with dark mode on. The block
+ * is gone and the scheme is declared, so form controls and scrollbars match.
+ */
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* The layout loads Geist and exposes it as --font-geist-sans; the
+     boilerplate hardcoded Arial here and threw both webfonts away. */
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }

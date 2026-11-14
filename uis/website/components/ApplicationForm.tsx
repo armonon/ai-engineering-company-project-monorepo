@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   COMMENTS_LIMIT,
+  FIELDS,
   OPTIONS,
   commentsRemaining,
   emptyApplication,
@@ -58,8 +59,12 @@ export function ApplicationForm() {
     const outcome = validateForm(values);
     setErrors(outcome.errors);
     if (!outcome.valid) {
-      const first = document.querySelector<HTMLElement>('[aria-invalid="true"]');
-      first?.focus();
+      const firstInvalid = FIELDS.find((name) => outcome.errors[name]);
+      if (firstInvalid) {
+        document
+          .querySelector<HTMLElement>(`[name="${firstInvalid}"]`)
+          ?.focus();
+      }
       return;
     }
     setSubmitted(true);
@@ -264,7 +269,12 @@ export function ApplicationForm() {
           <legend className="font-medium">
             Do you currently work with another 3PL? *
           </legend>
-          <div className="mt-2 space-y-2">
+          <div
+            role="radiogroup"
+            aria-invalid={invalid("currentThreePL")}
+            aria-describedby="currentThreePL-error"
+            className="mt-2 space-y-2"
+          >
             {OPTIONS.currentThreePL.map((option) => (
               <label key={option} className="flex items-center gap-2">
                 <input
@@ -273,8 +283,6 @@ export function ApplicationForm() {
                   value={option}
                   checked={values.currentThreePL === option}
                   onChange={() => set("currentThreePL", option)}
-                  aria-invalid={invalid("currentThreePL")}
-                  aria-describedby="currentThreePL-error"
                   className="h-4 w-4"
                 />
                 <span>{option}</span>

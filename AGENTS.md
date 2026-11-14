@@ -32,14 +32,15 @@ order. Not four. Not "the ones that make sense." All five.
 
 1. **Reconcile.** Run `git status` and read the diff of every staged
    file. If a change is not intentional, unstage it.
-2. **Typecheck & test.** From the repo root:
+2. **Lint, typecheck & test.** From the repo root:
 
    ```bash
+   npm run lint
    npm run typecheck
    npm run test
    ```
 
-   Both must exit 0. If a test is failing because it's out of date
+   All three must exit 0. If a test is failing because it's out of date
    for a deliberate behaviour change, update it in the same commit.
 3. **Build.** From the repo root:
 

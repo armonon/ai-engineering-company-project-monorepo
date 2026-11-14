@@ -73,15 +73,43 @@ content, the structured data, and the whole information-request page.
 - Removed `uis/website/components/FeatureCard.tsx`, unused after the
   migration.
 
+### Pre-existing defects found while verifying, also fixed
+
+- **`npm run lint` crashed in both apps.** The create-next-app config
+  loaded `eslint-config-next` through `@eslint/eslintrc`'s `FlatCompat`;
+  with v16 the validator walks the plugin graph and throws
+  `Converting circular structure to JSON` before linting a single file.
+  Both configs now import the native flat entry points directly. Confirmed
+  broken at `dece0e9`, the reviewed revision — and linting immediately
+  caught a real bug in the new form: `aria-invalid` on `role="radio"`,
+  which moved to the radiogroup.
+- **Dark mode made the public site unreadable.** The boilerplate
+  `prefers-color-scheme` block flipped `--background`/`--foreground` to
+  near-black, and in Tailwind v4 an unlayered `body` rule beats the layered
+  `bg-white` utility — so for anyone with dark mode on, section headings
+  and body copy rendered dark-on-black. These are light-only brand
+  surfaces, so the block is gone and `color-scheme: light` is declared.
+- **Neither app used the fonts it loaded.** `body` hardcoded
+  `font-family: Arial, Helvetica, sans-serif`, discarding the two Geist
+  webfonts the layouts fetch. Now set from `--font-geist-sans` with a real
+  fallback stack.
+- **Both app READMEs were create-next-app boilerplate**, same class of
+  defect as the root README. Replaced with the routes each app serves,
+  what owns the logic, and how to run them.
+- Root `lint` script added, and `AGENTS.md` step 2 now gates on it
+  alongside typecheck and test. The workflow is still five steps.
+
 ### Verification
 
-`npm ci`, `npm run bootstrap`, `npm run typecheck`, `npm test` (48 tests:
-7 + 24 + 17), `npm run build`, `npm run verify:freight-quote`
-(10 assertions) all pass from a clean clone. Both apps were driven in a
+`npm ci`, `npm run bootstrap`, `npm run lint`, `npm run typecheck`,
+`npm test` (48 tests: 7 + 24 + 17), `npm run build`,
+`npm run verify:freight-quote` (10 assertions) and `npm audit` (0
+vulnerabilities) all pass from a clean clone of the pushed branch. Both apps were driven in a
 browser: every Milestone 1 section renders, the form shows the briefing's
 errors on empty submit, warns on 0-100 volume without blocking, and reaches
 the thank-you state; the backoffice renders real Milestone 2 figures and
-`/freight-quote` still quotes.
+`/freight-quote` still quotes. Also checked at 375 px (no horizontal
+overflow) and under an emulated dark colour scheme (both apps stay legible).
 
 ## 2026-10-30 · Milestone 4 resubmission: official TrackFlow briefing
 

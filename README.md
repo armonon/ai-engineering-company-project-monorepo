@@ -91,9 +91,10 @@ Every command below is expected to pass on a clean clone of this branch:
 
 ```bash
 npm ci                      # install from the committed lockfile
-npm run bootstrap           # compile the workspace package
-npm run typecheck           # tsc --noEmit across all three workspaces
-npm test                    # 48 tests across all workspaces
+npm run bootstrap           # compile both workspace packages
+npm run lint                # ESLint across both Next.js apps
+npm run typecheck           # tsc --noEmit across every workspace
+npm test                    # 48 tests across every workspace
 npm run build               # production build of both Next.js apps
 npm run verify:freight-quote    # the skill's own invariant verifier
 ```

@@ -13,6 +13,7 @@
   "scripts": {
     "bootstrap": "npm run build --workspace @trackflow/business-logic && npm run build --workspace @trackflow/programming-fundamentals",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "dev:website": "npm run dev --workspace @trackflow/website",
